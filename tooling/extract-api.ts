@@ -39,6 +39,7 @@
 import ts from "typescript";
 import { readdir, readFile, writeFile, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
+import { readMachineTagProps, type MachineTagProp } from "./machine-tag-props.ts";
 import { join, dirname, basename, relative } from "node:path";
 
 const ROOT = new URL("../packages/shadcn/", import.meta.url).pathname;
@@ -57,8 +58,21 @@ interface PropertyEntry {
   description?: string;
   /** Variant props only: the literal option names (e.g. ["default","sm","lg"]). */
   options?: string[];
-  /** Variant props only: the cva `defaultVariants` entry, when present. */
+  /**
+   * Statically knowable default: the cva `defaultVariants` entry for a variant
+   * prop, or the Zag machine prop's own `@default` JSDoc tag. Absent means
+   * "not recorded", never "there is no default".
+   */
   default?: string;
+  /**
+   * A value the component writes on its own `<zag>` tag. marko-zag merges the
+   * tag's attributes LAST (`buildMachineProps`: `{ id, ...picked, ...overrides }`),
+   * so the caller's value is silently ignored — this prop is FIXED, not
+   * defaultable. The string is the literal when it is knowable
+   * (`"alertdialog"`), `true` when the component passes a non-literal
+   * expression instead (`slideCount=slides.length`).
+   */
+  fixed?: string | true;
 }
 
 interface PartEntry {
@@ -175,11 +189,19 @@ function resolveInputType(
   );
   const declaration = inputSymbol.declarations?.[0];
   if (declaration && ts.isTypeAliasDeclaration(declaration)) {
+    // SAFETY: `getTypeAliasInstantiation` and `createTypeReference` are
+    // internal TypeScript APIs (used by the checker itself, not published on
+    // the public `TypeChecker` interface) with no public equivalent for
+    // instantiating a generic alias by hand. Both are optional here precisely
+    // because they are not guaranteed: on a typescript version that lacks one,
+    // the call is skipped and the uninstantiated type — the pre-existing
+    // fallback — is returned instead.
     const instantiated = (checker as unknown as {
       getTypeAliasInstantiation?: (symbol: ts.Symbol, args: readonly ts.Type[]) => ts.Type;
     }).getTypeAliasInstantiation?.(inputSymbol, typeArguments);
     if (instantiated) return instantiated;
   }
+  // SAFETY: same internal-API caveat as the call above.
   const reference = (checker as unknown as {
     createTypeReference?: (target: ts.GenericType, args: readonly ts.Type[]) => ts.Type;
   }).createTypeReference?.(declaredType as ts.GenericType, typeArguments);
@@ -268,6 +290,29 @@ function classifyingDeclarations(
   return (property.declarations ?? []).filter((declaration) => test(declaration.getSourceFile().fileName));
 }
 
+/**
+ * The `@default` JSDoc tag of one declaration, normalized for a table cell.
+ *
+ * Zag's published `.d.ts` files document their props' defaults this way
+ * (`@default false`, `@default "vertical"`, `@default 50`), which is the only
+ * record of a machine prop's default that survives type erasure. Quotes are
+ * stripped (`"vertical"` → `vertical`) so the markdown renders it as code
+ * rather than as quoted text, and an expression — `@default 10 * step` — is
+ * dropped rather than half-documented, since a table cell cannot evaluate it.
+ */
+function declarationDefault(declaration: ts.Declaration): string | undefined {
+  for (const tag of ts.getJSDocTags(declaration)) {
+    if (tag.tagName.text !== "default") continue;
+    const text = typeof tag.comment === "string" ? tag.comment : undefined;
+    if (!text) continue;
+    const value = text.trim();
+    if (value.length === 0 || /\s/.test(value)) continue;
+    const unquoted = /^"([^"]*)"$/.exec(value);
+    return unquoted ? unquoted[1] : value;
+  }
+  return undefined;
+}
+
 /** The plain-text JSDoc body attached directly to one declaration. */
 function declarationDocumentation(declaration: ts.Declaration): string {
   const comments = ts
@@ -325,6 +370,27 @@ async function readVariantMetadata(
       if (config && ts.isObjectLiteralExpression(config)) {
         const variants = objectLiteralProperty(config, "variants");
         const defaults = objectLiteralProperty(config, "defaultVariants");
+// `defaultVariants` first, and independently of the `variants` block:
+        // every component in this registry keeps its variant MAP in classes.ts
+        // (`variants: { variant: button.variant }`), so requiring an inline
+        // object literal here used to skip the whole cva config and record no
+        // default for any component at all.
+        if (defaults && ts.isObjectLiteralExpression(defaults)) {
+          for (const entry of defaults.properties) {
+            if (!ts.isPropertyAssignment(entry)) continue;
+            const groupName = ts.isIdentifier(entry.name)
+              ? entry.name.text
+              : ts.isStringLiteral(entry.name)
+                ? entry.name.text
+                : undefined;
+            if (!groupName || !ts.isStringLiteral(entry.initializer)) continue;
+            const existing = metadata.get(groupName);
+            metadata.set(groupName, {
+              options: existing?.options ?? [],
+              default: entry.initializer.text,
+            });
+          }
+        }
         if (variants && ts.isObjectLiteralExpression(variants)) {
           for (const group of variants.properties) {
             if (!ts.isPropertyAssignment(group)) continue;
@@ -341,12 +407,10 @@ async function readVariantMetadata(
               }
               return [];
             });
-            let defaultOption: string | undefined;
-            if (defaults && ts.isObjectLiteralExpression(defaults)) {
-              const value = objectLiteralProperty(defaults, groupName);
-              if (value && ts.isStringLiteral(value)) defaultOption = value.text;
-            }
-            metadata.set(groupName, { options, default: defaultOption });
+            metadata.set(groupName, {
+              options,
+              default: metadata.get(groupName)?.default,
+            });
           }
         }
       }
@@ -369,6 +433,10 @@ async function main() {
   // 139 times; a per-file program takes minutes, this takes seconds.
   const virtualFiles = new Map<string, string>();
   const sourceRegions = new Map<string, string>();
+  // The props each component fixes on its own `<zag>`/`<zag-machine>` tag.
+  // Read from the FULL `.marko` source — the tag lives below the TypeScript
+  // region that `sourceRegions` keeps.
+  const machineTagProps = new Map<string, Map<string, MachineTagProp>>();
   const componentFiles = new Map<string, string[]>();
 
   for (const componentName of componentNames) {
@@ -380,10 +448,12 @@ async function main() {
     componentFiles.set(componentName, entries);
     for (const fileName of entries) {
       const markoPath = join(componentDir, fileName);
-      const region = extractTypeScriptRegion(await readFile(markoPath, "utf8"));
+      const source = await readFile(markoPath, "utf8");
+      const region = extractTypeScriptRegion(source);
       const virtualPath = virtualPathFor(markoPath);
       virtualFiles.set(virtualPath, region);
       sourceRegions.set(virtualPath, region);
+      machineTagProps.set(virtualPath, readMachineTagProps(source));
     }
   }
 
@@ -405,6 +475,7 @@ async function main() {
       const virtualPath = virtualPathFor(join(componentDir, fileName));
       const sourceFile = program.getSourceFile(virtualPath);
       const region = sourceRegions.get(virtualPath) ?? "";
+      const tagProps = machineTagProps.get(virtualPath) ?? new Map<string, MachineTagProp>();
       if (!sourceFile) continue;
 
       const inputType = resolveInputType(checker, sourceFile);
@@ -466,10 +537,42 @@ async function main() {
           kind,
         };
         if (documentation) entry.description = documentation;
+        // Resolved into a local first, because what the component fixes on its
+        // own `<zag>` tag can also UNSET a default: a prop passed as a
+        // non-literal expression (`count=input.count ?? input.length`) has no
+        // statically knowable value at all, and must not fall back to the
+        // machine's.
+        let defaultValue: string | undefined;
         const variant = variantMetadata.get(property.getName());
         if (kind === "variant" && variant) {
-          entry.options = variant.options;
-          if (variant.default !== undefined) entry.default = variant.default;
+          if (variant.options.length > 0) entry.options = variant.options;
+          defaultValue = variant.default;
+        }
+        // A Zag machine prop's default lives only in its `@default` JSDoc tag
+        // (see declarationDefault). Union-branch props have no single
+        // authoritative declaration, so every classifying one is consulted and
+        // the first tag found wins.
+        if (kind === "machine" && defaultValue === undefined) {
+          const candidates = authoritative ? [authoritative] : classifying;
+          for (const candidate of candidates) {
+            defaultValue = declarationDefault(candidate);
+            if (defaultValue !== undefined) break;
+          }
+        }
+
+        // What the component writes on its own `<zag>` tag is not a default at
+        // all. marko-zag merges those attributes LAST (`buildMachineProps`:
+        // `{ id, ...picked, ...overrides }`), so `<AlertDialog closeOnEscape
+        // =true>` is silently ignored — recording it as `default` would tell
+        // the reader they can change it. A passthrough expression
+        // (`count=input.count ?? input.length`) is neither: the caller's value
+        // still wins, and the fallback cannot be evaluated statically, so no
+        // default is stated.
+        const onTag = tagProps.get(property.getName());
+        if (onTag?.kind === "fixed") {
+          entry.fixed = onTag.value ?? true;
+        } else if (onTag?.kind !== "passthrough" && defaultValue !== undefined) {
+          entry.default = defaultValue;
         }
         properties.push(entry);
       }

@@ -12,7 +12,9 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Marquee>`,
   importSnippet: `import Marquee from "@/components/ui/marquee/marquee.marko";`,
-  usageSnippet: `<Marquee|logo| items=logos>
+  usageSnippet: `static const logos = ["Vercel", "Netlify", "Cloudflare"];
+
+<Marquee|logo| items=logos>
   <span>\${logo}</span>
 </Marquee>`,
   examples: [
@@ -43,12 +45,14 @@ export const docs: ComponentDocs = {
     },
     {
       name: "marquee-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `paused` prop without a change handler never moves. Pair it with `pausedChange`, or use Marko's bind shorthand `paused:=state`.",
     },
     {
       name: "marquee-compound",
+      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@item>` attribute tags instead of `items=` to compose each entry's markup directly.",

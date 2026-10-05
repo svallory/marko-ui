@@ -49,18 +49,41 @@ const mockResults = {
   items: [
     {
       name: "button",
-      type: "registry:ui",
+      type: "ui",
       description: "A button component",
       registry: "@marko-ui",
-      addCommandArgument: "@marko-ui/button",
     },
     {
       name: "card",
-      type: "registry:ui",
+      type: "ui",
       registry: "@marko-ui",
-      addCommandArgument: "@marko-ui/card",
     },
   ],
+}
+
+/**
+ * What `--json` wrote to stdout, as text. The command prints through
+ * printJson (process.stdout.write), not console.log — every JSON document the
+ * CLI emits goes through one helper so the pretty/compact split cannot drift
+ * per command (see src/utils/json-output.ts).
+ */
+function captureStdout() {
+  const chunks: string[] = []
+  const write = vi
+    .spyOn(process.stdout, "write")
+    .mockImplementation((chunk: unknown) => {
+      chunks.push(String(chunk))
+      return true
+    })
+  return {
+    write,
+    get text() {
+      return chunks.join("")
+    },
+    json<T = unknown>(): T {
+      return JSON.parse(chunks.join("")) as T
+    },
+  }
 }
 
 vi.mock("fs-extra", () => ({
@@ -77,6 +100,7 @@ vi.mock("@/src/utils/env-loader", () => ({
 vi.mock("@/src/utils/get-config", () => ({
   createConfig: vi.fn(() => baseConfig),
   getConfig: vi.fn(() => null),
+  readPartialComponentsJson: vi.fn(),
 }))
 
 vi.mock("@/src/utils/registries", () => ({
@@ -187,7 +211,7 @@ describe("search command", () => {
   })
 
   it("prints JSON output with --json", async () => {
-    const log = vi.spyOn(console, "log").mockImplementation(() => {})
+    const stdout = captureStdout()
     const exit = mockProcessExit()
 
     await expect(
@@ -196,13 +220,43 @@ describe("search command", () => {
       })
     ).rejects.toThrow("process.exit:0")
 
-    expect(log).toHaveBeenCalledWith(JSON.stringify(mockResults, null, 2))
+    // One envelope, carrying the compact item shape: no `title`, no
+    // `addCommandArgument`, and the short `type`.
+    const envelope = stdout.json<{
+      $type: string
+      version: number
+      ok: boolean
+      data: typeof mockResults
+    }>()
+    expect(envelope.$type).toBe("marko-ui/search")
+    expect(envelope.version).toBe(1)
+    expect(envelope.ok).toBe(true)
+    expect(envelope.data).toEqual(mockResults)
 
-    log.mockRestore()
+    stdout.write.mockRestore()
+    exit.mockRestore()
+  })
+
+  it("minifies the JSON document when stdout is not a TTY", async () => {
+    const stdout = captureStdout()
+    const exit = mockProcessExit()
+
+    await expect(
+      search.parseAsync(["@marko-ui", "--cwd", "/tmp/test-project", "--json"], {
+        from: "user",
+      })
+    ).rejects.toThrow("process.exit:0")
+
+    expect(stdout.text).not.toContain("\n  ")
+    expect(stdout.text.split("\n")).toHaveLength(2) // the document + its newline
+
+    stdout.write.mockRestore()
     exit.mockRestore()
   })
 
   it("requires a registry when no components.json is present", async () => {
+    // The error text is a diagnostic: stderr, so stdout stays clean.
+    const error = vi.spyOn(console, "error").mockImplementation(() => {})
     const log = vi.spyOn(console, "log").mockImplementation(() => {})
     const exit = mockProcessExit()
 
@@ -215,12 +269,17 @@ describe("search command", () => {
       })
     ).rejects.toThrow("process.exit:1")
 
-    expect(log).toHaveBeenCalledWith(
+    expect(error).toHaveBeenCalledWith(
       expect.stringContaining("Provide a registry or namespace to search")
     )
     expect(searchRegistries).not.toHaveBeenCalled()
+    // stdout carries only the result; a human-mode failure writes NOTHING to
+    // it. Asserting on the log spy rather than on text catches the stray
+    // blank line that this path used to emit (defect D).
+    expect(log).not.toHaveBeenCalled()
 
     log.mockRestore()
+    error.mockRestore()
     exit.mockRestore()
   })
 
@@ -250,6 +309,8 @@ describe("search command", () => {
   })
 
   it("errors on an unknown --type", async () => {
+    // The error text is a diagnostic: stderr, so stdout stays clean.
+    const error = vi.spyOn(console, "error").mockImplementation(() => {})
     const log = vi.spyOn(console, "log").mockImplementation(() => {})
     const exit = mockProcessExit()
 
@@ -262,10 +323,14 @@ describe("search command", () => {
       )
     ).rejects.toThrow("process.exit:1")
 
-    expect(log).toHaveBeenCalledWith(expect.stringContaining("Unknown type"))
+    expect(error).toHaveBeenCalledWith(expect.stringContaining("Unknown type"))
     expect(searchRegistries).not.toHaveBeenCalled()
+    // Zero bytes on stdout: the breaks around this prose are errorBreak, not
+    // break, so no blank line leaks onto the result stream.
+    expect(log).not.toHaveBeenCalled()
 
     log.mockRestore()
+    error.mockRestore()
     exit.mockRestore()
   })
 
@@ -305,6 +370,65 @@ describe("search command", () => {
     )
 
     log.mockRestore()
+    exit.mockRestore()
+  })
+
+  it("exits 0 and says so when nothing matches", async () => {
+    // "No items found" is a warning, not a result: it goes to stderr so a
+    // caller reading stdout gets the (empty) result and nothing else.
+    const warn = vi.spyOn(console, "error").mockImplementation(() => {})
+    const exit = mockProcessExit()
+
+    vi.mocked(searchRegistries).mockReturnValueOnce({
+      pagination: { total: 0, offset: 0, limit: 100, hasMore: false },
+      items: [],
+    } as never)
+
+    await expect(
+      search.parseAsync(
+        ["@marko-ui", "-q", "cryptocurrency", "--cwd", "/tmp/test-project"],
+        { from: "user" }
+      )
+    ).rejects.toThrow("process.exit:0")
+
+    const output = warn.mock.calls.map((call) => stripAnsi(String(call[0])))
+    expect(output).toContainEqual(
+      expect.stringContaining(
+        'No items found matching "cryptocurrency" in @marko-ui'
+      )
+    )
+
+    warn.mockRestore()
+    exit.mockRestore()
+  })
+
+  it("prints an empty items array in JSON when nothing matches", async () => {
+    const stdout = captureStdout()
+    const exit = mockProcessExit()
+
+    const empty = {
+      pagination: { total: 0, offset: 0, limit: 100, hasMore: false },
+      items: [],
+    }
+    vi.mocked(searchRegistries).mockReturnValueOnce(empty as never)
+
+    await expect(
+      search.parseAsync(
+        [
+          "@marko-ui",
+          "-q",
+          "cryptocurrency",
+          "--cwd",
+          "/tmp/test-project",
+          "--json",
+        ],
+        { from: "user" }
+      )
+    ).rejects.toThrow("process.exit:0")
+
+    expect(stdout.json<{ data: unknown }>().data).toEqual(empty)
+
+    stdout.write.mockRestore()
     exit.mockRestore()
   })
 
@@ -348,6 +472,10 @@ function mockProcessExit() {
   return vi.spyOn(process, "exit").mockImplementation((code) => {
     throw new Error(`process.exit:${code}`)
   })
+}
+
+function stripAnsi(value: string) {
+  return value.replace(/\[[0-9;]*m/g, "")
 }
 
 describe("React components.json refusal (re-throw from the shadow-config catch)", () => {

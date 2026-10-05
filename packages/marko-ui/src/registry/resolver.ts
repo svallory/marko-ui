@@ -10,6 +10,7 @@ import {
 } from "@/src/registry/builder"
 import { setRegistryHeaders } from "@/src/registry/context"
 import {
+  RegistryItemNotFoundError,
   RegistryNotConfiguredError,
   RegistryNotFoundError,
   RegistryParseError,
@@ -22,6 +23,7 @@ import {
   isLocalFile,
   isUniversalRegistryItem,
   isUrl,
+  parseUrl,
 } from "@/src/registry/utils"
 import {
   RegistryFontItem,
@@ -32,8 +34,7 @@ import {
   registryResolvedItemsTreeSchema,
 } from "@/src/schema"
 import { Config } from "@/src/utils/get-config"
-import { getProjectTailwindVersionFromConfig } from "@/src/utils/get-project-info"
-import { buildTailwindThemeColorsFromCssVars } from "@/src/utils/updaters/update-tailwind-config"
+import { closestNames } from "@/src/utils/suggest"
 import deepmerge from "deepmerge"
 import { z } from "zod"
 
@@ -172,11 +173,43 @@ async function fetchBareRegistryItem(
     }
   }
 
-  const [result] = await fetchRegistry([flatPath], options)
+  const [result] = await fetchRegistry([flatPath], options).catch(
+    async (error: unknown) => {
+      // A bare name that 404s is almost always a typo, and every command
+      // that resolves items (`add`, `show`, `diff`) goes through here — this
+      // is the one place where a "did you mean" can be attached to all of
+      // them. The index lookup is best-effort: if it fails, the original
+      // NOT_FOUND stands unchanged (and a network failure to reach the index
+      // must not mask the fact that the item itself is missing).
+      if (
+        !(error instanceof RegistryNotFoundError) ||
+        item.includes("/") ||
+        item.startsWith("@")
+      ) {
+        throw error
+      }
+      throw new RegistryItemNotFoundError(item, {
+        suggestions: await closestRegistryNames(item),
+      })
+    }
+  )
   try {
     return registryItemSchema.parse(result)
   } catch (error) {
     throw new RegistryParseError(item, error)
+  }
+}
+
+/** The closest registry item names to `name`, or [] when the index is unreachable. */
+async function closestRegistryNames(name: string): Promise<string[]> {
+  try {
+    const index = await getShadcnRegistryIndex()
+    return closestNames(
+      name,
+      (index ?? []).map((entry) => entry.name)
+    )
+  } catch {
+    return []
   }
 }
 
@@ -520,7 +553,54 @@ export async function resolveRegistryTree(
     parsed.envVars = envVars
   }
 
-  return parsed
+  // The item NAMES, attached after the parse because the resolved-tree schema
+  // does not carry them. `add` has to report what it actually installed, and
+  // `add button dialog` also installs `icon` — a caller told it installed two
+  // components when three landed on disk is worse than no report at all.
+  // `dependencyItems` is the ones NOT named on the command line.
+  const requested = new Set(items.map((item) => item.name))
+  return Object.assign(parsed, {
+    items: payload.map((item) => item.name),
+    dependencyItems: payload
+      .filter((item) => !requested.has(item.name))
+      .map((item) => item.name),
+    // The docs model of every ui item the tree installs, with where it came
+    // from and a hash of the exact item — `add` caches these so `docs` can
+    // describe the version on disk without the network. The resolved-tree
+    // schema merges items into one file list, so this is the only place the
+    // per-item model is still attached to its name.
+    itemDocs: payload
+      .filter((item) => item.type === "registry:ui" && item.componentDocs)
+      .map((item) => ({
+        name: item.name,
+        source: item._source ?? item.name,
+        contentHash: registryItemContentHash(item),
+        componentDocs: item.componentDocs!,
+      })),
+  }) as typeof parsed & ResolvedTreeNames
+}
+
+/** One installed ui item's docs model, as the resolved tree carries it. */
+export type ResolvedItemDocs = {
+  name: string
+  /** The address it was requested by (`button`, `@acme/x`, a URL). */
+  source: string
+  /** sha256 of the item as fetched, minus the resolver's own `_source`. */
+  contentHash: string
+  componentDocs: NonNullable<z.infer<typeof registryItemSchema>["componentDocs"]>
+}
+
+/** The item names a resolved tree carries, beyond its schema fields. */
+export type ResolvedTreeNames = {
+  items: string[]
+  dependencyItems: string[]
+  itemDocs?: ResolvedItemDocs[]
+}
+
+/** sha256 of a registry item's content, independent of how it was requested. */
+export function registryItemContentHash(item: object): string {
+  const { _source: _ignored, ...content } = item as { _source?: unknown }
+  return createHash("sha256").update(JSON.stringify(content)).digest("hex")
 }
 
 async function resolveDependenciesRecursively(
@@ -653,7 +733,7 @@ async function resolveDependenciesRecursively(
             items.push(...nested.items)
             registryNames.push(...nested.registryNames)
           }
-        } catch (error) {
+        } catch {
           // If we can't fetch the registry item, that's okay - we'll still
           // include the name.
         }
@@ -712,8 +792,8 @@ function extractItemIdentifierFromDependency(dependency: string) {
     }
   }
 
-  if (isUrl(dependency)) {
-    const url = new URL(dependency)
+  const url = parseUrl(dependency)
+  if (url) {
     const pathname = url.pathname
     const match = pathname.match(/\/([^/]+)\.json$/)
     const name = match ? match[1] : path.basename(pathname, ".json")

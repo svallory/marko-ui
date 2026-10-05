@@ -12,7 +12,8 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<SidebarProvider>, <Sidebar>`,
   importSnippet: `import SidebarProvider from "@/components/ui/sidebar/provider.marko";
-import Sidebar from "@/components/ui/sidebar/sidebar.marko";`,
+import Sidebar from "@/components/ui/sidebar/sidebar.marko";
+import SidebarTrigger from "@/components/ui/sidebar/trigger.marko";`,
   usageSnippet: `<SidebarProvider>
   <@sidebar|{ open, toggle }|>
     <Sidebar open=open>...</Sidebar>
@@ -37,7 +38,7 @@ import Sidebar from "@/components/ui/sidebar/sidebar.marko";`,
   // packages/shadcn/ui/sidebar/provider.marko (width props) and
   // apps/docs/src/app.css (token definitions).
   concepts:
-    "`SidebarProvider` sets the panel width via CSS custom properties: pass `width`/`widthIcon` props (defaulting to `16rem`/`3rem`) rather than editing constants in the source, since this is the import/copy-safe surface. Colors come from the `--sidebar`, `--sidebar-foreground`, `--sidebar-primary`, `--sidebar-primary-foreground`, `--sidebar-accent`, `--sidebar-accent-foreground`, `--sidebar-border`, and `--sidebar-ring` tokens defined per style layer — the same token names upstream uses, though our values are OKLCH (matching this port's token system) rather than upstream's HSL triples, so copy the token block from your chosen style rather than upstream's CSS. Upstream's dedicated \"Styling\" section additionally documents data-attribute styling hooks; this port carries the same ones, verified in source: `Sidebar` sets `data-collapsible` (so `group-data-[collapsible=icon]:hidden` on descendants works the same as upstream), and `SidebarMenuButton` sets `data-active` (so `peer-data-active/menu-button:...` — this port's Tailwind-v4 boolean-attribute selector syntax for upstream's `peer-data-[active=true]/menu-button:...` — works the same way on a sibling `SidebarMenuAction`). RTL is handled automatically through logical-property and `rtl:`-variant classes baked into `Sidebar`/`SidebarTrigger`/`SidebarRail` (`mu-rtl-flip`, `ltr:`/`rtl:` translate classes) — there is no separate RTL demo route or `dir` prop to set, unlike upstream's `dir`-prop opt-in.",
+    "`SidebarProvider` sets the panel width via CSS custom properties: pass `width`/`widthIcon` props (defaulting to `16rem`/`3rem`) rather than editing constants in the source, since this is the import/copy-safe surface. Colors come from the `--sidebar`, `--sidebar-foreground`, `--sidebar-primary`, `--sidebar-primary-foreground`, `--sidebar-accent`, `--sidebar-accent-foreground`, `--sidebar-border`, and `--sidebar-ring` tokens defined per style layer — the same token names upstream uses, though our values are OKLCH (matching this port's token system) rather than upstream's HSL triples, so copy the token block from your chosen style rather than upstream's CSS. Upstream's dedicated \"Styling\" section additionally documents data-attribute styling hooks; this port carries the same ones, verified in source: `Sidebar` sets `data-collapsible` (so `group-data-[collapsible=icon]:hidden` on descendants works the same as upstream), and `SidebarMenuButton` sets `data-active` (so `peer-data-active/menu-button:...` — this port's Tailwind-v4 boolean-attribute selector syntax for upstream's `peer-data-[active=true]/menu-button:...` — works the same way on a sibling `SidebarMenuAction`). RTL is handled through logical-property and `rtl:`-variant classes baked into `Sidebar`/`SidebarTrigger`/`SidebarRail` (`mu-rtl-flip`, `ltr:`/`rtl:` translate classes) — there is no RTL-specific prop, and `dir=\"rtl\"` on a wrapper (or any ancestor) is all that is needed, as the \"RTL\" example below shows.",
   examples: [
     {
       name: "sidebar-demo",

@@ -19,8 +19,15 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Checkbox>`,
   importSnippet: `import Checkbox from "@/components/ui/checkbox/checkbox.marko";`,
-  usageSnippet: `<Checkbox checked:=accepted>\n  <span>Accept terms and conditions</span>\n</Checkbox>`,
+  usageSnippet: `<let/accepted=(false as boolean | "indeterminate")/>
+
+<Checkbox checked:=accepted>\n  <span>Accept terms and conditions</span>\n</Checkbox>`,
   examples: [
+    {
+      name: "checkbox-basic",
+      title: "Basic (label content)",
+      description: "A checkbox paired with a label as its content.",
+    },
     {
       name: "checkbox-demo",
       title: "Basic",
@@ -29,13 +36,10 @@ export const docs: ComponentDocs = {
     },
     {
       name: "checkbox-invalid",
+      essential: true,
       title: "Invalid",
-      description: 'Set `aria-invalid="true"` on the checkbox and `invalid` on the wrapping `Field` to show the invalid styles.',
-    },
-    {
-      name: "checkbox-basic",
-      title: "Basic (label content)",
-      description: "A checkbox paired with a label as its content.",
+      description:
+        'Set `aria-invalid="true"` on the checkbox and `invalid` on the wrapping `Field` to show the invalid styles. Note the label is the checkbox\'s own `content` body, not a `FieldLabel` wrapper: `Checkbox` already renders a root `<label>` around its hidden input, so nesting a second `<label>` would be invalid HTML (upstream pairs a bare checkbox with an external label instead).',
     },
     {
       name: "checkbox-checked",
@@ -59,6 +63,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "checkbox-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `checked` prop without a change handler never moves. Pair it with `checkedChange`, or use Marko's bind shorthand `checked:=state`.",
@@ -77,8 +82,7 @@ export const docs: ComponentDocs = {
       name: "checkbox-rtl",
       title: "RTL",
       description: 'Checkboxes restyle correctly under `dir="rtl"` — logical Tailwind properties, not physical ones, drive layout and text alignment.',
-    },
-  ],
+    },],
   accessibilityNotes: [
     'Renders a native hidden `<input type="checkbox">` under a styled root `<label>`, so it participates in native form submission and inherits the platform\'s checkbox semantics.',
     "Always pair the checkbox with visible label text: either as the checkbox's own `content` body (its root element is already a `<label>`), or an external `FieldLabel`/`Label` with `for` matching the checkbox's `id` — never wrap a `Checkbox` in a second `<label>`, since that nests two label elements around the same control.",

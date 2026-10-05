@@ -40,6 +40,7 @@
     "ui",
     "lib",
     "styles",
+    "docs",
     "README.md",
     "LICENSE",
     "!**/registry.meta.json"
@@ -47,7 +48,8 @@
   "exports": {
     "./ui/*": "./ui/*",
     "./lib/*": "./lib/*",
-    "./styles/*": "./styles/*"
+    "./styles/*": "./styles/*",
+    "./docs/*": "./docs/*"
   },
   "imports": {
     "#lib/*": "./lib/*"

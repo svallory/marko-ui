@@ -49,6 +49,12 @@ export const docs: ComponentDocs = {
   // than fabricating a section.
   examples: [
     {
+      name: "drawer-basic",
+      title: "Basic",
+      description:
+        "The default drawer: a trigger, a title, the tag's body and a footer with the actions.",
+    },
+    {
       name: "drawer-demo",
       title: "Default",
       description: "A drawer for editing profile details.",
@@ -75,6 +81,7 @@ export const docs: ComponentDocs = {
       title: "Nested",
       description:
         "Open a drawer from inside another drawer. Our @zag-js/drawer port stacks nested drawers as independent instances — it does not implement upstream's stacked-indent visual (the parent drawer does not scale/dim behind the frontmost one).",
+      essential: true,
     },
     {
       name: "drawer-non-modal",
@@ -93,6 +100,5 @@ export const docs: ComponentDocs = {
       title: "Responsive dialog",
       description:
         "Combine `Dialog` and `Drawer` to render a dialog on desktop and a drawer on mobile, switching on a `matchMedia` breakpoint check.",
-    },
-  ],
+    },],
 };

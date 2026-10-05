@@ -1,4 +1,12 @@
 import { RegistryErrorCode } from "@/src/registry/errors"
+import { WarningCode } from "@/src/utils/command-result"
+import {
+  ERROR_ENVELOPE_TYPE,
+  ERROR_ENVELOPE_VERSION,
+} from "@/src/utils/error-contract"
+import { CommandError, handleError } from "@/src/utils/handle-error"
+import { printJson } from "@/src/utils/json-output"
+import { highlighter } from "@/src/utils/highlighter"
 import { Command } from "commander"
 
 import packageJson from "../../package.json"
@@ -8,13 +16,24 @@ import packageJson from "../../package.json"
  * response so agents can learn the full surface in a single call. The data
  * is introspected from the live commander program — it cannot drift from
  * the actual CLI. Always JSON; --json is implied.
+ *
+ * `marko-ui manifest <command>` narrows the answer to ONE command (by name
+ * or alias, subcommands included) plus the exit-code table: the whole
+ * manifest is ~3.4k tokens, which is most of a task's context for the answer
+ * to "does this flag exist?". An unknown name is a usage error (exit 2), the
+ * same code commander uses for a mistyped command.
  */
 export const manifest = new Command()
   .name("manifest")
-  .description("print a machine-readable description of the entire CLI")
-  .action((_, command) => {
-    const program = command.parent as Command
-    console.log(JSON.stringify(buildManifest(program), null, 2))
+  .description("describe the CLI, or one command, as machine-readable JSON")
+  .argument("[command]", "describe only this command (name or alias)")
+  .action((commandName: string | undefined, _opts, command: Command) => {
+    try {
+      const program = command.parent as Command
+      printJson(buildManifest(program, commandName))
+    } catch (error) {
+      handleError(error)
+    }
   })
 
 /**
@@ -57,7 +76,78 @@ const AGENT_WORKFLOW_STEPS: {
   },
 ]
 
-export function buildManifest(program: Command) {
+export function buildManifest(program: Command, commandName?: string) {
+  const commands = visibleCommands(program)
+
+  if (commandName === undefined) {
+    return {
+      $type: "marko-ui/manifest",
+      version: 1,
+      ok: true,
+      data: {
+        name: "marko-ui",
+        cliVersion: packageJson.version,
+        commands: commands.map((cmd) => describeCommand(cmd)),
+        exitCodes: EXIT_CODES,
+        // Stable machine-readable error codes carried by registry errors
+        // (RegistryError.code in error output and thrown errors).
+        errorCodes: Object.values(RegistryErrorCode),
+        // Stable machine-readable WARNING codes, for the commands that
+        // report something that needs attention without failing
+        // (`add`, `init`, `eject`, `diff`, `agents sync`). A warning is not
+        // an error: the command did its job, `ok` stays true, and the
+        // warning carries its own `fix`. Listed here, next to errorCodes, so
+        // one `manifest` call is the whole vocabulary a program needs to
+        // branch on either outcome.
+        warningCodes: Object.values(WarningCode),
+        // How a failure reaches a machine. Stated here so a caller can rely
+        // on it without reading the CLI's source: stdout carries only the
+        // result, and with --json a failure is exactly one envelope of this
+        // shape. A whole-CLI fact, like errorCodes, so it is left to this
+        // unnarrowed form (same as agentWorkflow below).
+        errorOutput: {
+          streams: {
+            stdout:
+              "the command's result (and, with --json, the result or one error envelope)",
+            stderr: "human-readable errors and warnings",
+          },
+          jsonEnvelope: {
+            $type: ERROR_ENVELOPE_TYPE,
+            version: ERROR_ENVELOPE_VERSION,
+            ok: false,
+            error: {
+              code: "<one of errorCodes>",
+              message: "string",
+              suggestion: "string (optional)",
+              details: "object (optional)",
+            },
+          },
+        },
+        agentWorkflow: buildAgentWorkflow(program),
+      },
+    }
+  }
+
+  const found = commands.find(
+    (cmd) => cmd.name() === commandName || cmd.aliases().includes(commandName)
+  )
+  if (!found) {
+    throw new CommandError(
+      `Unknown command ${highlighter.info(commandName)}. Known commands: ${commands
+        .map((cmd) => cmd.name())
+        .join(", ")}.`,
+      {
+        exitCode: 2,
+        code: RegistryErrorCode.USAGE_ERROR,
+        suggestion: `Run "marko-ui manifest" for every command, or "marko-ui manifest <command>" for one.`,
+        details: { requested: commandName, known: commands.map((cmd) => cmd.name()) },
+      }
+    )
+  }
+
+  // Narrowed form: this one command (subcommands included) plus the
+  // exit-code table. `agentWorkflow`/`errorCodes` are whole-CLI facts and
+  // are left to the unnarrowed form.
   return {
     $type: "marko-ui/manifest",
     version: 1,
@@ -65,22 +155,23 @@ export function buildManifest(program: Command) {
     data: {
       name: "marko-ui",
       cliVersion: packageJson.version,
-      commands: program.commands
-        .filter((cmd) => cmd.name() !== "help")
-        .map((cmd) => describeCommand(cmd)),
-      exitCodes: {
-        "0": "success",
-        "1": "operational failure",
-        "2": "usage error (unknown command/option, bad arguments)",
-        "3": "doctor/validate/agents-check found problems",
-        "4": "network error or registry unreachable (registry-backed commands)",
-      },
-      // Stable machine-readable error codes carried by registry errors
-      // (RegistryError.code in error output and thrown errors).
-      errorCodes: Object.values(RegistryErrorCode),
-      agentWorkflow: buildAgentWorkflow(program),
+commands: [describeCommand(found)],
+      exitCodes: EXIT_CODES,
     },
   }
+}
+
+const EXIT_CODES = {
+  "0": "success",
+  "1": "operational failure",
+  "2": "usage error (unknown command/option, bad arguments)",
+  "3": "doctor/validate/agents-check found problems",
+  "4": "network error or registry unreachable (registry-backed commands)",
+}
+
+/** The top-level commands a user can name (commander's implicit `help`). */
+function visibleCommands(program: Command) {
+  return program.commands.filter((cmd) => cmd.name() !== "help")
 }
 
 export function buildAgentWorkflow(program: Command) {
@@ -99,8 +190,31 @@ export function buildAgentWorkflow(program: Command) {
 
 const cwdAtStartup = process.cwd()
 
-function describeDefaultValue(defaultValue: unknown): unknown {
-  return defaultValue === cwdAtStartup ? "current working directory" : defaultValue
+/**
+ * A default value as it appears in the manifest JSON. The manifest is
+ * serialized straight to stdout, so the honest boundary type is "whatever
+ * JSON can carry" — anything else is stringified rather than dropped.
+ */
+type JsonDefaultValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonDefaultValue[]
+
+function describeDefaultValue(
+  defaultValue: unknown
+): JsonDefaultValue | undefined {
+  if (defaultValue === cwdAtStartup) return "current working directory"
+  if (defaultValue === undefined) return undefined
+  return isJsonValue(defaultValue) ? defaultValue : String(defaultValue)
+}
+
+function isJsonValue(value: unknown): value is JsonDefaultValue {
+  if (value === null) return true
+  const type = typeof value
+  if (type === "string" || type === "number" || type === "boolean") return true
+  return Array.isArray(value) && value.every(isJsonValue)
 }
 
 export function describeCommand(cmd: Command): Record<string, unknown> {

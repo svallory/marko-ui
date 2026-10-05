@@ -7,6 +7,7 @@
 // demos-manifest.ts, via the static chain below. Never a dynamic tag over a
 // runtime component lookup — Marko 6 crashes client hydration in production
 // builds for those (notes/bug-marko-dynamic-tag-hydration-crash.md).
+import Demo_drawer_drawer_basic from "../../../demos/drawer/drawer-basic.marko";
 import Demo_drawer_drawer_demo from "../../../demos/drawer/drawer-demo.marko";
 import Demo_drawer_drawer_dialog from "../../../demos/drawer/drawer-dialog.marko";
 import Demo_drawer_drawer_nested from "../../../demos/drawer/drawer-nested.marko";
@@ -17,11 +18,12 @@ import Demo_drawer_drawer_snap_points from "../../../demos/drawer/drawer-snap-po
 import Demo_drawer_drawer_swipe_handle from "../../../demos/drawer/drawer-swipe-handle.marko";
 
 export interface Input {
-  /** A DemoEntry.demoId from demos-manifest.ts, e.g. "drawer/drawer-demo". */
+  /** A DemoEntry.demoId from demos-manifest.ts, e.g. "drawer/drawer-basic". */
   demoId: string;
 }
 
-<if=(input.demoId === "drawer/drawer-demo")><Demo_drawer_drawer_demo/></if>
+<if=(input.demoId === "drawer/drawer-basic")><Demo_drawer_drawer_basic/></if>
+<else if=(input.demoId === "drawer/drawer-demo")><Demo_drawer_drawer_demo/></else>
 <else if=(input.demoId === "drawer/drawer-dialog")><Demo_drawer_drawer_dialog/></else>
 <else if=(input.demoId === "drawer/drawer-nested")><Demo_drawer_drawer_nested/></else>
 <else if=(input.demoId === "drawer/drawer-no-footer")><Demo_drawer_drawer_no_footer/></else>

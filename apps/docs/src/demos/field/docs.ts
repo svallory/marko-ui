@@ -13,10 +13,17 @@ export const docs: ComponentDocs = {
   usageTags: `<Field>, <FieldLabel>, <FieldDescription>`,
   importSnippet: `import Field from "@/components/ui/field/field.marko";
 import FieldLabel from "@/components/ui/field/field-label.marko";
-import FieldDescription from "@/components/ui/field/field-description.marko";`,
+import FieldDescription from "@/components/ui/field/field-description.marko";
+import TextInput from "@/components/ui/input/input.marko";`,
+  // `TextInput`, never `<Input>`: the import binding `Input` shadows Marko's
+  // reserved props-type name (CLAUDE.md), and `field`'s own examples already
+  // use TextInput. It is also a different registry component, so the snippet
+  // imports it explicitly rather than pretending `add field` brought it.
+  // The Usage snippet uses these; `add` does not install them.
+  requires: ["input"],
   usageSnippet: `<Field>
   <FieldLabel for="name">Full name</FieldLabel>
-  <Input id="name" autocomplete="off" placeholder="Evil Rabbit"/>
+  <TextInput id="name" autocomplete="off" placeholder="Evil Rabbit"/>
   <FieldDescription>This appears on invoices and emails.</FieldDescription>
 </Field>`,
   // `field` is compound (10 parts in api-reference.json), so `isCompound` is
@@ -70,11 +77,13 @@ import FieldDescription from "@/components/ui/field/field-description.marko";`,
       title: "Invalid",
       description:
         "Pass `invalid` to `Field` to switch the whole block into an error state, and `aria-invalid` on the control itself.",
+      essential: true,
     },
     {
       name: "field-multiple-errors",
       title: "Multiple errors",
       description: "`FieldError` accepts a list of errors and renders them as a bulleted list.",
+      essential: true,
     },
     {
       name: "field-input",
@@ -135,7 +144,7 @@ import FieldDescription from "@/components/ui/field/field-description.marko";`,
       name: "field-choice-card",
       title: "Choice card",
       description:
-        "Render rich title/description content inside a `RadioGroup` item's `content` slot to build a selectable card group.",
+        "Render rich title/description content inside a `RadioGroup` item's `content` slot to build a selectable card group. Each item is one root row in a fixed order — indicator, hidden input, then that `content` — so the indicator cannot be moved to trail the text the way upstream's `FieldLegend`/`Field` wrapper arrangement does it.",
     },
     {
       name: "field-group",
@@ -158,8 +167,7 @@ import FieldDescription from "@/components/ui/field/field-description.marko";`,
       title: "Responsive layout",
       description:
         "Set `orientation=\"responsive\"` to stack vertically on narrow containers and switch to a horizontal row once the `FieldGroup`'s `@container` query matches — apply `@md/field-group:` classes on `FieldGroup` to tune the breakpoint.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "`FieldSet` and `FieldLegend` keep related controls grouped for keyboard and assistive-technology users.",
     "`Field` renders `role=\"group\"` so nested controls inherit labeling from `FieldLabel` and `FieldLegend` when combined.",

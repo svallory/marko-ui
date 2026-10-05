@@ -82,6 +82,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "input-otp-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, which receives the array of per-slot characters.",
@@ -96,6 +97,5 @@ export const docs: ComponentDocs = {
       title: "RTL",
       description:
         "The machine's own `dir` prop drives right-to-left slot layout and arrow-key navigation directly, with no separate RTL configuration step.",
-    },
-  ],
+    },],
 };

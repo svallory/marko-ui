@@ -863,17 +863,15 @@ describe("GitHub registry items", () => {
     expect(result.items).toEqual([
       {
         name: "button",
-        type: "registry:ui",
+        type: "ui",
         description: "A button component",
         registry: "acme/ui",
-        addCommandArgument: "acme/ui/button",
       },
       {
         name: "card",
-        type: "registry:ui",
+        type: "ui",
         description: "A card component",
         registry: "acme/ui",
-        addCommandArgument: "acme/ui/card",
       },
     ])
   })
@@ -910,10 +908,9 @@ describe("GitHub registry items", () => {
     expect(result.items).toEqual([
       {
         name: "button",
-        type: "registry:ui",
+        type: "ui",
         description: "A button component",
         registry: "acme/ui#v1.0.0",
-        addCommandArgument: "acme/ui/button#v1.0.0",
       },
     ])
   })

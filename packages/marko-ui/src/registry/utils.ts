@@ -254,13 +254,25 @@ function determineFileType(
 }
 
 // Additional utility functions for local file support
-export function isUrl(path: string) {
+
+/**
+ * Parse `path` as a URL, or null when it is not one.
+ *
+ * Total by construction: callers that need the parsed value used to write
+ * `isUrl(x)` and then `new URL(x)`, which parses twice and leaves a bare
+ * `new URL` that throws on invalid input if the guard is ever reordered.
+ * Returning the URL (or null) removes both problems at once.
+ */
+export function parseUrl(path: string): URL | null {
   try {
-    new URL(path)
-    return true
-  } catch (error) {
-    return false
+    return new URL(path)
+  } catch {
+    return null
   }
+}
+
+export function isUrl(path: string) {
+  return parseUrl(path) !== null
 }
 
 export function isLocalFile(path: string) {

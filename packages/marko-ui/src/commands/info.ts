@@ -1,6 +1,7 @@
 import { existsSync } from "fs"
 import path from "path"
 import { MARKO_UI_URL, REGISTRY_URL } from "@/src/registry/constants"
+import { RegistryErrorCode } from "@/src/registry/errors"
 import { getConfig } from "@/src/utils/get-config"
 import {
   formatMonorepoMessage,
@@ -14,7 +15,9 @@ import {
 } from "@/src/utils/get-project-info"
 import { CommandError, handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
+import { printEnvelope } from "@/src/utils/json-output"
 import { logger } from "@/src/utils/logger"
+import { setJsonMode } from "@/src/utils/output-mode"
 import { Command } from "commander"
 
 export const info = new Command()
@@ -29,6 +32,8 @@ export const info = new Command()
   .option("--json", "output as JSON.", false)
   .action(async (opts) => {
     try {
+      setJsonMode(Boolean(opts.json))
+
       const cwd = path.resolve(opts.cwd)
 
       // Check if we're in a monorepo root.
@@ -38,27 +43,22 @@ export const info = new Command()
       ) {
         const targets = await getMonorepoTargets(cwd)
         if (targets.length > 0) {
-          if (opts.json) {
-            console.log(
-              JSON.stringify(
-                {
-                  error: "monorepo_root",
-                  message:
-                    "You are running info from a monorepo root. Use the -c flag to specify a workspace.",
-                  targets: targets.map((t) => t.name),
-                },
-                null,
-                2
-              )
-            )
-          } else {
-            formatMonorepoMessage("info", targets)
+          // One shape for every failure: handleError renders the human form
+          // on stderr, or the marko-ui/error envelope on stdout under --json.
+          // This used to print an ad-hoc {error, message, targets} object that
+          // shared no field, version or `$type` with anything else the CLI
+          // emits, so a caller had to special-case it.
+          if (!opts.json) {
+            formatMonorepoMessage("status", targets)
           }
-          // Both branches already printed a tailored message (JSON or
-          // human) — don't let handleError print a second one.
           throw new CommandError(
-            "Run status from a workspace, not the monorepo root.",
-            { formatted: true }
+            "You are running status from a monorepo root. Use the -c flag to specify a workspace.",
+            {
+              code: RegistryErrorCode.MONOREPO_ROOT,
+              formatted: !opts.json,
+              suggestion: `Run status with -c <workspace>, e.g. marko-ui status -c ${targets[0].name}.`,
+              details: { cwd, targets: targets.map((target) => target.name) },
+            }
           )
         }
       }
@@ -69,7 +69,9 @@ export const info = new Command()
       const data = await collectInfo(projectInfo, config, components)
 
       if (opts.json) {
-        console.log(JSON.stringify(data, null, 2))
+        // One envelope for every `--json` payload, printed by the one helper
+        // that owns JSON output (see json-output.ts).
+        printEnvelope("marko-ui/status", data)
         return
       }
 
@@ -91,6 +93,21 @@ function getRegistries(
     result[name] = typeof value === "string" ? value : value.url
   }
   return result
+}
+
+/**
+ * A resolved path, expressed relative to the cwd `resolvedPaths.cwd` already
+ * states. A path outside the cwd (a hoisted monorepo package) keeps its
+ * absolute form — a `../../..` chain is harder to act on than the path itself,
+ * and silently wrong-looking.
+ */
+function relativizePath(value: string | undefined, cwd: string) {
+  if (!value) return null
+  const relative = path.relative(cwd, value)
+  if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) {
+    return value
+  }
+  return relative
 }
 
 export async function collectInfo(
@@ -115,7 +132,15 @@ export async function collectInfo(
       : null,
     config: config
       ? {
-          style: config.style,
+          // The three knobs that decide WHAT gets installed, and that were
+          // simply absent from this report: `distribution` chooses the copy vs
+          // import path, `visualStyle` the per-style registry tree, and
+          // `iconLibrary` which icon package `add` writes. Reporting a
+          // `style` that is always the vestigial "default" while omitting all
+          // three was reporting a constant and hiding the variables.
+          distribution: config.distribution,
+          visualStyle: config.visualStyle,
+          iconLibrary: config.iconLibrary,
           typescript: config.tsx,
           aliases: {
             components: config.aliases.components,
@@ -124,15 +149,34 @@ export async function collectInfo(
             lib: config.aliases.lib ?? null,
             hooks: config.aliases.hooks ?? null,
           },
+          // `cwd` once, absolute; everything else RELATIVE to it. The seven
+          // paths all share the same prefix, so repeating it seven times spent
+          // more tokens on the answer than on the question, and put the user's
+          // home directory into every log this output was pasted into.
           resolvedPaths: {
             cwd: config.resolvedPaths.cwd,
-            tailwindConfig: config.resolvedPaths.tailwindConfig || null,
-            tailwindCss: config.resolvedPaths.tailwindCss || null,
-            utils: config.resolvedPaths.utils,
-            components: config.resolvedPaths.components,
-            lib: config.resolvedPaths.lib,
-            hooks: config.resolvedPaths.hooks,
-            ui: config.resolvedPaths.ui,
+            tailwindConfig: relativizePath(
+              config.resolvedPaths.tailwindConfig,
+              config.resolvedPaths.cwd
+            ),
+            tailwindCss: relativizePath(
+              config.resolvedPaths.tailwindCss,
+              config.resolvedPaths.cwd
+            ),
+            utils: relativizePath(
+              config.resolvedPaths.utils,
+              config.resolvedPaths.cwd
+            ),
+            components: relativizePath(
+              config.resolvedPaths.components,
+              config.resolvedPaths.cwd
+            ),
+            lib: relativizePath(config.resolvedPaths.lib, config.resolvedPaths.cwd),
+            hooks: relativizePath(
+              config.resolvedPaths.hooks,
+              config.resolvedPaths.cwd
+            ),
+            ui: relativizePath(config.resolvedPaths.ui, config.resolvedPaths.cwd),
           },
           registries: getRegistries(config.registries),
         }
@@ -170,7 +214,9 @@ export function printInfo(data: Awaited<ReturnType<typeof collectInfo>>) {
   logger.log(highlighter.info("Configuration"))
   if (data.config) {
     printEntries({
-      style: data.config.style,
+      distribution: data.config.distribution ?? "-",
+      visualStyle: data.config.visualStyle ?? "-",
+      iconLibrary: data.config.iconLibrary ?? "-",
       typescript: data.config.typescript ? "Yes" : "No",
     })
 
@@ -187,18 +233,22 @@ export function printInfo(data: Awaited<ReturnType<typeof collectInfo>>) {
       hooks: data.config.aliases.hooks ?? "-",
     })
 
-    // Resolved paths.
+    // Resolved paths. `cwd` is the base every other path here is relative to,
+    // so it is the first row and labelled as such — but the whole block is
+    // printed in ONE pass so every row shares one column width. Splitting it
+    // (to emphasise `cwd`) padded each group to its own longest key, which
+    // left `cwd` and `tailwindConfig` in visibly different columns.
     logger.break()
     logger.log(highlighter.info("Resolved Paths"))
     printEntries({
       cwd: data.config.resolvedPaths.cwd,
       tailwindConfig: data.config.resolvedPaths.tailwindConfig ?? "-",
       tailwindCss: data.config.resolvedPaths.tailwindCss ?? "-",
-      utils: data.config.resolvedPaths.utils,
-      components: data.config.resolvedPaths.components,
-      lib: data.config.resolvedPaths.lib,
-      hooks: data.config.resolvedPaths.hooks,
-      ui: data.config.resolvedPaths.ui,
+      utils: data.config.resolvedPaths.utils ?? "-",
+      components: data.config.resolvedPaths.components ?? "-",
+      lib: data.config.resolvedPaths.lib ?? "-",
+      hooks: data.config.resolvedPaths.hooks ?? "-",
+      ui: data.config.resolvedPaths.ui ?? "-",
     })
 
     // Registries.

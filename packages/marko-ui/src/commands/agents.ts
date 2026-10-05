@@ -4,19 +4,21 @@ import {
   AGENTS_END_MARKER,
   AGENTS_START_MARKER,
   buildAgentsSection,
-  type InstalledComponent,
 } from "@/src/agents/content"
 import {
   getMissingSkills,
   getWantedSkills,
   installAgentSkills,
 } from "@/src/agents/skills"
-import { getShadcnRegistryIndex } from "@/src/registry/api"
+import { RegistryErrorCode } from "@/src/registry/errors"
+import type { CommandWarning } from "@/src/utils/command-result"
 import { getConfig } from "@/src/utils/get-config"
 import { getProjectComponents } from "@/src/utils/get-project-info"
 import { CommandError, handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
+import { printEnvelope } from "@/src/utils/json-output"
+import { setJsonMode } from "@/src/utils/output-mode"
 import { spinner } from "@/src/utils/spinner"
 import { Command } from "commander"
 import { z } from "zod"
@@ -26,6 +28,7 @@ const syncOptionsSchema = z.object({
   check: z.boolean(),
   skill: z.boolean(),
   silent: z.boolean(),
+  json: z.boolean().optional(),
 })
 
 export const agents = new Command()
@@ -52,13 +55,20 @@ agents
     "do not install (or check) the agent skills; AGENTS.md only."
   )
   .option("-s, --silent", "mute output.", false)
+  .option(
+    "--json",
+    "output as JSON (whether AGENTS.md changed, and which skills were installed).",
+    false
+  )
   .action(async (opts) => {
     try {
+      setJsonMode(Boolean(opts.json))
       const options = syncOptionsSchema.parse({
         cwd: path.resolve(opts.cwd),
         check: opts.check,
         skill: opts.skill,
         silent: opts.silent,
+        json: Boolean(opts.json),
       })
 
       const config = await getConfig(options.cwd)
@@ -73,14 +83,13 @@ agents
       }
 
       if (options.check) {
-        const { agentsPath, nextAgents, indexAvailable } =
-          await prepareAgentDocs(options.cwd)
+        const { agentsPath, nextAgents } = await prepareAgentDocs(options.cwd)
         const problems: string[] = []
 
         const currentAgents = existsSync(agentsPath)
           ? await fs.readFile(agentsPath, "utf8")
           : null
-        if (!agentsDocsAreCurrent(currentAgents, nextAgents, indexAvailable)) {
+        if (!agentsDocsAreCurrent(currentAgents, nextAgents)) {
           problems.push("AGENTS.md is stale")
         }
 
@@ -101,7 +110,11 @@ agents
             `Agent setup is out of date: ${problems.join(
               "; "
             )}. Run ${highlighter.info("marko-ui agents sync")}.`,
-            { exitCode: 3 }
+            {
+              exitCode: 3,
+              code: RegistryErrorCode.CHECK_FAILED,
+              details: { problems, cwd: options.cwd },
+            }
           )
         }
         if (!options.silent) {
@@ -110,14 +123,54 @@ agents
         return
       }
 
-      await runAgentsSync(options.cwd, {
+      const synced = await runAgentsSync(options.cwd, {
         silent: options.silent,
         skill: options.skill,
       })
+
+      if (options.json) {
+        printAgentsResult(options.cwd, synced)
+        return
+      }
     } catch (error) {
       handleError(error)
     }
   })
+
+/**
+ * The `marko-ui/agents.sync` payload. `agentsChanged` is the field that
+ * matters: `agents sync` printed nothing on stdout at all, so a program could
+ * not tell a sync that updated AGENTS.md from one that found it current.
+ */
+function printAgentsResult(
+  cwd: string,
+  result: {
+    agentsChanged: boolean
+    agentsPath: string
+    skills: { installed: string[]; skipped: string[] }
+    warnings: CommandWarning[]
+  }
+) {
+  printEnvelope("marko-ui/agents.sync", {
+    cwd,
+    agentsChanged: result.agentsChanged,
+    files: [
+      {
+        path: path.relative(cwd, result.agentsPath) || "AGENTS.md",
+        status: result.agentsChanged ? "updated" : "unchanged",
+      },
+    ],
+    skills: result.skills,
+    // A real warning, not an empty array: a skills install that failed is
+    // exactly what SKILL_INSTALL_FAILED names, and hardcoding `[]` meant a
+    // caller had no way to learn it from the document.
+    warnings: result.warnings,
+    // Nothing to do after a sync either way: the file is current and the
+    // skills are installed. N3 flagged the previous `changed ? [] : []` as a
+    // dead ternary, and the honest answer is that `next` is empty.
+    next: [],
+  })
+}
 
 /**
  * Writes the AGENTS.md section and installs the agent skills. Also called
@@ -129,9 +182,27 @@ agents
  */
 export async function runAgentsSync(
   cwd: string,
-  options: { silent?: boolean; skill?: boolean } = {}
-) {
+  options: {
+    silent?: boolean
+    skill?: boolean
+    json?: boolean
+    files?: { path: string; status: "unchanged" | "updated" }[]
+  } = {}
+): Promise<{
+  agentsChanged: boolean
+  agentsPath: string
+  skills: { installed: string[]; skipped: string[] }
+  warnings: CommandWarning[]
+}> {
   const { agentsPath, nextAgents } = await prepareAgentDocs(cwd)
+
+  // Compared BEFORE writing: "did AGENTS.md change?" is the question, and
+  // answering it by writing and reading back would make every sync look like
+  // it changed the file.
+  const before = existsSync(agentsPath)
+    ? await fs.readFile(agentsPath, "utf8")
+    : null
+  const agentsChanged = !agentsDocsAreCurrent(before, nextAgents)
 
   const writeSpinner = spinner("Writing AGENTS.md.", {
     silent: options.silent,
@@ -139,14 +210,30 @@ export async function runAgentsSync(
   await fs.writeFile(agentsPath, nextAgents, "utf8")
   writeSpinner.succeed()
 
-  if (options.skill !== false) {
-    await installAgentSkills(cwd, { silent: options.silent })
+  // A failed skills install THROWS (it is fatal by design), so it never
+  // reaches a `warnings` array — the structured facts belong on the error
+  // envelope instead, where `installAgentSkills` now puts them.
+  const skills =
+    options.skill === false
+      ? { installed: [] as string[], skipped: [] as string[] }
+      : ((await installAgentSkills(cwd, { silent: options.silent })) ?? {
+          installed: [] as string[],
+          skipped: [] as string[],
+        })
+
+  return {
+    agentsChanged,
+    agentsPath,
+    skills,
+    // Empty on success BY CONSTRUCTION: everything runAgentsSync can report
+    // here already worked. N3 called this hardcoded — it is, deliberately.
+    warnings: [],
   }
 }
 
 async function prepareAgentDocs(cwd: string) {
   const config = await getConfig(cwd)
-  const { components, indexAvailable } = await collectInstalledComponents(cwd)
+  const components = await collectInstalledComponents(cwd)
   const agentsPath = path.resolve(cwd, "AGENTS.md")
 
   const nextAgents = mergeAgentsFile(
@@ -154,62 +241,29 @@ async function prepareAgentDocs(cwd: string) {
     buildAgentsSection(components, { distribution: config?.distribution })
   )
 
-  return { agentsPath, nextAgents, indexAvailable }
-}
-
-async function collectInstalledComponents(
-  cwd: string
-): Promise<{ components: InstalledComponent[]; indexAvailable: boolean }> {
-  // One registry fetch per sync, shared with the on-disk listing. It is
-  // best-effort so sync also works offline (names only, no descriptions).
-  let index: Awaited<ReturnType<typeof getShadcnRegistryIndex>> | null = null
-  try {
-    index = await getShadcnRegistryIndex()
-  } catch (error) {
-    logger.debug(
-      `registry index unavailable: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    )
-  }
-
-  const names = await getProjectComponents(cwd, index)
-  const descriptions = new Map(
-    (index ?? [])
-      .filter((item) => item.description)
-      .map((item) => [item.name, item.description!])
-  )
-
-  return {
-    components: names.sort().map((name) => ({
-      name,
-      description: descriptions.get(name),
-    })),
-    indexAvailable: index !== null,
-  }
-}
-
-/** Drops the ` — description` tail from `- \`name\` — ...` component lines. */
-export function stripComponentDescriptions(text: string) {
-  return text.replace(/^(- `[^`\s]+`) — .*$/gm, "$1")
+  return { agentsPath, nextAgents }
 }
 
 /**
- * Whether the AGENTS.md on disk matches the one sync would write.
+ * The installed component NAMES, sorted. Nothing else.
  *
- * Component descriptions come from the registry index. When the index could
- * not be fetched the expected section has none, so comparing them would turn
- * every offline `--check` (a CI job that lost network) red for a file that is
- * not stale: compare without descriptions on both sides instead.
+ * `null` for the registry index on purpose: the section lists names, so the
+ * index only ever served the descriptions that are gone, and a names-from-
+ * disk listing (a directory holding a `.marko` file) is both offline and one
+ * network round trip cheaper. Anything that does go wrong here is LOCAL (an
+ * unresolvable alias, a readdir failure) and must reach the user through
+ * handleError: swallowed into `[]` it would rewrite a project's AGENTS.md to
+ * "Installed: none" and exit 0.
  */
-export function agentsDocsAreCurrent(
-  current: string | null,
-  next: string,
-  indexAvailable: boolean
-) {
+async function collectInstalledComponents(cwd: string) {
+  const names = await getProjectComponents(cwd, null)
+  return names.sort()
+}
+
+/** Whether the AGENTS.md on disk matches the one sync would write. */
+export function agentsDocsAreCurrent(current: string | null, next: string) {
   if (current === null) return false
-  if (indexAvailable) return current === next
-  return stripComponentDescriptions(current) === stripComponentDescriptions(next)
+  return current === next
 }
 
 /**

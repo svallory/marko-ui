@@ -4,8 +4,14 @@ import { getShadcnRegistryIndex } from "@/src/registry/api"
 import { clearRegistryContext } from "@/src/registry/context"
 import { confirm } from "@/src/utils/clack"
 import { isInteractive } from "@/src/utils/interactive"
-import { addComponents } from "@/src/utils/add-components"
+import { addComponents, type AddResult } from "@/src/utils/add-components"
+import {
+  type CommandWarning,
+  nextSteps,
+  WarningCode,
+} from "@/src/utils/command-result"
 import { getConfig } from "@/src/utils/get-config"
+import { getPackageManager } from "@/src/utils/get-package-manager"
 import {
   CleanExit,
   CommandError,
@@ -13,6 +19,8 @@ import {
 } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
+import { printEnvelope } from "@/src/utils/json-output"
+import { setJsonMode } from "@/src/utils/output-mode"
 import { spinner } from "@/src/utils/spinner"
 import { writeProjectTaglib } from "@/src/utils/taglib"
 import { Command } from "commander"
@@ -22,7 +30,68 @@ const ejectOptionsSchema = z.object({
   cwd: z.string(),
   yes: z.boolean(),
   silent: z.boolean(),
+  json: z.boolean().optional(),
 })
+
+/**
+ * The `marko-ui/eject` payload.
+ *
+ * The manual steps are a WARNING with a code, not prose printed after the
+ * fact: eject deliberately leaves the user two things to do by hand (remove
+ * the npm dependency, remove the import-distribution CSS block), and a
+ * program driving eject needs to know that work is outstanding rather than
+ * discovering it from a sentence.
+ */
+function printEjectResult(
+  cwd: string,
+  components: string[],
+  ejected: AddResult,
+  taglib: { tags?: number } | null,
+  options: { manualStepsRemaining: boolean; packageManager: string }
+) {
+  const { packageManager } = options
+  const warnings: CommandWarning[] = [...(ejected?.warnings ?? [])]
+  if (options.manualStepsRemaining) {
+    // The ONE case that is a warning: something the CLI could not do, on a
+    // file the project already had.
+    warnings.push({
+      code: WarningCode.MANUAL_STEPS_REMAIN,
+      message:
+        "marko.json exists and is not marko-ui-generated, so tags were NOT registered. Component source was written; the taglib was not.",
+      fix: "Merge marko.json by hand, or delete it and re-run marko-ui eject",
+    })
+  }
+
+  printEnvelope("marko-ui/eject", {
+    cwd,
+    // N2: NOT a copy of `requested`. eject re-adds every installed component
+    // through `addComponents`, and that resolution pulls in the same registry
+    // dependencies a real add would — so the honest answer is the tree's, and
+    // the two now cannot disagree.
+    items: {
+      requested: components,
+      resolved: ejected?.resolved ?? components,
+    },
+    registryDependencies: ejected?.registryDependencies ?? [],
+    files: [
+      ...(ejected?.files ?? []),
+      { path: "components.json", status: "updated" },
+      ...(taglib ? [{ path: "marko.json", status: "updated" }] : []),
+    ].sort((a, b) => a.path.localeCompare(b.path)),
+    tags: taglib?.tags ?? 0,
+    warnings,
+    // Lead's ruling: the always-true "remove the dependency / the CSS block"
+    // to-do is NOT a warning. A warning means something went wrong or needs
+    // attention THIS time; this fires on every eject, which made
+    // `warnings.length > 0` meaningless for the command and trained callers to
+    // ignore the field. It is a next step, which is what it always was.
+    // The package manager is derived, not hardcoded to bun.
+    next: nextSteps([
+      `${packageManager} remove @marko-ui/shadcn`,
+      "Remove the marko-ui:import-distribution block from your CSS entry",
+    ]),
+  })
+}
 
 /**
  * Switches a project from the `import` distribution to `copy` (see
@@ -67,12 +136,15 @@ export const eject = new Command()
   )
   .option("-y, --yes", "skip confirmation prompt.", false)
   .option("-s, --silent", "mute output.", false)
+  .option("--json", "output as JSON (files written, and any manual steps left).", false)
   .action(async (opts) => {
     try {
+      setJsonMode(Boolean(opts.json))
       const options = ejectOptionsSchema.parse({
         cwd: path.resolve(opts.cwd),
         yes: opts.yes,
         silent: opts.silent,
+        json: Boolean(opts.json),
       })
 
       const config = await getConfig(options.cwd)
@@ -140,7 +212,7 @@ export const eject = new Command()
       // unstyled import-form item (imports ./classes.ts), which `diff` then
       // reports as drift against everything `add` writes.
       const copyConfig = ejectTargetConfig(config)
-      await addComponents(installedComponents, copyConfig, {
+      const ejected = await addComponents(installedComponents, copyConfig, {
         overwrite: true,
         silent: true,
         interactive: false,
@@ -152,6 +224,21 @@ export const eject = new Command()
       await setDistribution(options.cwd, "copy")
 
       ejectSpinner.succeed()
+
+      // Resolved ONCE, for both renderings — the JSON `next` and the human
+      // "Remaining manual steps" must not be able to disagree about the
+      // package manager, which is exactly what hardcoding one of them did.
+      const packageManager = await getPackageManager(options.cwd, {
+        withFallback: true,
+      })
+
+      if (options.json) {
+        printEjectResult(options.cwd, installedComponents, ejected, taglib, {
+          manualStepsRemaining: taglib === null,
+          packageManager,
+        })
+        return
+      }
 
       if (!options.silent) {
         logger.log(
@@ -165,9 +252,11 @@ export const eject = new Command()
           )}.`
         )
         logger.log(`Remaining manual steps:`)
+        // Criterion 5: derived, exactly like the JSON `next` — hardcoding bun
+        // told an npm/pnpm user to run a command they do not have.
         logger.log(
           `  1. Remove the dependency: ${highlighter.info(
-            "bun remove @marko-ui/shadcn"
+            `${packageManager} remove @marko-ui/shadcn`
           )}`
         )
         logger.log(

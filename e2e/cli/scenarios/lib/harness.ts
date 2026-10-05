@@ -76,7 +76,14 @@ export function exists(root: string, rel: string) {
   return existsSync(join(root, rel))
 }
 export function readJson(root: string, rel: string) {
-  return JSON.parse(read(root, rel))
+  const raw = read(root, rel)
+  try {
+    return JSON.parse(raw)
+  } catch (error) {
+    // A fixture that is not JSON is a bug in THIS suite, and the raw text is
+    // the only way to see it.
+    throw new Error(`${rel} is not valid JSON: ${String(error)}\n${raw}`)
+  }
 }
 
 // ---------------------------------------------------------------- fixtures
@@ -277,7 +284,11 @@ export interface RunOptions {
 export interface RunResult {
   code: number | null
   timedOut: boolean
+  /** stdout and stderr interleaved, as a terminal shows them. */
   out: string
+  /** The two streams separately, for scenarios asserting WHICH one carried something. */
+  stdout: string
+  stderr: string
 }
 
 /** Env vars that would leak the host's context into a scenario. */
@@ -318,9 +329,17 @@ export function cli(cwd: string, args: string[], o: RunOptions = {}): Promise<Ru
       detached: true,
     })
     let out = ""
+    let stdout = ""
+    let stderr = ""
     let timedOut = false
-    child.stdout!.on("data", (d) => (out += d))
-    child.stderr!.on("data", (d) => (out += d))
+    child.stdout!.on("data", (d) => {
+      out += d
+      stdout += d
+    })
+    child.stderr!.on("data", (d) => {
+      out += d
+      stderr += d
+    })
     const timer = setTimeout(() => {
       timedOut = true
       try {
@@ -331,7 +350,7 @@ export function cli(cwd: string, args: string[], o: RunOptions = {}): Promise<Ru
     }, o.timeoutMs ?? 60_000)
     child.on("close", (code) => {
       clearTimeout(timer)
-      resolvePromise({ code, timedOut, out })
+      resolvePromise({ code, timedOut, out, stdout, stderr })
     })
   })
 }
@@ -348,7 +367,56 @@ export function tail(text: string, lines = 8) {
 /** Parses the JSON object a `--json` command printed (skips any leading noise). */
 export function jsonOut(out: string) {
   const text = plain(out)
-  return JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1))
+  try {
+    return JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1))
+  } catch (error) {
+    // An unparseable `--json` document is the bug this harness exists to
+    // catch, so the captured text goes in the message.
+    throw new Error(
+      `--json output did not parse: ${String(error)}\n${text.slice(0, 500)}`
+    )
+  }
+}
+
+/**
+ * The `data` of the envelope every `--json` command now prints.
+ *
+ * Every JSON document the CLI emits is `{ $type, version, ok, data }` (see
+ * `packages/marko-ui/src/utils/json-output.ts`), so a scenario asserting on
+ * the payload reads `.data`, not the document root. Throws when there is no
+ * envelope, which is the point: a command that silently changed shape fails
+ * here rather than asserting on `undefined`.
+ */
+export function jsonData<T = unknown>(out: string): T {
+  const envelope = jsonOut(out)
+  if (
+    typeof envelope !== "object" ||
+    envelope === null ||
+    !("$type" in envelope) ||
+    !("data" in envelope)
+  ) {
+    throw new Error(
+      `Expected a { $type, version, ok, data } envelope, got: ${plain(out).slice(0, 200)}`
+    )
+  }
+  return envelope.data as T
+}
+
+/**
+ * The component names the generated AGENTS.md section lists, from its single
+ * "Installed: `a`, `b`" line (names only, no descriptions — see
+ * `packages/marko-ui/src/agents/content.ts`). `[]` for "none — run …". Throws
+ * when the line is absent so a changed format fails loudly instead of
+ * reading as "nothing installed".
+ */
+export function installedComponents(agentsMd: string): string[] {
+  const line = agentsMd.split("\n").find((l) => l.startsWith("Installed: "))
+  if (line === undefined) {
+    throw new Error(`AGENTS.md has no "Installed:" line:\n${agentsMd.slice(0, 600)}`)
+  }
+  return [...line.matchAll(/`([^`]+)`/g)]
+    .map((m) => m[1]!)
+    .filter((name) => !name.startsWith("marko-ui "))
 }
 
 /** Init + add button through shims: the common "installed one component" starting state. */

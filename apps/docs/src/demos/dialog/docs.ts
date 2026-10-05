@@ -67,15 +67,15 @@ export const docs: ComponentDocs = {
       name: "dialog-rtl",
       title: "RTL",
       description:
-        "The `dir` prop is a native attribute pass-through — set it on `<Dialog>` to flip logical-property layout and typography for right-to-left languages. See the [RTL guide](/docs/rtl).",
+        "The `dir` prop is a native attribute pass-through — set it on `<Dialog>` to flip logical-property layout and typography for right-to-left languages. Every RTL example on this site does it the same way: a `dir=\"rtl\"` wrapper plus Arabic labels.",
     },
     {
       name: "dialog-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: an `open` prop without a change handler never moves. Pair it with `openChange`.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     'Rendered with `role="dialog"` per the [WAI-ARIA Dialog (Modal) Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/); the title and description are linked to the content via `aria-labelledby`/`aria-describedby`, generated automatically from `@title`/`@description`.',
     "Focus moves into the dialog on open and is trapped there until it closes; it's restored to the trigger element on close.",

@@ -21,6 +21,8 @@ export const docs: ComponentDocs = {
     This action cannot be undone.
   </@description>
 </AlertDialog>`,
+
+  requires: ["button"],
   // Upstream ("## Composition") documents AlertDialog as a tree of
   // AlertDialogTrigger/AlertDialogContent/AlertDialogHeader/
   // AlertDialogMedia/AlertDialogTitle/AlertDialogDescription/
@@ -72,15 +74,15 @@ export const docs: ComponentDocs = {
       name: "alert-dialog-rtl",
       title: "RTL",
       description:
-        "The `dir` prop is a native attribute pass-through — set it on `<AlertDialog>` to flip logical-property layout and typography for right-to-left languages. See the [RTL guide](/docs/rtl).",
+        "The `dir` prop is a native attribute pass-through — set it on `<AlertDialog>` to flip logical-property layout and typography for right-to-left languages. Every RTL example on this site does it the same way: a `dir=\"rtl\"` wrapper plus Arabic labels.",
     },
     {
       name: "alert-dialog-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: an `open` prop without a change handler never moves. Pair it with `openChange`, or use Marko's bind shorthand `open:=state`.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "Rendered with `role=\"alertdialog\"` (not `\"dialog\"`) so assistive technology announces it as requiring an explicit response, per the [WAI-ARIA Alert and Message Dialogs Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/alertdialog/).",
     "Focus moves into the dialog on open and is trapped there until it closes; it's restored to the trigger element on close.",

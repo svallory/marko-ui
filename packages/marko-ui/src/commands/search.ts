@@ -2,7 +2,9 @@ import path from "path"
 import { configWithDefaults } from "@/src/registry/config"
 import { BUILTIN_REGISTRIES } from "@/src/registry/constants"
 import { clearRegistryContext } from "@/src/registry/context"
+import { RegistryErrorCode } from "@/src/registry/errors"
 import {
+  buildSearchData,
   findUnknownSearchTypes,
   printSearchResults,
   resolveSearchRegistries,
@@ -10,16 +12,21 @@ import {
   searchRegistries,
 } from "@/src/registry/search"
 import { validateRegistryConfigForItems } from "@/src/registry/validator"
-import { rawConfigSchema } from "@/src/schema"
 import { loadEnvFiles } from "@/src/utils/env-loader"
-import { createConfig, getConfig } from "@/src/utils/get-config"
+import {
+  createConfig,
+  getConfig,
+  readPartialComponentsJson,
+} from "@/src/utils/get-config"
 import {
   CleanExit,
   CommandError,
   handleError,
 } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
+import { printEnvelope } from "@/src/utils/json-output"
 import { logger } from "@/src/utils/logger"
+import { setJsonMode } from "@/src/utils/output-mode"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
 import { Command } from "commander"
 import fsExtra from "fs-extra"
@@ -59,6 +66,8 @@ export const search = new Command()
   .option("--json", "output as JSON.", false)
   .action(async (registries: string[], opts) => {
     try {
+      setJsonMode(Boolean(opts.json))
+
       const options = searchOptionsSchema.parse({
         cwd: path.resolve(opts.cwd),
         query: opts.query,
@@ -77,16 +86,21 @@ export const search = new Command()
       if (options.types?.length) {
         const unknownTypes = findUnknownSearchTypes(options.types)
         if (unknownTypes.length > 0) {
-          logger.break()
+          logger.errorBreak()
           logger.error(
             `Unknown ${unknownTypes.length === 1 ? "type" : "types"}: ${unknownTypes
               .map((type) => highlighter.info(type))
               .join(", ")}.`
           )
           logger.error(`Valid types: ${SEARCHABLE_TYPES.join(", ")}.`)
-          logger.break()
+          logger.errorBreak()
           // Multi-line message already printed above.
-          throw new CommandError(`Unknown search type.`, { formatted: true })
+          throw new CommandError(`Unknown search type.`, {
+            formatted: true,
+            code: RegistryErrorCode.USAGE_ERROR,
+            suggestion: `Pass one of the searchable types, e.g. --type ui.`,
+            details: { unknownTypes, validTypes: SEARCHABLE_TYPES },
+          })
         }
       }
 
@@ -106,8 +120,12 @@ export const search = new Command()
       const componentsJsonPath = path.resolve(options.cwd, "components.json")
       const hasComponentsJson = fsExtra.existsSync(componentsJsonPath)
       if (hasComponentsJson) {
-        const existingConfig = await fsExtra.readJson(componentsJsonPath)
-        const partialConfig = rawConfigSchema.partial().parse(existingConfig)
+        // An invalid or unreadable components.json is a CONFIG failure, not a
+        // reason to fall back to the shadow config: `search` used to read and
+        // parse the file inline, so a hand-edited one threw fs-extra's
+        // SyntaxError — absolute project path and all — and the error handler
+        // could only report UNKNOWN_ERROR with the GitHub boilerplate.
+        const partialConfig = await readPartialComponentsJson(options.cwd)
         shadowConfig = configWithDefaults({
           ...defaultConfig,
           ...partialConfig,
@@ -134,13 +152,13 @@ export const search = new Command()
       // for an explicit registry/namespace argument.
       const searchAllConfigured = registries.length === 0
       if (searchAllConfigured && !hasComponentsJson) {
-        logger.break()
+        logger.errorBreak()
         logger.error(
           `Provide a registry or namespace to search, e.g. ${highlighter.info(
             "marko-ui search @marko-ui"
           )}.`
         )
-        logger.break()
+        logger.errorBreak()
         logger.error(
           `If you have a ${highlighter.info(
             "components.json"
@@ -148,9 +166,12 @@ export const search = new Command()
             "marko-ui search"
           )} with no arguments to search all of them.`
         )
-        logger.break()
+        logger.errorBreak()
         throw new CommandError("A registry or namespace is required.", {
           formatted: true,
+          code: RegistryErrorCode.USAGE_ERROR,
+          suggestion:
+            "Name a registry or namespace, e.g. marko-ui search @marko-ui.",
         })
       }
 
@@ -184,7 +205,7 @@ export const search = new Command()
       const registriesToSearch = resolveSearchRegistries(registries, config)
 
       if (searchAllConfigured && registriesToSearch.length === 0) {
-        logger.break()
+        logger.errorBreak()
         logger.error(
           `No registries are configured in ${highlighter.info(
             "components.json"
@@ -195,9 +216,13 @@ export const search = new Command()
             "marko-ui search @marko-ui"
           )}.`
         )
-        logger.break()
+        logger.errorBreak()
         throw new CommandError("No registries are configured.", {
           formatted: true,
+          code: RegistryErrorCode.NOT_CONFIGURED,
+          suggestion:
+            'Add a "registries" entry to components.json, or pass a registry or namespace explicitly.',
+          details: { cwd: options.cwd },
         })
       }
 
@@ -228,7 +253,9 @@ export const search = new Command()
         results.errors?.length === registriesToSearch.length
 
       if (opts.json) {
-        console.log(JSON.stringify(results, null, 2))
+        // One envelope for every `--json` payload (see json-output.ts), printed
+        // by the one helper that owns JSON output.
+        printEnvelope("marko-ui/search", buildSearchData(results))
       } else {
         printSearchResults(results, {
           query: options.query,

@@ -12,7 +12,16 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Toc>`,
   importSnippet: `import Toc from "@/components/ui/toc/toc.marko";`,
-  usageSnippet: `<Toc items=items scrollEl=() => scrollContainer()/>`,
+  usageSnippet: `static const items = [
+  { value: "introduction", depth: 2, label: "Introduction" },
+  { value: "usage", depth: 2, label: "Usage" },
+];
+
+<div/scrollContainer class="h-72 overflow-y-auto">
+  <h2 id="introduction">Introduction</h2>
+  <h2 id="usage">Usage</h2>
+</div>
+<Toc items=items scrollEl=() => scrollContainer()/>`,
   examples: [
     {
       name: "toc-demo",
@@ -28,12 +37,12 @@ export const docs: ComponentDocs = {
       name: "toc-nested",
       title: "Nested headings",
       description: "Each item's `depth` controls its indentation, so `h2`/`h3` outlines nest naturally.",
+      essential: true,
     },
     {
       name: "toc-controlled",
       title: "Controlled",
       description:
         "Listen for `activeIdsChange` (or `onActiveChange` for the full details) to read the active headings without taking over control of the list.",
-    },
-  ],
+    },],
 };

@@ -12,8 +12,15 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Menubar>, <MenubarMenu>`,
   importSnippet: `import Menubar from "@/components/ui/menubar/menubar.marko";
-import MenubarMenu from "@/components/ui/menubar/menu.marko";`,
-  usageSnippet: `<Menubar>
+import MenubarMenu from "@/components/ui/menubar/menu.marko";
+import type { DropdownMenuItem } from "@/components/ui/dropdown-menu/dropdown-menu.marko";`,
+  usageSnippet: `static const fileItems = [
+  { value: "new", label: "New Tab", shortcut: "⌘T" },
+  { type: "separator" },
+  { value: "print", label: "Print…" },
+] satisfies DropdownMenuItem[];
+
+<Menubar>
   <MenubarMenu items=fileItems select(value) { /* ... */ }>
     <@trigger|triggerProps|>
       <button ...triggerProps>File</button>
@@ -38,6 +45,7 @@ import MenubarMenu from "@/components/ui/menubar/menu.marko";`,
       title: "Radio",
       description:
         "Group `<@item type=\"radio\">` entries with a shared `radioGroup` name for single-select options; `radioChange` fires with the group name and the newly selected value.",
+      essential: true,
     },
     {
       name: "menubar-submenu",
@@ -55,7 +63,7 @@ import MenubarMenu from "@/components/ui/menubar/menu.marko";`,
       name: "menubar-rtl",
       title: "RTL",
       description:
-        "Wrap the menubar in a `dir=\"rtl\"` container for right-to-left layout and text; see the note in the demo source for the one behavioral gap versus upstream's floating-ui RTL placement flip.",
+        "Wrap the menubar in a `dir=\"rtl\"` container for right-to-left layout and text. One gap versus upstream: `MenubarMenu`'s `Input` type does not declare the menu machine's `dir` prop, so passing `dir` to it is a type error — even though `<zag-machine from=input/>` would forward it to the machine (`MenuProps` extends `DirectionProperty`). Until the type declares it, only the static `dir=\"rtl\"` wrapper flips this demo: text direction and logical-property layout, not floating-ui's own RTL placement flip.",
     },
     {
       name: "menubar-danger",
@@ -75,9 +83,9 @@ import MenubarMenu from "@/components/ui/menubar/menu.marko";`,
     },
     {
       name: "menubar-compound",
+      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@item>` attribute tags on `MenubarMenu` instead of `items=` to compose the menu directly in markup — pass `type=\"separator\"` for a divider or `type=\"label\"` for a group label. Entries render in the order they are written. An item's text can come from either a `label=` attribute or a markup body, whichever you prefer.",
-    },
-  ],
+    },],
 };

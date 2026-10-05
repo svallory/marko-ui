@@ -141,6 +141,38 @@ static function optionLines(cmd: CliCommand) {
     configs, missing CSS entries, or an unreachable registry before they reach users.
   </p>
 
+  <h2 id="results">Results and warnings</h2>
+
+  <p>
+    <code>add</code>, <code>init</code>, <code>eject</code>, <code>diff</code> and
+    <code>agents sync</code> all take <code>--json</code>, and return the same
+    three shapes so one parser covers all of them:
+    <code>files</code> (each <code>{ path, status }</code>, relative to
+    <code>cwd</code>), <code>warnings</code> (each
+    <code>{ code, message, fix }</code>), and <code>next</code> (commands worth
+    running next). <code>add --dry-run --json</code> returns the same shape with
+    <code>dryRun: true</code> and planned statuses, so “would be created” is
+    never mistaken for “was created”.
+  </p>
+
+  <p>
+    A <strong>warning is not a failure</strong>: the command did its job and
+    <code>ok</code> stays <code>true</code> — a project whose CSS entry is not
+    imported is initialized, and the warning says what is left. <code>skipped</code>
+    and <code>unchanged</code> are different facts: <code>skipped</code> means
+    the file exists and differs but was left alone, <code>unchanged</code> means
+    it already matched.
+  </p>
+
+  <if=CLI_MANIFEST.warningCodes?.length>
+    <p>Warning codes:</p>
+    <ul>
+      <for|code| of=CLI_MANIFEST.warningCodes>
+        <li><code>${code}</code></li>
+      </for>
+    </ul>
+  </if>
+
   <h2 id="agents">For Agents</h2>
 
   <p>

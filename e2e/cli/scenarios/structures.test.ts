@@ -2,7 +2,8 @@ import { describe, expect } from "vitest"
 import {
   cli,
   exists,
-  jsonOut,
+  installedComponents,
+  jsonData,
   link,
   makeWorkspace,
   markoApp,
@@ -36,8 +37,10 @@ describe("project structures — the stock scaffold (D2)", () => {
     expect(add.code, tail(add.out)).toBe(0)
     expect(exists(ws, BUTTON)).toBe(true)
     expect(sync.code, tail(sync.out)).toBe(0)
-    expect(read(ws, "AGENTS.md")).toContain("- `button`")
-    const status = jsonOut((await cli(ws, ["status", "--json"])).out)
+    expect(installedComponents(read(ws, "AGENTS.md"))).toEqual(["button"])
+    const status = jsonData<{ components: string[] }>(
+      (await cli(ws, ["status", "--json"])).out
+    )
     expect(status.components).toContain("button")
   })
 
@@ -45,8 +48,17 @@ describe("project structures — the stock scaffold (D2)", () => {
     const ws = makeWorkspace()
     markoApp(ws)
     await fullFlow(ws)
-    const ui = jsonOut((await cli(ws, ["status", "--json"])).out).config.resolvedPaths.ui as string
-    expect(ui).toBe(`${ws}/src/components/ui`)
+    const status = jsonData<{
+      config: {
+        resolvedPaths: { cwd: string; ui: string | null }
+      }
+    }>((await cli(ws, ["status", "--json"])).out)
+    // resolvedPaths are relative to resolvedPaths.cwd, which states the
+    // absolute base once — so joining the two is what a consumer does.
+    expect(status.config.resolvedPaths.ui).toBe("src/components/ui")
+    expect(
+      `${status.config.resolvedPaths.cwd}/${status.config.resolvedPaths.ui}`
+    ).toBe(`${ws}/src/components/ui`)
   })
 
   scenario("S01c", "stock create-marko app: diff sees an unmodified installed component", async () => {
@@ -75,8 +87,10 @@ describe("project structures — tsconfig / alias variants", () => {
     expect(add.code, tail(add.out)).toBe(0)
     expect(exists(ws, BUTTON)).toBe(true)
     expect(sync.code).toBe(0)
-    expect(read(ws, "AGENTS.md")).toContain("- `button`")
-    const status = jsonOut((await cli(ws, ["status", "--json"])).out)
+    expect(installedComponents(read(ws, "AGENTS.md"))).toEqual(["button"])
+    const status = jsonData<{ components: string[] }>(
+      (await cli(ws, ["status", "--json"])).out
+    )
     expect(status.components).toContain("button")
   })
 
@@ -87,7 +101,7 @@ describe("project structures — tsconfig / alias variants", () => {
     expect(init.code, tail(init.out)).toBe(0)
     expect(add.code, tail(add.out)).toBe(0)
     expect(sync.code).toBe(0)
-    expect(read(ws, "AGENTS.md")).toContain("- `button`")
+    expect(installedComponents(read(ws, "AGENTS.md"))).toEqual(["button"])
   })
 
   scenario("S04", "jsconfig.json, no tsconfig: init and add succeed and are seen", async () => {
@@ -97,7 +111,7 @@ describe("project structures — tsconfig / alias variants", () => {
     expect(init.code, tail(init.out)).toBe(0)
     expect(add.code, tail(add.out)).toBe(0)
     expect(sync.code, tail(sync.out)).toBe(0)
-    expect(read(ws, "AGENTS.md")).toContain("- `button`")
+    expect(installedComponents(read(ws, "AGENTS.md"))).toEqual(["button"])
   })
 
   scenario("S05", "no tsconfig and no jsconfig: init, add, sync exit 0 and write their files", async () => {
@@ -116,8 +130,12 @@ describe("project structures — tsconfig / alias variants", () => {
     const ws = makeWorkspace()
     markoApp(ws, { tsconfig: "none" })
     await fullFlow(ws)
-    expect(read(ws, "AGENTS.md")).toContain("- `button`")
-    expect(jsonOut((await cli(ws, ["status", "--json"])).out).components).toContain("button")
+    expect(installedComponents(read(ws, "AGENTS.md"))).toEqual(["button"])
+    expect(
+      jsonData<{ components: string[] }>(
+        (await cli(ws, ["status", "--json"])).out
+      ).components
+    ).toContain("button")
   })
 
   scenario("S05b", "no tsconfig, components.json already present: agents sync succeeds", async () => {
@@ -154,7 +172,9 @@ describe("project structures — tsconfig / alias variants", () => {
     const ws = makeWorkspace()
     markoApp(ws, { srcDir: false, framework: "marko-vite", viteConfig: true })
     await fullFlow(ws)
-    const status = jsonOut((await cli(ws, ["status", "--json"])).out)
+    const status = jsonData<{ components: string[] }>(
+      (await cli(ws, ["status", "--json"])).out
+    )
     expect(status.components).toContain("button")
   })
 })
@@ -193,7 +213,7 @@ describe("project structures — build tooling already present", () => {
     expect(add.code, tail(add.out)).toBe(0)
     expect(sync.code, tail(sync.out)).toBe(0)
     expect(readJson(ws, "components.json").distribution).toBe("copy")
-    expect(read(ws, "AGENTS.md")).toContain("- `button`")
+    expect(installedComponents(read(ws, "AGENTS.md"))).toEqual(["button"])
   })
 })
 
@@ -261,7 +281,7 @@ describe("project structures — monorepos", () => {
     expect(add.code, tail(add.out)).toBe(0)
     expect(exists(app, BUTTON)).toBe(true)
     expect(sync.code, tail(sync.out)).toBe(0)
-    expect(read(app, "AGENTS.md")).toContain("- `button`")
+    expect(installedComponents(read(app, "AGENTS.md"))).toEqual(["button"])
     expect(exists(ws, "AGENTS.md")).toBe(false)
   })
 
@@ -278,7 +298,7 @@ describe("project structures — monorepos", () => {
     expect(add.code, tail(add.out)).toBe(0)
     expect(sync.code, tail(sync.out)).toBe(0)
     expect(exists(app, BUTTON)).toBe(true)
-    expect(read(app, "AGENTS.md")).toContain("- `button`")
+    expect(installedComponents(read(app, "AGENTS.md"))).toEqual(["button"])
     expect(exists(ws, "AGENTS.md")).toBe(false)
     expect(exists(ws, "components.json")).toBe(false)
   })
@@ -304,7 +324,7 @@ describe("project structures — monorepos", () => {
     expect(add.code, tail(add.out)).toBe(0)
     expect(exists(app, BUTTON)).toBe(true)
 
-    const status = jsonOut(
+    const status = jsonData<{ components: string[] }>(
       (await cli(ws, ["status", "--json", "--cwd", "apps/web"])).out
     )
     expect(status.components).toContain("button")
@@ -322,7 +342,7 @@ describe("project structures — monorepos", () => {
     expect(exists(ui, BUTTON)).toBe(true)
     expect(exists(`${ws}/apps/web`, "src/components")).toBe(false)
     expect(sync.code, tail(sync.out)).toBe(0)
-    expect(read(ui, "AGENTS.md")).toContain("- `button`")
+    expect(installedComponents(read(ui, "AGENTS.md"))).toEqual(["button"])
   })
 })
 

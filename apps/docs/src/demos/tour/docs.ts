@@ -11,12 +11,20 @@ export const docs: ComponentDocs = {
   // init`), so no import is required. The explicit-import form is
   // documented as the override/escape hatch.
   usageTags: `<Tour>`,
-  importSnippet: `import Tour from "@/components/ui/tour/tour.marko";`,
-  usageSnippet: `<Tour items=steps>
+  importSnippet: `import Tour from "@/components/ui/tour/tour.marko";
+import type { TourStep } from "@/components/ui/tour/tour.marko";`,
+  usageSnippet: `static const steps = [
+  { id: "welcome", type: "dialog", title: "Welcome", description: "A quick look around.", actions: [{ label: "Start", action: "next" }] },
+  { id: "search", target: "#search", title: "Search", description: "Find anything here.", actions: [{ label: "Done", action: "dismiss" }] },
+] satisfies TourStep[];
+
+<Tour items=steps>
   <@trigger|props|>
     <Button ...props>Start tour</Button>
   </@trigger>
 </Tour>`,
+
+  requires: ["button"],
   examples: [
     {
       name: "tour-demo",
@@ -35,6 +43,5 @@ export const docs: ComponentDocs = {
       title: "Controlled",
       description:
         "Pair `stepId` with `stepIdChange` (or Marko's bind shorthand `stepId:=state`) to drive the current step from parent state, and `statusChange` to observe the tour's lifecycle.",
-    },
-  ],
+    },],
 };

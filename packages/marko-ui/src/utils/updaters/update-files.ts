@@ -34,6 +34,13 @@ import {
   mergeThemeIntoStylesheet,
 } from "@/src/utils/updaters/update-theme-stylesheet"
 import { isTargetAliasKey } from "@/src/utils/target-aliases"
+import type { FileChange } from "@/src/utils/command-result"
+import {
+  assertWritable,
+  rootsFor,
+  type WriteRoots,
+} from "@/src/utils/path-guard"
+import { dim, green, red, yellow } from "kleur/colors"
 import { loadConfig, type ConfigLoaderSuccessResult } from "tsconfig-paths"
 import { z } from "zod"
 
@@ -53,6 +60,20 @@ export async function updateFiles(
     path?: string
     plannedFiles?: RegistryItem["files"]
     supportedFontMarkers?: string[]
+    /**
+     * Collects each file as it is written, for a caller that must report a
+     * PARTIAL run. The returned arrays cannot do this job: they are only
+     * returned on success, and a write failing INSIDE the loop (ENOTDIR, EACCES,
+     * a full disk) throws past them — so the caller saw no `written` list at
+     * all while half the component sat on disk.
+     */
+    written?: FileChange[]
+    /**
+     * The roots this call may write into (see path-guard). Computed once by
+     * the command and threaded down, so the workspace root is not re-detected
+     * per file.
+     */
+    roots?: WriteRoots
   }
 ) {
   // Keep only the configured iconLibrary's icon map (see icon-library.ts).
@@ -72,6 +93,7 @@ export async function updateFiles(
       filesCreated: [],
       filesUpdated: [],
       filesSkipped: [],
+      filesUnchanged: [],
       filesRemoved: [] as string[],
     }
   }
@@ -107,6 +129,12 @@ export async function updateFiles(
   let filesCreated: string[] = []
   let filesUpdated: string[] = []
   let filesSkipped: string[] = []
+  // Files already byte-for-byte what the registry ships. SEPARATE from
+  // `filesSkipped`, which means "exists and DIFFERS, and was left alone".
+  // Both used to land in the same array, so a re-run that changed nothing and
+  // a re-run that refused to overwrite everything were indistinguishable in
+  // the result — and `unchanged` was documented but never emitted.
+  let filesUnchanged: string[] = []
   let filesRemoved: string[] = []
   let envVarsAdded: string[] = []
   let envFile: string | null = null
@@ -171,6 +199,21 @@ export async function updateFiles(
       }
     }
 
+    // THE choke point. Every write and every delete below goes through a
+    // `filePath` computed here, so this one check covers them all: mkdir,
+    // writeFile (three sites) and the stale-icon-map `fs.rm`. Raised before
+    // anything is touched, so a rejected target leaves nothing half-done.
+    //
+    // Roots: the project (config.resolvedPaths.cwd) plus the workspace
+    // packages this writer may legitimately install into, which for a
+    // workspace write is the TARGET package rather than the one we were
+    // called from.
+    assertWritable(
+      filePath,
+      options.roots ?? rootsFor(config.resolvedPaths.cwd),
+      "write"
+    )
+
     const existingFile = existsSync(filePath)
 
     // Check if the path exists and is a directory - we can't write to directories.
@@ -205,7 +248,7 @@ export async function updateFiles(
           ignoreImports: options.isWorkspace,
         })
       ) {
-        filesSkipped.push(path.relative(config.resolvedPaths.cwd, filePath))
+        filesUnchanged.push(path.relative(config.resolvedPaths.cwd, filePath))
         continue
       }
     }
@@ -254,7 +297,7 @@ export async function updateFiles(
       envFile = path.relative(config.resolvedPaths.cwd, filePath)
 
       if (!envVarsAdded.length) {
-        filesSkipped.push(path.relative(config.resolvedPaths.cwd, filePath))
+        filesUnchanged.push(path.relative(config.resolvedPaths.cwd, filePath))
         continue
       }
 
@@ -271,6 +314,14 @@ export async function updateFiles(
     if (isIconResolverPath(file.path) && isIconLibraryName(config.iconLibrary)) {
       const stale = findStaleIconMaps(targetDir, config.iconLibrary)
       for (const file of stale.deletable) {
+        // A delete is the more dangerous half of this function, so it is
+        // checked by name: the list comes from a DIRECTORY SCAN, not from the
+        // registry, so nothing upstream vouched for these paths.
+        assertWritable(
+          file,
+          options.roots ?? rootsFor(config.resolvedPaths.cwd),
+          "delete"
+        )
         await fs.rm(file)
         filesRemoved.push(path.relative(config.resolvedPaths.cwd, file))
       }
@@ -289,6 +340,11 @@ export async function updateFiles(
     // Handle file creation logging
     if (!existingFile) {
       filesCreated.push(path.relative(config.resolvedPaths.cwd, filePath))
+      // Reported the moment the file is on disk, not when the loop ends.
+      options.written?.push({
+        path: path.relative(config.resolvedPaths.cwd, filePath),
+        status: "created",
+      })
 
       if (isEnvFile(filePath)) {
         envVarsAdded = Object.keys(parseEnvContent(content))
@@ -296,6 +352,10 @@ export async function updateFiles(
       }
     } else {
       filesUpdated.push(path.relative(config.resolvedPaths.cwd, filePath))
+      options.written?.push({
+        path: path.relative(config.resolvedPaths.cwd, filePath),
+        status: "updated",
+      })
     }
   }
 
@@ -328,7 +388,7 @@ export async function updateFiles(
     )
     if (!options.silent) {
       for (const file of filesCreated) {
-        logger.log(`  - ${file}`)
+        logger.log(`  ${green("created")} ${file}`)
       }
     }
   } else {
@@ -346,7 +406,7 @@ export async function updateFiles(
     )?.info()
     if (!options.silent) {
       for (const file of filesUpdated) {
-        logger.log(`  - ${file}`)
+        logger.log(`  ${yellow("updated")} ${file}`)
       }
     }
   }
@@ -362,7 +422,21 @@ export async function updateFiles(
     )?.info()
     if (!options.silent) {
       for (const file of filesSkipped) {
-        logger.log(`  - ${file}`)
+        logger.log(`  ${yellow("skipped")} ${file}`)
+      }
+    }
+  }
+
+  if (filesUnchanged.length) {
+    spinner(
+      `Unchanged ${filesUnchanged.length} ${
+        filesUnchanged.length === 1 ? "file" : "files"
+      }:`,
+      { silent: options.silent }
+    )?.info()
+    if (!options.silent) {
+      for (const file of filesUnchanged) {
+        logger.log(`  ${dim("unchanged")} ${file}`)
       }
     }
   }
@@ -376,7 +450,7 @@ export async function updateFiles(
     )?.info()
     if (!options.silent) {
       for (const file of filesRemoved) {
-        logger.log(`  - ${file}`)
+        logger.log(`  ${red("removed")} ${file}`)
       }
     }
   }
@@ -396,6 +470,7 @@ export async function updateFiles(
     filesCreated,
     filesUpdated,
     filesSkipped,
+    filesUnchanged,
     filesRemoved,
   }
 }

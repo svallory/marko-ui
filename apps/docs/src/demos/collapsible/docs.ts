@@ -77,11 +77,11 @@ in the machine's \`getContentProps()\` internally.`,
     },
     {
       name: "collapsible-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: an `open` prop without a change handler never moves. Pair it with `openChange`.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "The trigger owns `aria-expanded`, reflecting the panel's open state, and `aria-controls`, pointing at the content region's id.",
     "The content region is present in the DOM at all times; its visibility (and, when animated, height) is driven by `data-state=\"open\"|\"closed\"` rather than removing/re-adding the subtree, so assistive tech never loses its place in the document.",

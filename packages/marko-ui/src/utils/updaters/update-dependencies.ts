@@ -1,4 +1,5 @@
 import { RegistryItem } from "@/src/schema"
+import type { DependencyChange } from "@/src/utils/command-result"
 import { Config } from "@/src/utils/get-config"
 import { getPackageInfo } from "@/src/utils/get-package-info"
 import { getPackageManager } from "@/src/utils/get-package-manager"
@@ -14,15 +15,45 @@ export async function updateDependencies(
     silent?: boolean
     interactive?: boolean
   }
-) {
+): Promise<DependencyChange[]> {
   const packageInfo = getPackageInfo(config.resolvedPaths.cwd, false)
   const packageManager = await getPackageManager(config.resolvedPaths.cwd)
+
+  const requestedDependencies = dependencies ?? []
+  const requestedDevDependencies = devDependencies ?? []
 
   dependencies = normalizeDependencyRequests(dependencies, packageInfo)
   devDependencies = normalizeDependencyRequests(devDependencies, packageInfo)
 
+  // What was asked for, and what is already declared. The two sets differ:
+  // `normalizeDependencyRequests` DROPS a bare name that package.json already
+  // declares (so re-running `add` never rewrites an existing range), and a
+  // program reading the result has to be able to tell "installed" from
+  // "already there" — that difference is the whole point of reporting it.
+  const declared = new Set([
+    ...Object.keys(packageInfo?.dependencies ?? {}),
+    ...Object.keys(packageInfo?.devDependencies ?? {}),
+    ...Object.keys(packageInfo?.optionalDependencies ?? {}),
+    ...Object.keys(packageInfo?.peerDependencies ?? {}),
+  ])
+
+  const changes: DependencyChange[] = []
+  for (const dependency of [
+    ...requestedDependencies,
+    ...requestedDevDependencies,
+  ]) {
+    const name = dependencyName(dependency)
+    if (!name || changes.some((change) => change.name === name)) {
+      continue
+    }
+    changes.push({
+      name,
+      status: declared.has(name) ? "present" : "installed",
+    })
+  }
+
   if (!dependencies?.length && !devDependencies?.length) {
-    return
+    return changes
   }
 
   options = {
@@ -61,6 +92,13 @@ export async function updateDependencies(
     )
     dependenciesSpinner?.succeed()
   } catch (error) {
+    // Mark exactly what was asked for. The files are still written, so this
+    // is a warning the caller can act on, not a failure of the command.
+    for (const change of changes) {
+      if (change.status === "installed") {
+        change.status = "failed"
+      }
+    }
     dependenciesSpinner?.fail()
     const installHint = [
       dependencies.length
@@ -78,6 +116,24 @@ export async function updateDependencies(
       }).\nComponent files will still be written. Install manually with:\n${installHint}`
     )
   }
+
+  return changes
+}
+
+/**
+ * The package NAME out of a dependency spec, for reporting. `"recharts@3.8.0"`
+ * is `recharts`; a protocol spec (`file:`, `workspace:`, a git URL) has no
+ * usable name and returns null, so it is left out of the structured list
+ * rather than reported under a made-up name.
+ */
+function dependencyName(dependency: string): string | null {
+  if (/^[a-z][a-z0-9+.-]*:/i.test(dependency)) {
+    return null
+  }
+  const match = dependency.startsWith("@")
+    ? dependency.match(/^(@[^/]+\/[^@/]+)(@.+)?$/)
+    : dependency.match(/^([^@/]+)(@.+)?$/)
+  return match?.[1] ?? null
 }
 
 export function formatInstallCommand(

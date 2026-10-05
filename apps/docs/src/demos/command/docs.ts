@@ -11,7 +11,17 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Command>`,
   importSnippet: `import Command from "@/components/ui/command/command.marko";`,
-  usageSnippet: `<Command groups=groups placeholder="Type a command or search..."/>`,
+  usageSnippet: `static const groups = [
+  {
+    label: "Suggestions",
+    items: [
+      { value: "calendar", label: "Calendar" },
+      { value: "settings", label: "Settings", shortcut: "⌘S" },
+    ],
+  },
+];
+
+<Command groups=groups placeholder="Type a command or search..."/>`,
   // Command has no separate CommandDialog wrapper (see command.marko's top
   // comment): consumers compose Dialog + Command themselves. Documented
   // here rather than as a Composition tree since it's prose about
@@ -36,13 +46,19 @@ export const docs: ComponentDocs = {
     },
     {
       name: "command-basic",
+      // Round 3: composes two registry components (Dialog + Command) with no attr-tag of its own — no mechanical rule here reads that.
+      essential: true,
       title: "Command Dialog",
       description: "A command menu opened from a button trigger, composed from `Dialog` and `Command` (see Composition above).",
+      // Hand-flagged: the automated rule reads the demo's own signals and this
+      // one's signal is that it composes TWO registry components (Dialog +
+      // Command) with no attr-tag of its own — an agent cannot infer that
+      // pairing from command's parts or props list.
     },
     {
       name: "command-shortcuts",
       title: "Shortcuts",
-      description: "Items with a `shortcut` render it right-aligned. Upstream also shows a leading icon per item; our `CommandItem` type has no icon slot, so this demo omits it (see the in-file comment).",
+      description: "Items with a `shortcut` render it right-aligned. Upstream also shows a leading icon per item; our `CommandItem` type carries only `value`/`label`/`shortcut` and has no icon slot, so this demo omits them rather than faking them.",
     },
     {
       name: "command-groups",
@@ -61,6 +77,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "command-controlled",
+      essential: true,
       title: "Controlled",
       description: "Pass `valueChange` to observe the selected item's value as the user navigates and picks from the list.",
     },
@@ -68,8 +85,7 @@ export const docs: ComponentDocs = {
       name: "command-rtl",
       title: "RTL",
       description: "Pass `dir=\"rtl\"` — it forwards straight through to the root element and search input, no extra wiring required.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "Built on `@zag-js/combobox`: the search input owns `role=\"combobox\"` with `aria-expanded`/`aria-controls`, and the list is `role=\"listbox\"` with items as `role=\"option\"`.",
     "The currently highlighted item is announced via `aria-activedescendant` on the input, so screen reader users always know which item arrow-key navigation lands on.",

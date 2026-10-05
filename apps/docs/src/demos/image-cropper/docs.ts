@@ -12,7 +12,9 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<ImageCropper>`,
   importSnippet: `import ImageCropper from "@/components/ui/image-cropper/image-cropper.marko";`,
-  usageSnippet: `<ImageCropper src=imageUrl alt="Photo to crop"/>`,
+  usageSnippet: `static const imageUrl = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800";
+
+<ImageCropper src=imageUrl alt="Photo to crop"/>`,
   examples: [
     {
       name: "image-cropper-demo",
@@ -33,6 +35,7 @@ export const docs: ComponentDocs = {
     },
     {
       name: "image-cropper-controlled",
+      essential: true,
       title: "Controlled zoom and rotation",
       description:
         "Zag machines are controlled: `zoom` and `rotation` props without change handlers never move. Pair them with `zoomChange` and `rotationChange`, or use Marko's bind shorthand `zoom:=state`.",

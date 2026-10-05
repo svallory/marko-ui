@@ -3,6 +3,7 @@ import path from "path"
 import { Config } from "@/src/utils/get-config"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
+import { rootsFor, writeGuarded, type WriteRoots } from "@/src/utils/path-guard"
 import { spinner } from "@/src/utils/spinner"
 
 /**
@@ -26,7 +27,9 @@ export async function scaffoldImportDistributionCss(
     baseColor: string
     visualStyle: string
     silent?: boolean
-  }
+  },
+  /** Allowed write roots; computed once by the command. */
+  roots?: WriteRoots
 ) {
   const cssFilepath = config.resolvedPaths.tailwindCss
   if (!cssFilepath) {
@@ -69,7 +72,13 @@ export async function scaffoldImportDistributionCss(
   })
 
   const separator = output.trim().length ? "\n\n" : ""
-  await fs.writeFile(cssFilepath, output.trimEnd() + separator + block, "utf8")
+  // B2: same guard as every other config-driven writer — the path is
+  // components.json's `tailwind.css`.
+  await writeGuarded(
+    cssFilepath,
+    output.trimEnd() + separator + block,
+    roots ?? rootsFor(config.resolvedPaths.cwd)
+  )
 
   cssSpinner.succeed()
 }

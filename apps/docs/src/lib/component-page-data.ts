@@ -13,7 +13,7 @@ import type { ApiPart } from "../tags/docs/api-table.marko";
 // install). NOT read from process.env: this module is imported by the page,
 // so it is bundled for the browser too, and touching `process` there throws
 // "process is not defined" and takes down hydration for the whole page.
-const REGISTRY_BASE_URL = "https://marko-ui.saulo.tech/r";
+export const REGISTRY_BASE_URL = "https://marko-ui.saulo.tech/r";
 
 interface ApiComponent {
   name: string;
@@ -136,8 +136,10 @@ export function getComponentPageData(componentName: string): ComponentPageData |
     href: `/docs/components/${componentName}`,
     registryUrl,
     // Our CLI resolves bare names through the built-in @marko-ui registry;
-    // the shadcn-CLI URL form is documented on /docs/cli as interop.
-    installCommand: `bunx marko-ui add ${componentName}`,
+    // the shadcn-CLI URL form is documented on /docs/cli as interop. `-y`
+    // because this line's reader is an assistant running it in a pipeline:
+    // without it `add` opens a confirmation prompt nothing can answer.
+    installCommand: `bunx marko-ui add ${componentName} -y`,
     docs: entry.docs,
     registry: entry.registry,
     parts,

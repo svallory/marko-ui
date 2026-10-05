@@ -1,6 +1,17 @@
 import { SocksClient, type SocksProxy } from "socks"
 import { Agent, Dispatcher, EnvHttpProxyAgent } from "undici"
 
+import { RegistryError, RegistryErrorCode } from "@/src/registry/errors"
+import { parseUrl } from "@/src/registry/utils"
+import {
+  asConfigError,
+  asNetworkError,
+  asTlsError,
+  looksLikeConfigFailure,
+  looksLikeNetworkFailure,
+  looksLikeTlsFailure,
+} from "@/src/utils/error-contract"
+
 const HTTP_PROXY_ENV_VARS = [
   "HTTPS_PROXY",
   "https_proxy",
@@ -91,9 +102,36 @@ const MAX_REDIRECTS = 5
 const SAFE_HEADER_NAMES = new Set(["accept", "user-agent"])
 
 export async function fetchWithProxy(url: string | URL, init?: RequestInit) {
-  const originalOrigin = new URL(url).origin
+  // Parsed once, and total: a malformed configured URL used to throw a bare
+  // TypeError out of here, which the error handler could not tell from a
+  // connection failure and reported as an unexpected bug.
+  const parsed = url instanceof URL ? url : parseUrl(url)
+  if (!parsed) {
+    throw new RegistryError(`Invalid registry URL: ${String(url)}`, {
+      code: RegistryErrorCode.INVALID_CONFIG,
+      context: { url: String(url) },
+      suggestion:
+        'Check the registry URL in components.json (or the registry entry that produced it).',
+    })
+  }
+  // Scheme check BEFORE any socket is opened.
+  //
+  // `ftp://example.com/r` parses fine, so it used to reach `fetch`, which
+  // reported it as `TypeError: fetch failed` with an unhelpful cause — and the
+  // message-based classifier in `fetchOnce` then called it a NETWORK_ERROR
+  // (exit 4, "retry"), which sends an agent to retry a typo in components.json
+  // forever. The scheme is knowable here, so it is decided here.
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw asConfigError(
+      new Error(
+        `unsupported protocol "${parsed.protocol}" — only http: and https: are supported`
+      ),
+      { url: parsed.toString() }
+    )
+  }
+  const originalOrigin = parsed.origin
   const originalHeaders = new Headers(init?.headers)
-  let currentUrl = new URL(url).toString()
+  let currentUrl = parsed.toString()
   let headers = originalHeaders
 
   for (let i = 0; i <= MAX_REDIRECTS; i++) {
@@ -152,41 +190,29 @@ async function fetchOnce(
       dispatcher: proxyDispatcher,
     } as RequestInit)
   } catch (error) {
-    // Native fetch reports network failures as a generic "fetch failed"
-    // TypeError with the actual reason buried in `cause`. The casts are
-    // needed because the configured TS lib predates Error.cause.
-    const cause =
-      error instanceof TypeError
-        ? (error as TypeError & { cause?: unknown }).cause
-        : undefined
-
-    if (cause) {
-      const enriched = new Error(
-        `Request to ${url} failed, reason: ${getFailureReason(cause)}`
-      ) as Error & { cause?: unknown }
-      enriched.cause = cause
-      throw enriched
+    // Four classes, because the exit code and the advice differ:
+    //
+    // - The request could not be BUILT (credentials in the URL, unsupported
+    //   scheme, unparseable). Nothing was sent, so "check your network and
+    //   retry" is wrong advice and exit 4 would make an agent retry a
+    //   misconfiguration forever. INVALID_CONFIG, exit 1.
+    // - The CERTIFICATE is wrong (expired, self-signed, hostname mismatch).
+    //   TLS_ERROR, exit 1 — its own class, because it is the failure retrying
+    //   does not fix.
+    // - The host could not be REACHED (refused, DNS, timeout, reset).
+    //   NETWORK_ERROR, exit 4 — the documented "retry" case.
+    // - Anything else is not ours to classify. Rethrowing the ORIGINAL
+    //   error lets the error handler report it as the unexpected bug it
+    //   probably is, rather than dressing it up as a network problem.
+    if (looksLikeConfigFailure(error)) {
+      throw asConfigError(error, { url })
     }
-
+    if (looksLikeTlsFailure(error)) {
+      throw asTlsError(error, { url })
+    }
+    if (looksLikeNetworkFailure(error)) {
+      throw asNetworkError(error, { url, context: { url } })
+    }
     throw error
   }
-}
-
-function getFailureReason(cause: unknown): string {
-  // Connection failures surface as an AggregateError with an empty message
-  // and the per-address errors (e.g. ECONNREFUSED) in `errors`.
-  if (cause instanceof Error && "errors" in cause) {
-    const errors = (cause as Error & { errors: unknown }).errors
-    if (Array.isArray(errors) && errors.length) {
-      return getFailureReason(errors[0])
-    }
-  }
-
-  if (cause instanceof Error) {
-    return (
-      cause.message || (cause as NodeJS.ErrnoException).code || "unknown error"
-    )
-  }
-
-  return String(cause)
 }

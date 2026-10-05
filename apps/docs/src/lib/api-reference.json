@@ -13,7 +13,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether an accordion item can be closed after it has been expanded."
+              "description": "Whether an accordion item can be closed after it has been expanded.",
+              "default": "false"
             },
             {
               "name": "content",
@@ -33,7 +34,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -73,7 +75,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether multiple accordion items can be expanded at the same time."
+              "description": "Whether multiple accordion items can be expanded at the same time.",
+              "default": "false"
             },
             {
               "name": "onFocusChange",
@@ -94,7 +97,8 @@
               "type": "'horizontal' | 'vertical' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The orientation of the accordion items."
+              "description": "The orientation of the accordion items.",
+              "default": "vertical"
             },
             {
               "name": "value",
@@ -133,7 +137,8 @@
               "name": "variant",
               "type": "'default' | 'destructive' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "default"
             }
           ],
           "nativeAttributes": "div"
@@ -201,21 +206,24 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to close the dialog when the escape key is pressed"
+              "description": "Whether to close the dialog when the escape key is pressed",
+              "fixed": "false"
             },
             {
               "name": "closeOnInteractOutside",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to close the dialog when the outside is clicked"
+              "description": "Whether to close the dialog when the outside is clicked",
+              "fixed": "false"
             },
             {
               "name": "defaultOpen",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The initial open state of the dialog when rendered.\nUse when you don't need to control the open state of the dialog."
+              "description": "The initial open state of the dialog when rendered.\nUse when you don't need to control the open state of the dialog.",
+              "default": "false"
             },
             {
               "name": "defaultTriggerValue",
@@ -235,7 +243,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "finalFocusEl",
@@ -276,7 +285,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to prevent pointer interaction outside the element and hide all content below it"
+              "description": "Whether to prevent pointer interaction outside the element and hide all content below it",
+              "default": "true"
             },
             {
               "name": "onEscapeKeyDown",
@@ -352,7 +362,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to prevent scrolling behind the dialog when it's opened"
+              "description": "Whether to prevent scrolling behind the dialog when it's opened",
+              "default": "true"
             },
             {
               "name": "restoreFocus",
@@ -366,7 +377,8 @@
               "type": "'dialog' | 'alertdialog' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The dialog's role"
+              "description": "The dialog's role",
+              "fixed": "alertdialog"
             },
             {
               "name": "size",
@@ -386,7 +398,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to trap focus inside the dialog when it's opened"
+              "description": "Whether to trap focus inside the dialog when it's opened",
+              "default": "true"
             },
             {
               "name": "trigger",
@@ -434,14 +447,16 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The initial value of the slider.\nUse when you don't need to control the value of the slider."
+              "description": "The initial value of the slider.\nUse when you don't need to control the value of the slider.",
+              "default": "0"
             },
             {
               "name": "dir",
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -504,7 +519,8 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The step value for the slider."
+              "description": "The step value for the slider.",
+              "default": "1"
             },
             {
               "name": "value",
@@ -611,7 +627,8 @@
               "name": "variant",
               "type": "'image' | 'icon' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "icon"
             }
           ],
           "nativeAttributes": "div"
@@ -668,7 +685,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "fallback",
@@ -758,7 +776,8 @@
               "name": "variant",
               "type": "'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "default"
             }
           ],
           "nativeAttributes": "span"
@@ -854,7 +873,8 @@
               "name": "variant",
               "type": "'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'muted' | 'tinted' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "default"
             }
           ],
           "nativeAttributes": "div"
@@ -878,13 +898,15 @@
               "name": "size",
               "type": "'default' | 'sm' | 'xs' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "default"
             },
             {
               "name": "variant",
               "type": "'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "default"
             }
           ],
           "nativeAttributes": "button"
@@ -902,7 +924,8 @@
               "name": "orientation",
               "type": "'horizontal' | 'vertical' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "horizontal"
             }
           ],
           "nativeAttributes": "div"
@@ -975,14 +998,16 @@
               "type": "DateView | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The default view of the calendar"
+              "description": "The default view of the calendar",
+              "default": "day"
             },
             {
               "name": "dir",
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -1045,7 +1070,8 @@
               "type": "string | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The locale (BCP 47 language tag) to use when formatting the date."
+              "description": "The locale (BCP 47 language tag) to use when formatting the date.",
+              "default": "en-US"
             },
             {
               "name": "max",
@@ -1066,7 +1092,8 @@
               "type": "DateView | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The maximum view of the calendar"
+              "description": "The maximum view of the calendar",
+              "default": "year"
             },
             {
               "name": "min",
@@ -1080,7 +1107,8 @@
               "type": "DateView | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The minimum view of the calendar"
+              "description": "The minimum view of the calendar",
+              "default": "day"
             },
             {
               "name": "name",
@@ -1136,14 +1164,16 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to open the calendar when the input is clicked."
+              "description": "Whether to open the calendar when the input is clicked.",
+              "default": "false"
             },
             {
               "name": "outsideDaySelectable",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether day outside the visible range can be selected."
+              "description": "Whether day outside the visible range can be selected.",
+              "default": "false"
             },
             {
               "name": "parse",
@@ -1185,7 +1215,8 @@
               "type": "SelectionMode | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The selection mode of the calendar.\n- `single` - only one date can be selected\n- `multiple` - multiple dates can be selected\n- `range` - a range of dates can be selected"
+              "description": "The selection mode of the calendar.\n- `single` - only one date can be selected\n- `multiple` - multiple dates can be selected\n- `range` - a range of dates can be selected",
+              "default": "single"
             },
             {
               "name": "showWeekNumbers",
@@ -1206,7 +1237,8 @@
               "type": "string | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The time zone to use"
+              "description": "The time zone to use",
+              "default": "UTC"
             },
             {
               "name": "translations",
@@ -1309,21 +1341,24 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to allow scrolling via dragging with mouse"
+              "description": "Whether to allow scrolling via dragging with mouse",
+              "default": "false"
             },
             {
               "name": "autoplay",
               "type": "boolean | { delay: number; } | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to scroll automatically. The default delay is 4000ms."
+              "description": "Whether to scroll automatically. The default delay is 4000ms.",
+              "default": "false"
             },
             {
               "name": "autoSize",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to enable variable width slides."
+              "description": "Whether to enable variable width slides.",
+              "default": "false"
             },
             {
               "name": "content",
@@ -1337,14 +1372,16 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The initial page to scroll to when rendered.\nUse when you don't need to control the page of the carousel."
+              "description": "The initial page to scroll to when rendered.\nUse when you don't need to control the page of the carousel.",
+              "default": "0"
             },
             {
               "name": "dir",
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "getRootNode",
@@ -1365,7 +1402,8 @@
               "type": "number | number[] | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The threshold for determining if an item is in view."
+              "description": "The threshold for determining if an item is in view.",
+              "default": "0.6"
             },
             {
               "name": "items",
@@ -1378,7 +1416,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the carousel should loop around."
+              "description": "Whether the carousel should loop around.",
+              "default": "false"
             },
             {
               "name": "onAutoplayStatusChange",
@@ -1406,7 +1445,8 @@
               "type": "'horizontal' | 'vertical' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The orientation of the element."
+              "description": "The orientation of the element.",
+              "default": "horizontal"
             },
             {
               "name": "padding",
@@ -1439,28 +1479,32 @@
               "type": "number | 'auto' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The number of slides to scroll at a time.\n\nWhen set to `auto`, the number of slides to scroll is determined by the\n`slidesPerPage` property."
+              "description": "The number of slides to scroll at a time.\n\nWhen set to `auto`, the number of slides to scroll is determined by the\n`slidesPerPage` property.",
+              "default": "auto"
             },
             {
               "name": "slidesPerPage",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The number of slides to show at a time."
+              "description": "The number of slides to show at a time.",
+              "default": "1"
             },
             {
               "name": "snapType",
               "type": "'proximity' | 'mandatory' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The snap type of the item."
+              "description": "The snap type of the item.",
+              "default": "mandatory"
             },
             {
               "name": "spacing",
               "type": "string | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The amount of space between items."
+              "description": "The amount of space between items.",
+              "default": "0px"
             },
             {
               "name": "translations",
@@ -1495,7 +1539,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the cascade-select should close when an item is selected"
+              "description": "Whether the cascade-select should close when an item is selected",
+              "default": "true"
             },
             {
               "name": "defaultHighlightedValue",
@@ -1523,7 +1568,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -1565,7 +1611,8 @@
               "type": "'click' | 'hover' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "What triggers highlighting of items"
+              "description": "What triggers highlighting of items",
+              "default": "click"
             },
             {
               "name": "ids",
@@ -1598,14 +1645,16 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the cascade-select should loop focus when navigating with keyboard"
+              "description": "Whether the cascade-select should loop focus when navigating with keyboard",
+              "default": "false"
             },
             {
               "name": "multiple",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to allow multiple selections"
+              "description": "Whether to allow multiple selections",
+              "default": "false"
             },
             {
               "name": "name",
@@ -2490,7 +2539,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -2560,7 +2610,8 @@
               "type": "string | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The value of checkbox input. Useful for form submission."
+              "description": "The value of checkbox input. Useful for form submission.",
+              "default": "on"
             }
           ],
           "nativeAttributes": "input",
@@ -2628,7 +2679,8 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The timeout for the copy operation"
+              "description": "The timeout for the copy operation",
+              "default": "3000"
             },
             {
               "name": "translations",
@@ -2696,7 +2748,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -2771,14 +2824,16 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to close the color picker when a swatch is selected"
+              "description": "Whether to close the color picker when a swatch is selected",
+              "default": "false"
             },
             {
               "name": "defaultFormat",
               "type": "ColorFormat | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The initial color format when rendered.\nUse when you don't need to control the color format of the color picker."
+              "description": "The initial color format when rendered.\nUse when you don't need to control the color format of the color picker.",
+              "default": "rgba"
             },
             {
               "name": "defaultOpen",
@@ -2799,7 +2854,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -2946,7 +3002,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to auto focus the color picker when it is opened"
+              "description": "Whether to auto focus the color picker when it is opened",
+              "default": "true"
             },
             {
               "name": "openChange",
@@ -3036,7 +3093,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to always submit on Enter key press, even if popup is open.\nUseful for single-field autocomplete forms where Enter should submit the form."
+              "description": "Whether to always submit on Enter key press, even if popup is open.\nUseful for single-field autocomplete forms where Enter should submit the form.",
+              "default": "false"
             },
             {
               "name": "autoFocus",
@@ -3057,7 +3115,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the combobox is a composed with other composite widgets like tabs"
+              "description": "Whether the combobox is a composed with other composite widgets like tabs",
+              "default": "true"
             },
             {
               "name": "defaultHighlightedValue",
@@ -3071,7 +3130,8 @@
               "type": "string | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The initial value of the combobox's input when rendered.\nUse when you don't need to control the value of the combobox's input."
+              "description": "The initial value of the combobox's input when rendered.\nUse when you don't need to control the value of the combobox's input.",
+              "default": ""
             },
             {
               "name": "defaultOpen",
@@ -3085,14 +3145,16 @@
               "type": "string[] | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The initial value of the combobox's selected items when rendered.\nUse when you don't need to control the value of the combobox's selected items."
+              "description": "The initial value of the combobox's selected items when rendered.\nUse when you don't need to control the value of the combobox's selected items.",
+              "default": "[]"
             },
             {
               "name": "dir",
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -3153,7 +3215,8 @@
               "type": "'none' | 'autocomplete' | 'autohighlight' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Defines the auto-completion behavior of the combobox.\n\n- `autohighlight`: The first focused item is highlighted as the user types\n- `autocomplete`: Navigating the listbox with the arrow keys selects the item and the input is updated"
+              "description": "Defines the auto-completion behavior of the combobox.\n\n- `autohighlight`: The first focused item is highlighted as the user types\n- `autocomplete`: Navigating the listbox with the arrow keys selects the item and the input is updated",
+              "default": "none"
             },
             {
               "name": "inputValue",
@@ -3180,7 +3243,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to loop the keyboard navigation through the items"
+              "description": "Whether to loop the keyboard navigation through the items",
+              "default": "true"
             },
             {
               "name": "multiple",
@@ -3271,21 +3335,24 @@
               "type": "boolean | ((details: InputValueChangeDetails) => boolean) | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to show the combobox when the input value changes"
+              "description": "Whether to show the combobox when the input value changes",
+              "default": "true"
             },
             {
               "name": "openOnClick",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to open the combobox popup on initial click on the input"
+              "description": "Whether to open the combobox popup on initial click on the input",
+              "default": "false"
             },
             {
               "name": "openOnKeyPress",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to open the combobox on arrow key press"
+              "description": "Whether to open the combobox on arrow key press",
+              "default": "true"
             },
             {
               "name": "placeholder",
@@ -3327,7 +3394,8 @@
               "type": "'clear' | 'replace' | 'preserve' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The behavior of the combobox input when an item is selected\n\n- `replace`: The selected item string is set as the input value\n- `clear`: The input value is cleared\n- `preserve`: The input value is preserved"
+              "description": "The behavior of the combobox input when an item is selected\n\n- `replace`: The selected item string is set as the input value\n- `clear`: The input value is cleared\n- `preserve`: The input value is preserved",
+              "default": "replace"
             },
             {
               "name": "showClear",
@@ -3388,7 +3456,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to always submit on Enter key press, even if popup is open.\nUseful for single-field autocomplete forms where Enter should submit the form."
+              "description": "Whether to always submit on Enter key press, even if popup is open.\nUseful for single-field autocomplete forms where Enter should submit the form.",
+              "default": "false"
             },
             {
               "name": "autoFocus",
@@ -3409,7 +3478,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the combobox is a composed with other composite widgets like tabs"
+              "description": "Whether the combobox is a composed with other composite widgets like tabs",
+              "default": "true"
             },
             {
               "name": "defaultHighlightedValue",
@@ -3423,7 +3493,8 @@
               "type": "string | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The initial value of the combobox's input when rendered.\nUse when you don't need to control the value of the combobox's input."
+              "description": "The initial value of the combobox's input when rendered.\nUse when you don't need to control the value of the combobox's input.",
+              "default": ""
             },
             {
               "name": "defaultOpen",
@@ -3437,14 +3508,16 @@
               "type": "string[] | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The initial value of the combobox's selected items when rendered.\nUse when you don't need to control the value of the combobox's selected items."
+              "description": "The initial value of the combobox's selected items when rendered.\nUse when you don't need to control the value of the combobox's selected items.",
+              "default": "[]"
             },
             {
               "name": "dir",
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -3493,7 +3566,8 @@
               "type": "'none' | 'autocomplete' | 'autohighlight' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Defines the auto-completion behavior of the combobox.\n\n- `autohighlight`: The first focused item is highlighted as the user types\n- `autocomplete`: Navigating the listbox with the arrow keys selects the item and the input is updated"
+              "description": "Defines the auto-completion behavior of the combobox.\n\n- `autohighlight`: The first focused item is highlighted as the user types\n- `autocomplete`: Navigating the listbox with the arrow keys selects the item and the input is updated",
+              "fixed": "autohighlight"
             },
             {
               "name": "invalid",
@@ -3507,7 +3581,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to loop the keyboard navigation through the items"
+              "description": "Whether to loop the keyboard navigation through the items",
+              "default": "true"
             },
             {
               "name": "multiple",
@@ -3591,28 +3666,32 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The controlled open state of the combobox"
+              "description": "The controlled open state of the combobox",
+              "fixed": "true"
             },
             {
               "name": "openOnChange",
               "type": "boolean | ((details: InputValueChangeDetails) => boolean) | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to show the combobox when the input value changes"
+              "description": "Whether to show the combobox when the input value changes",
+              "default": "true"
             },
             {
               "name": "openOnClick",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to open the combobox popup on initial click on the input"
+              "description": "Whether to open the combobox popup on initial click on the input",
+              "default": "false"
             },
             {
               "name": "openOnKeyPress",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to open the combobox on arrow key press"
+              "description": "Whether to open the combobox on arrow key press",
+              "default": "true"
             },
             {
               "name": "placeholder",
@@ -3654,7 +3733,8 @@
               "type": "'clear' | 'replace' | 'preserve' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The behavior of the combobox input when an item is selected\n\n- `replace`: The selected item string is set as the input value\n- `clear`: The input value is cleared\n- `preserve`: The input value is preserved"
+              "description": "The behavior of the combobox input when an item is selected\n\n- `replace`: The selected item string is set as the input value\n- `clear`: The input value is cleared\n- `preserve`: The input value is preserved",
+              "fixed": "clear"
             },
             {
               "name": "translations",
@@ -3848,7 +3928,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -3896,14 +3977,16 @@
               "type": "DateGranularity | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Determines the smallest unit that is displayed in the date input."
+              "description": "Determines the smallest unit that is displayed in the date input.",
+              "default": "day"
             },
             {
               "name": "hideTimeZone",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to hide the time zone segment when the value is a `ZonedDateTime`.\nHas no effect for values without a time zone."
+              "description": "Whether to hide the time zone segment when the value is a `ZonedDateTime`.\nHas no effect for values without a time zone.",
+              "default": "false"
             },
             {
               "name": "hourCycle",
@@ -3938,7 +4021,8 @@
               "type": "string | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The locale (BCP 47 language tag) to use when formatting the date."
+              "description": "The locale (BCP 47 language tag) to use when formatting the date.",
+              "default": "en-US"
             },
             {
               "name": "max",
@@ -4013,21 +4097,24 @@
               "type": "SelectionMode | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The selection mode of the date input.\n- `single` - only one date can be entered\n- `range` - a range of dates can be entered (start and end)"
+              "description": "The selection mode of the date input.\n- `single` - only one date can be entered\n- `range` - a range of dates can be entered (start and end)",
+              "default": "single"
             },
             {
               "name": "shouldForceLeadingZeros",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to always show leading zeros in month, day, and hour fields.\nWhen false, formatting follows the locale default (e.g. \"1\" instead of \"01\")."
+              "description": "Whether to always show leading zeros in month, day, and hour fields.\nWhen false, formatting follows the locale default (e.g. \"1\" instead of \"01\").",
+              "default": "false"
             },
             {
               "name": "timeZone",
               "type": "string | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The time zone to use"
+              "description": "The time zone to use",
+              "default": "UTC"
             },
             {
               "name": "translations",
@@ -4067,7 +4154,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the calendar should close after the date selection is complete.\nThis is ignored when the selection mode is `multiple`."
+              "description": "Whether the calendar should close after the date selection is complete.\nThis is ignored when the selection mode is `multiple`.",
+              "default": "true"
             },
             {
               "name": "createCalendar",
@@ -4102,14 +4190,16 @@
               "type": "DateView | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The default view of the calendar"
+              "description": "The default view of the calendar",
+              "default": "day"
             },
             {
               "name": "dir",
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -4179,7 +4269,8 @@
               "type": "string | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The locale (BCP 47 language tag) to use when formatting the date."
+              "description": "The locale (BCP 47 language tag) to use when formatting the date.",
+              "default": "en-US"
             },
             {
               "name": "max",
@@ -4200,7 +4291,8 @@
               "type": "DateView | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The maximum view of the calendar"
+              "description": "The maximum view of the calendar",
+              "default": "year"
             },
             {
               "name": "min",
@@ -4214,7 +4306,8 @@
               "type": "DateView | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The minimum view of the calendar"
+              "description": "The minimum view of the calendar",
+              "default": "day"
             },
             {
               "name": "name",
@@ -4277,14 +4370,16 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to open the calendar when the input is clicked."
+              "description": "Whether to open the calendar when the input is clicked.",
+              "default": "false"
             },
             {
               "name": "outsideDaySelectable",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether day outside the visible range can be selected."
+              "description": "Whether day outside the visible range can be selected.",
+              "default": "false"
             },
             {
               "name": "parse",
@@ -4326,7 +4421,8 @@
               "type": "SelectionMode | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The selection mode of the calendar.\n- `single` - only one date can be selected\n- `multiple` - multiple dates can be selected\n- `range` - a range of dates can be selected"
+              "description": "The selection mode of the calendar.\n- `single` - only one date can be selected\n- `multiple` - multiple dates can be selected\n- `range` - a range of dates can be selected",
+              "default": "single"
             },
             {
               "name": "showWeekNumbers",
@@ -4347,7 +4443,8 @@
               "type": "string | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The time zone to use"
+              "description": "The time zone to use",
+              "default": "UTC"
             },
             {
               "name": "translations",
@@ -4403,14 +4500,16 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to close the dialog when the escape key is pressed"
+              "description": "Whether to close the dialog when the escape key is pressed",
+              "default": "true"
             },
             {
               "name": "closeOnInteractOutside",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to close the dialog when the outside is clicked"
+              "description": "Whether to close the dialog when the outside is clicked",
+              "default": "true"
             },
             {
               "name": "content",
@@ -4423,7 +4522,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The initial open state of the dialog when rendered.\nUse when you don't need to control the open state of the dialog."
+              "description": "The initial open state of the dialog when rendered.\nUse when you don't need to control the open state of the dialog.",
+              "default": "false"
             },
             {
               "name": "defaultTriggerValue",
@@ -4443,7 +4543,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "finalFocusEl",
@@ -4484,7 +4585,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to prevent pointer interaction outside the element and hide all content below it"
+              "description": "Whether to prevent pointer interaction outside the element and hide all content below it",
+              "default": "true"
             },
             {
               "name": "onEscapeKeyDown",
@@ -4560,7 +4662,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to prevent scrolling behind the dialog when it's opened"
+              "description": "Whether to prevent scrolling behind the dialog when it's opened",
+              "default": "true"
             },
             {
               "name": "restoreFocus",
@@ -4574,7 +4677,8 @@
               "type": "'dialog' | 'alertdialog' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The dialog's role"
+              "description": "The dialog's role",
+              "fixed": "dialog"
             },
             {
               "name": "showCloseButton",
@@ -4594,7 +4698,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to trap focus inside the dialog when it's opened"
+              "description": "Whether to trap focus inside the dialog when it's opened",
+              "default": "true"
             },
             {
               "name": "trigger",
@@ -4654,21 +4759,24 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to close the drawer when the escape key is pressed."
+              "description": "Whether to close the drawer when the escape key is pressed.",
+              "default": "true"
             },
             {
               "name": "closeOnInteractOutside",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to close the drawer when the outside is clicked."
+              "description": "Whether to close the drawer when the outside is clicked.",
+              "default": "true"
             },
             {
               "name": "closeThreshold",
               "type": "number",
               "required": false,
               "kind": "machine",
-              "description": "The threshold distance for dismissing the drawer."
+              "description": "The threshold distance for dismissing the drawer.",
+              "default": "0.25"
             },
             {
               "name": "content",
@@ -4688,7 +4796,8 @@
               "type": "SnapPoint | null | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The default snap point of the drawer."
+              "description": "The default snap point of the drawer.",
+              "default": "1"
             },
             {
               "name": "defaultTriggerValue",
@@ -4708,7 +4817,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "draggable",
@@ -4770,7 +4880,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to prevent pointer interaction outside the element and hide all content below it."
+              "description": "Whether to prevent pointer interaction outside the element and hide all content below it.",
+              "default": "true"
             },
             {
               "name": "onEscapeKeyDown",
@@ -4847,28 +4958,32 @@
               "type": "boolean",
               "required": false,
               "kind": "machine",
-              "description": "Whether to prevent dragging on scrollable elements.\nWhen enabled, the sheet will not start dragging if the user is interacting with a scrollable element."
+              "description": "Whether to prevent dragging on scrollable elements.\nWhen enabled, the sheet will not start dragging if the user is interacting with a scrollable element.",
+              "default": "true"
             },
             {
               "name": "preventScroll",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to prevent scrolling behind the sheet when it's opened"
+              "description": "Whether to prevent scrolling behind the sheet when it's opened",
+              "default": "true"
             },
             {
               "name": "restoreFocus",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to restore focus to the element that had focus before the sheet was opened."
+              "description": "Whether to restore focus to the element that had focus before the sheet was opened.",
+              "default": "true"
             },
             {
               "name": "role",
               "type": "'dialog' | 'alertdialog' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The sheet's role"
+              "description": "The sheet's role",
+              "default": "dialog"
             },
             {
               "name": "snapPoint",
@@ -4889,14 +5004,16 @@
               "type": "SnapPoint[] | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The snap points of the drawer.\nArray of numbers or strings representing the snap points."
+              "description": "The snap points of the drawer.\nArray of numbers or strings representing the snap points.",
+              "default": "[1]"
             },
             {
               "name": "snapToSequentialPoints",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the drawer should snap to sequential points when swiping."
+              "description": "Whether the drawer should snap to sequential points when swiping.",
+              "default": "false"
             },
             {
               "name": "stack",
@@ -4917,14 +5034,16 @@
               "type": "SwipeDirection | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The direction in which the drawer can be swiped."
+              "description": "The direction in which the drawer can be swiped.",
+              "default": "down"
             },
             {
               "name": "swipeVelocityThreshold",
               "type": "number",
               "required": false,
               "kind": "machine",
-              "description": "The threshold velocity (in pixels/s) for closing the drawer."
+              "description": "The threshold velocity (in pixels/s) for closing the drawer.",
+              "default": "700"
             },
             {
               "name": "title",
@@ -4937,7 +5056,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to trap focus inside the sheet when it's opened."
+              "description": "Whether to trap focus inside the sheet when it's opened.",
+              "default": "true"
             },
             {
               "name": "trigger",
@@ -5122,7 +5242,8 @@
               "type": "ActivationMode | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The activation mode for the preview element.\n\n- \"focus\" - Enter edit mode when the preview is focused\n- \"dblclick\" - Enter edit mode when the preview is double-clicked\n- \"click\" - Enter edit mode when the preview is clicked\n- \"none\" - Edit can be triggered programmatically only"
+              "description": "The activation mode for the preview element.\n\n- \"focus\" - Enter edit mode when the preview is focused\n- \"dblclick\" - Enter edit mode when the preview is double-clicked\n- \"click\" - Enter edit mode when the preview is clicked\n- \"none\" - Edit can be triggered programmatically only",
+              "default": "focus"
             },
             {
               "name": "autoResize",
@@ -5150,7 +5271,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -5296,14 +5418,16 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to select the text in the input when it is focused."
+              "description": "Whether to select the text in the input when it is focused.",
+              "default": "true"
             },
             {
               "name": "submitMode",
               "type": "SubmitMode | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The action that triggers submit in the edit mode:\n\n- \"enter\" - Trigger submit when the enter key is pressed\n- \"blur\" - Trigger submit when the editable is blurred\n- \"none\" - No action will trigger submit. You need to use the submit button\n- \"both\" - Pressing `Enter` and blurring the input will trigger submit"
+              "description": "The action that triggers submit in the edit mode:\n\n- \"enter\" - Trigger submit when the enter key is pressed\n- \"blur\" - Trigger submit when the editable is blurred\n- \"none\" - No action will trigger submit. You need to use the submit button\n- \"both\" - Pressing `Enter` and blurring the input will trigger submit",
+              "default": "both"
             },
             {
               "name": "translations",
@@ -5385,7 +5509,8 @@
               "name": "variant",
               "type": "'default' | 'icon' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "default"
             }
           ],
           "nativeAttributes": "div"
@@ -5492,7 +5617,8 @@
               "name": "orientation",
               "type": "'horizontal' | 'vertical' | 'responsive' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "vertical"
             }
           ],
           "nativeAttributes": "div"
@@ -5525,7 +5651,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to allow drag and drop in the dropzone element"
+              "description": "Whether to allow drag and drop in the dropzone element",
+              "default": "true"
             },
             {
               "name": "capture",
@@ -5546,7 +5673,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "directory",
@@ -5594,28 +5722,32 @@
               "type": "string | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The current locale. Based on the BCP 47 definition."
+              "description": "The current locale. Based on the BCP 47 definition.",
+              "default": "en-US"
             },
             {
               "name": "maxFiles",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The maximum number of files"
+              "description": "The maximum number of files",
+              "default": "1"
             },
             {
               "name": "maxFileSize",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The maximum file size in bytes"
+              "description": "The maximum file size in bytes",
+              "default": "Infinity"
             },
             {
               "name": "minFileSize",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The minimum file size in bytes"
+              "description": "The minimum file size in bytes",
+              "default": "0"
             },
             {
               "name": "name",
@@ -5650,7 +5782,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to prevent the drop event on the document"
+              "description": "Whether to prevent the drop event on the document",
+              "default": "true"
             },
             {
               "name": "readOnly",
@@ -5713,7 +5846,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the panel should be strictly contained within the boundary when dragging"
+              "description": "Whether the panel should be strictly contained within the boundary when dragging",
+              "default": "true"
             },
             {
               "name": "closeOnEscape",
@@ -5734,7 +5868,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The initial open state of the panel when rendered.\nUse when you don't need to control the open state of the panel."
+              "description": "The initial open state of the panel when rendered.\nUse when you don't need to control the open state of the panel.",
+              "default": "false"
             },
             {
               "name": "defaultPosition",
@@ -5755,7 +5890,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -5769,7 +5905,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the panel is draggable"
+              "description": "Whether the panel is draggable",
+              "default": "true"
             },
             {
               "name": "finalFocusEl",
@@ -5804,7 +5941,8 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The snap grid for the panel"
+              "description": "The snap grid for the panel",
+              "default": "1"
             },
             {
               "name": "hideCloseTrigger",
@@ -5944,14 +6082,16 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the panel is resizable"
+              "description": "Whether the panel is resizable",
+              "default": "true"
             },
             {
               "name": "restoreFocus",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to restore focus to the trigger when the panel is closed."
+              "description": "Whether to restore focus to the trigger when the panel is closed.",
+              "default": "true"
             },
             {
               "name": "size",
@@ -5986,7 +6126,8 @@
               "type": "'absolute' | 'fixed' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The strategy to use for positioning"
+              "description": "The strategy to use for positioning",
+              "default": "fixed"
             },
             {
               "name": "title",
@@ -6049,7 +6190,8 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The duration from when the mouse leaves the trigger or content until the hover card closes."
+              "description": "The duration from when the mouse leaves the trigger or content until the hover card closes.",
+              "default": "300"
             },
             {
               "name": "defaultOpen",
@@ -6070,7 +6212,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -6147,7 +6290,8 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The duration from when the mouse enters the trigger until the hover card opens."
+              "description": "The duration from when the mouse enters the trigger until the hover card opens.",
+              "default": "600"
             },
             {
               "name": "positioning",
@@ -6242,7 +6386,8 @@
               "type": "'circle' | 'rectangle' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The shape of the crop area."
+              "description": "The shape of the crop area.",
+              "default": "rectangle"
             },
             {
               "name": "defaultFlip",
@@ -6256,28 +6401,32 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The initial rotation to apply to the image in degrees."
+              "description": "The initial rotation to apply to the image in degrees.",
+              "default": "0"
             },
             {
               "name": "defaultZoom",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The initial zoom factor to apply to the image."
+              "description": "The initial zoom factor to apply to the image.",
+              "default": "1"
             },
             {
               "name": "dir",
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "fixedCropArea",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the crop area is fixed in size and position."
+              "description": "Whether the crop area is fixed in size and position.",
+              "default": "false"
             },
             {
               "name": "flip",
@@ -6326,63 +6475,72 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The maximum height of the crop area"
+              "description": "The maximum height of the crop area",
+              "default": "Infinity"
             },
             {
               "name": "maxWidth",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The maximum width of the crop area"
+              "description": "The maximum width of the crop area",
+              "default": "Infinity"
             },
             {
               "name": "maxZoom",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The maximum zoom factor allowed."
+              "description": "The maximum zoom factor allowed.",
+              "default": "5"
             },
             {
               "name": "minHeight",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The minimum height of the crop area"
+              "description": "The minimum height of the crop area",
+              "default": "40"
             },
             {
               "name": "minWidth",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The minimum width of the crop area"
+              "description": "The minimum width of the crop area",
+              "default": "40"
             },
             {
               "name": "minZoom",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The minimum zoom factor allowed."
+              "description": "The minimum zoom factor allowed.",
+              "default": "1"
             },
             {
               "name": "nudgeStep",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The base nudge step for keyboard arrow keys (in pixels)."
+              "description": "The base nudge step for keyboard arrow keys (in pixels).",
+              "default": "1"
             },
             {
               "name": "nudgeStepCtrl",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The nudge step when Ctrl/Cmd key is held (in pixels)."
+              "description": "The nudge step when Ctrl/Cmd key is held (in pixels).",
+              "default": "50"
             },
             {
               "name": "nudgeStepShift",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The nudge step when Shift key is held (in pixels)."
+              "description": "The nudge step when Shift key is held (in pixels).",
+              "default": "10"
             },
             {
               "name": "onCropChange",
@@ -6459,14 +6617,16 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Controls how responsive pinch-to-zoom is."
+              "description": "Controls how responsive pinch-to-zoom is.",
+              "default": "2"
             },
             {
               "name": "zoomStep",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The amount of zoom applied per wheel step."
+              "description": "The amount of zoom applied per wheel step.",
+              "default": "0.1"
             }
           ],
           "nativeAttributes": "div",
@@ -6497,7 +6657,8 @@
               "name": "align",
               "type": "'inline-start' | 'inline-end' | 'block-start' | 'block-end' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "inline-start"
             }
           ],
           "nativeAttributes": "div"
@@ -6510,7 +6671,8 @@
               "name": "size",
               "type": "'sm' | 'xs' | 'icon-xs' | 'icon-sm' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "xs"
             }
           ],
           "nativeAttributes": "button"
@@ -6596,7 +6758,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -6699,7 +6862,8 @@
               "type": "string | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The placeholder text for the input"
+              "description": "The placeholder text for the input",
+              "default": "○"
             },
             {
               "name": "readOnly",
@@ -6741,7 +6905,8 @@
               "type": "'numeric' | 'alphanumeric' | 'alphabetic' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The type of value the pin-input should allow"
+              "description": "The type of value the pin-input should allow",
+              "default": "numeric"
             },
             {
               "name": "value",
@@ -6816,13 +6981,15 @@
               "name": "size",
               "type": "'default' | 'sm' | 'xs' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "default"
             },
             {
               "name": "variant",
               "type": "'default' | 'outline' | 'muted' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "default"
             }
           ],
           "nativeAttributes": "div"
@@ -6835,7 +7002,8 @@
               "name": "variant",
               "type": "'image' | 'default' | 'icon' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "default"
             }
           ],
           "nativeAttributes": "div"
@@ -6901,7 +7069,8 @@
               "type": "string[] | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The initial default value of the listbox when rendered.\nUse when you don't need to control the value of the listbox."
+              "description": "The initial default value of the listbox when rendered.\nUse when you don't need to control the value of the listbox.",
+              "default": "[]"
             },
             {
               "name": "deselectable",
@@ -6915,7 +7084,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -6975,7 +7145,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to loop the keyboard navigation through the options"
+              "description": "Whether to loop the keyboard navigation through the options",
+              "default": "false"
             },
             {
               "name": "onHighlightChange",
@@ -7009,7 +7180,8 @@
               "type": "'horizontal' | 'vertical' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The orientation of the listbox."
+              "description": "The orientation of the listbox.",
+              "default": "vertical"
             },
             {
               "name": "scrollToIndexFn",
@@ -7023,7 +7195,8 @@
               "type": "SelectionMode | undefined",
               "required": false,
               "kind": "machine",
-              "description": "How multiple selection should behave in the listbox.\n\n- `single`: The user can select a single item.\n- `multiple`: The user can select multiple items without using modifier keys.\n- `extended`: The user can select multiple items by using modifier keys."
+              "description": "How multiple selection should behave in the listbox.\n\n- `single`: The user can select a single item.\n- `multiple`: The user can select multiple items without using modifier keys.\n- `extended`: The user can select multiple items by using modifier keys.",
+              "default": "single"
             },
             {
               "name": "selectOnHighlight",
@@ -7108,7 +7281,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to automatically duplicate content to fill the container."
+              "description": "Whether to automatically duplicate content to fill the container.",
+              "default": "false"
             },
             {
               "name": "content",
@@ -7122,21 +7296,24 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the marquee is paused by default."
+              "description": "Whether the marquee is paused by default.",
+              "default": "false"
             },
             {
               "name": "delay",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The delay before the animation starts (in seconds)."
+              "description": "The delay before the animation starts (in seconds).",
+              "default": "0"
             },
             {
               "name": "dir",
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "getRootNode",
@@ -7169,7 +7346,8 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The number of times to loop the animation (0 = infinite)."
+              "description": "The number of times to loop the animation (0 = infinite).",
+              "default": "0"
             },
             {
               "name": "onComplete",
@@ -7210,35 +7388,40 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to pause the marquee on user interaction (hover, focus)."
+              "description": "Whether to pause the marquee on user interaction (hover, focus).",
+              "default": "false"
             },
             {
               "name": "reverse",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to reverse the animation direction."
+              "description": "Whether to reverse the animation direction.",
+              "default": "false"
             },
             {
               "name": "side",
               "type": "Side | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The side/direction the marquee scrolls towards."
+              "description": "The side/direction the marquee scrolls towards.",
+              "default": "start"
             },
             {
               "name": "spacing",
               "type": "string | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The spacing between marquee items."
+              "description": "The spacing between marquee items.",
+              "default": "1rem"
             },
             {
               "name": "speed",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The speed of the marquee animation in pixels per second."
+              "description": "The speed of the marquee animation in pixels per second.",
+              "default": "50"
             },
             {
               "name": "translations",
@@ -7556,7 +7739,7 @@
               "type": "number",
               "required": false,
               "kind": "own",
-              "description": "Extra top margin for a newly anchored row, added to scrollMargin. Defaults to 64."
+              "description": "Extra top margin for a newly anchored row, added to scrollMargin. Defaults to 64. Read once, when the controller is created: a later change has no effect until the provider remounts."
             }
           ]
         },
@@ -7646,7 +7829,8 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The delay before the menu closes"
+              "description": "The delay before the menu closes",
+              "default": "300"
             },
             {
               "name": "content",
@@ -7667,7 +7851,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disableClickTrigger",
@@ -7729,14 +7914,16 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The delay before the menu opens"
+              "description": "The delay before the menu opens",
+              "default": "200"
             },
             {
               "name": "orientation",
               "type": "'horizontal' | 'vertical' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The orientation of the element."
+              "description": "The orientation of the element.",
+              "default": "horizontal"
             },
             {
               "name": "translations",
@@ -7784,14 +7971,16 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to allow the value overflow the min/max range"
+              "description": "Whether to allow the value overflow the min/max range",
+              "default": "true"
             },
             {
               "name": "clampValueOnBlur",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to clamp the value when the input loses focus (blur)"
+              "description": "Whether to clamp the value when the input loses focus (blur)",
+              "default": "true"
             },
             {
               "name": "defaultValue",
@@ -7805,7 +7994,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -7819,7 +8009,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to focus input when the value changes"
+              "description": "Whether to focus input when the value changes",
+              "default": "true"
             },
             {
               "name": "form",
@@ -7854,7 +8045,8 @@
               "type": "InputMode | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Hints at the type of data that might be entered by the user. It also determines\nthe type of keyboard shown to the user on mobile devices"
+              "description": "Hints at the type of data that might be entered by the user. It also determines\nthe type of keyboard shown to the user on mobile devices",
+              "default": "decimal"
             },
             {
               "name": "invalid",
@@ -7875,21 +8067,24 @@
               "type": "string | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The current locale. Based on the BCP 47 definition."
+              "description": "The current locale. Based on the BCP 47 definition.",
+              "default": "en-US"
             },
             {
               "name": "max",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The maximum value of the number input"
+              "description": "The maximum value of the number input",
+              "default": "Number.MAX_SAFE_INTEGER"
             },
             {
               "name": "min",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The minimum value of the number input"
+              "description": "The minimum value of the number input",
+              "default": "Number.MIN_SAFE_INTEGER"
             },
             {
               "name": "name",
@@ -7931,7 +8126,8 @@
               "type": "string | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The pattern used to check the <input> element's value against"
+              "description": "The pattern used to check the <input> element's value against",
+              "default": "-?[0-9]*(.[0-9]+)?"
             },
             {
               "name": "readOnly",
@@ -7959,14 +8155,16 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to spin the value when the increment/decrement button is pressed"
+              "description": "Whether to spin the value when the increment/decrement button is pressed",
+              "default": "true"
             },
             {
               "name": "step",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The amount to increment or decrement the value by"
+              "description": "The amount to increment or decrement the value by",
+              "default": "1"
             },
             {
               "name": "translations",
@@ -8081,7 +8279,8 @@
               "type": "'current-password' | 'new-password' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The autocomplete attribute for the password input."
+              "description": "The autocomplete attribute for the password input.",
+              "default": "current-password"
             },
             {
               "name": "defaultVisible",
@@ -8095,7 +8294,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -8224,7 +8424,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to automatically set focus on the first focusable\ncontent within the popover when opened."
+              "description": "Whether to automatically set focus on the first focusable\ncontent within the popover when opened.",
+              "default": "true"
             },
             {
               "name": "class",
@@ -8238,14 +8439,16 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to close the popover when the escape key is pressed."
+              "description": "Whether to close the popover when the escape key is pressed.",
+              "default": "true"
             },
             {
               "name": "closeOnInteractOutside",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to close the popover when the user clicks outside of the popover."
+              "description": "Whether to close the popover when the user clicks outside of the popover.",
+              "default": "true"
             },
             {
               "name": "content",
@@ -8280,7 +8483,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "finalFocusEl",
@@ -8315,7 +8519,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the popover should be modal. When set to `true`:\n- interaction with outside elements will be disabled\n- only popover content will be visible to screen readers\n- scrolling is blocked\n- focus is trapped within the popover"
+              "description": "Whether the popover should be modal. When set to `true`:\n- interaction with outside elements will be disabled\n- only popover content will be visible to screen readers\n- scrolling is blocked\n- focus is trapped within the popover",
+              "default": "false"
             },
             {
               "name": "onEscapeKeyDown",
@@ -8391,7 +8596,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the popover is portalled. This will proxy the tabbing behavior regardless of the DOM position\nof the popover content."
+              "description": "Whether the popover is portalled. This will proxy the tabbing behavior regardless of the DOM position\nof the popover content.",
+              "default": "true"
             },
             {
               "name": "positioning",
@@ -8405,7 +8611,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to restore focus to the element that had focus before the popover was opened."
+              "description": "Whether to restore focus to the element that had focus before the popover was opened.",
+              "default": "true"
             },
             {
               "name": "title",
@@ -8453,14 +8660,16 @@
               "type": "number | null | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The initial value of the progress bar when rendered.\nUse when you don't need to control the value of the progress bar."
+              "description": "The initial value of the progress bar when rendered.\nUse when you don't need to control the value of the progress bar.",
+              "default": "50"
             },
             {
               "name": "dir",
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "formatOptions",
@@ -8494,21 +8703,24 @@
               "type": "string | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The locale to use for formatting the value."
+              "description": "The locale to use for formatting the value.",
+              "default": "en-US"
             },
             {
               "name": "max",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The maximum allowed value of the progress bar."
+              "description": "The maximum allowed value of the progress bar.",
+              "default": "100"
             },
             {
               "name": "min",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The minimum allowed value of the progress bar."
+              "description": "The minimum allowed value of the progress bar.",
+              "default": "0"
             },
             {
               "name": "onValueChange",
@@ -8522,7 +8734,8 @@
               "type": "'horizontal' | 'vertical' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The orientation of the element."
+              "description": "The orientation of the element.",
+              "default": "horizontal"
             },
             {
               "name": "translations",
@@ -8570,7 +8783,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "encoding",
@@ -8618,7 +8832,8 @@
               "name": "size",
               "type": "'default' | 'sm' | 'lg' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "default"
             },
             {
               "name": "value",
@@ -8659,7 +8874,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -8788,7 +9004,8 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The total number of ratings."
+              "description": "The total number of ratings.",
+              "default": "5"
             },
             {
               "name": "defaultValue",
@@ -8802,7 +9019,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -9010,7 +9228,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "getRootNode",
@@ -9066,14 +9285,16 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the select should close after an item is selected"
+              "description": "Whether the select should close after an item is selected",
+              "default": "true"
             },
             {
               "name": "composite",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the select is a composed with other composite widgets like tabs or combobox"
+              "description": "Whether the select is a composed with other composite widgets like tabs or combobox",
+              "default": "true"
             },
             {
               "name": "defaultHighlightedValue",
@@ -9108,7 +9329,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -9176,7 +9398,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to loop the keyboard navigation through the options"
+              "description": "Whether to loop the keyboard navigation through the options",
+              "default": "false"
             },
             {
               "name": "multiple",
@@ -9364,14 +9587,16 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to close the dialog when the escape key is pressed"
+              "description": "Whether to close the dialog when the escape key is pressed",
+              "default": "true"
             },
             {
               "name": "closeOnInteractOutside",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to close the dialog when the outside is clicked"
+              "description": "Whether to close the dialog when the outside is clicked",
+              "default": "true"
             },
             {
               "name": "content",
@@ -9384,7 +9609,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The initial open state of the dialog when rendered.\nUse when you don't need to control the open state of the dialog."
+              "description": "The initial open state of the dialog when rendered.\nUse when you don't need to control the open state of the dialog.",
+              "default": "false"
             },
             {
               "name": "defaultTriggerValue",
@@ -9404,7 +9630,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "finalFocusEl",
@@ -9445,7 +9672,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to prevent pointer interaction outside the element and hide all content below it"
+              "description": "Whether to prevent pointer interaction outside the element and hide all content below it",
+              "default": "true"
             },
             {
               "name": "onEscapeKeyDown",
@@ -9521,7 +9749,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to prevent scrolling behind the dialog when it's opened"
+              "description": "Whether to prevent scrolling behind the dialog when it's opened",
+              "default": "true"
             },
             {
               "name": "restoreFocus",
@@ -9535,7 +9764,8 @@
               "type": "'dialog' | 'alertdialog' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The dialog's role"
+              "description": "The dialog's role",
+              "fixed": "dialog"
             },
             {
               "name": "showCloseButton",
@@ -9562,7 +9792,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to trap focus inside the dialog when it's opened"
+              "description": "Whether to trap focus inside the dialog when it's opened",
+              "default": "true"
             },
             {
               "name": "trigger",
@@ -9682,13 +9913,15 @@
               "name": "size",
               "type": "'default' | 'sm' | 'lg' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "default"
             },
             {
               "name": "variant",
               "type": "'default' | 'outline' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "default"
             }
           ],
           "nativeAttributes": "div"
@@ -9908,7 +10141,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -10050,7 +10284,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -10106,21 +10341,24 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The maximum value of the slider"
+              "description": "The maximum value of the slider",
+              "default": "100"
             },
             {
               "name": "min",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The minimum value of the slider"
+              "description": "The minimum value of the slider",
+              "default": "0"
             },
             {
               "name": "minStepsBetweenThumbs",
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The minimum permitted steps between multiple thumbs.\n\n`minStepsBetweenThumbs` * `step` should reflect the gap between the thumbs.\n\n- `step: 1` and `minStepsBetweenThumbs: 10` => gap is `10`\n- `step: 10` and `minStepsBetweenThumbs: 2` => gap is `20`"
+              "description": "The minimum permitted steps between multiple thumbs.\n\n`minStepsBetweenThumbs` * `step` should reflect the gap between the thumbs.\n\n- `step: 1` and `minStepsBetweenThumbs: 10` => gap is `10`\n- `step: 10` and `minStepsBetweenThumbs: 2` => gap is `20`",
+              "default": "0"
             },
             {
               "name": "name",
@@ -10155,14 +10393,16 @@
               "type": "'horizontal' | 'vertical' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The orientation of the slider"
+              "description": "The orientation of the slider",
+              "default": "horizontal"
             },
             {
               "name": "origin",
               "type": "'end' | 'start' | 'center' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The origin of the slider range. The track is filled from the origin\nto the thumb for single values.\n- \"start\": Useful when the value represents an absolute value\n- \"center\": Useful when the value represents an offset (relative)\n- \"end\": Useful when the value represents an offset from the end"
+              "description": "The origin of the slider range. The track is filled from the origin\nto the thumb for single values.\n- \"start\": Useful when the value represents an absolute value\n- \"center\": Useful when the value represents an offset (relative)\n- \"end\": Useful when the value represents an offset from the end",
+              "default": "start"
             },
             {
               "name": "readOnly",
@@ -10176,21 +10416,24 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The step value of the slider"
+              "description": "The step value of the slider",
+              "default": "1"
             },
             {
               "name": "thumbAlignment",
               "type": "'center' | 'contain' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The alignment of the slider thumb relative to the track\n- `center`: the thumb will extend beyond the bounds of the slider track.\n- `contain`: the thumb will be contained within the bounds of the track."
+              "description": "The alignment of the slider thumb relative to the track\n- `center`: the thumb will extend beyond the bounds of the slider track.\n- `contain`: the thumb will be contained within the bounds of the track.",
+              "default": "contain"
             },
             {
               "name": "thumbCollisionBehavior",
               "type": "'none' | 'push' | 'swap' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Controls how thumbs behave when they collide during pointer interactions.\n- `none` (default): Thumbs cannot move past each other; excess movement is ignored.\n- `push`: Thumbs push each other without restoring their previous positions when dragged back.\n- `swap`: Thumbs swap places when dragged past each other."
+              "description": "Controls how thumbs behave when they collide during pointer interactions.\n- `none` (default): Thumbs cannot move past each other; excess movement is ignored.\n- `push`: Thumbs push each other without restoring their previous positions when dragged back.\n- `swap`: Thumbs swap places when dragged past each other.",
+              "default": "none"
             },
             {
               "name": "thumbSize",
@@ -10293,7 +10536,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "getRootNode",
@@ -10356,7 +10600,8 @@
               "type": "'horizontal' | 'vertical' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The orientation of the stepper"
+              "description": "The orientation of the stepper",
+              "default": "horizontal"
             },
             {
               "name": "step",
@@ -10417,7 +10662,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -10501,7 +10747,8 @@
               "type": "string | number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The value of switch input. Useful for form submission."
+              "description": "The value of switch input. Useful for form submission.",
+              "default": "on"
             }
           ],
           "nativeAttributes": "input",
@@ -10631,7 +10878,8 @@
               "type": "'manual' | 'automatic' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The activation mode of the tabs. Can be `manual` or `automatic`\n- `manual`: Tabs are activated when clicked or press `enter` key.\n- `automatic`: Tabs are activated when receiving focus"
+              "description": "The activation mode of the tabs. Can be `manual` or `automatic`\n- `manual`: Tabs are activated when clicked or press `enter` key.\n- `automatic`: Tabs are activated when receiving focus",
+              "default": "automatic"
             },
             {
               "name": "composite",
@@ -10644,7 +10892,8 @@
               "name": "content",
               "type": "Marko.Body<[string], void>",
               "required": false,
-              "kind": "own"
+              "kind": "own",
+              "description": "The fallback panel content: for every panel without its own `<@panel>`\nbody, it is rendered once with THAT panel's `value` as its parameter\n(`<Tabs|value|>…</Tabs>`), and Zag shows only the active panel, so branch\non the parameter to render each panel's content. It is not the currently\nactive value."
             },
             {
               "name": "defaultValue",
@@ -10665,7 +10914,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "getRootNode",
@@ -10692,7 +10942,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the keyboard navigation will loop from last tab to first, and vice versa."
+              "description": "Whether the keyboard navigation will loop from last tab to first, and vice versa.",
+              "default": "true"
             },
             {
               "name": "navigate",
@@ -10720,7 +10971,8 @@
               "type": "'horizontal' | 'vertical' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The orientation of the tabs. Can be `horizontal` or `vertical`\n- `horizontal`: only left and right arrow key navigation will work.\n- `vertical`: only up and down arrow key navigation will work."
+              "description": "The orientation of the tabs. Can be `horizontal` or `vertical`\n- `horizontal`: only left and right arrow key navigation will work.\n- `vertical`: only up and down arrow key navigation will work.",
+              "default": "horizontal"
             },
             {
               "name": "panel",
@@ -10758,7 +11010,8 @@
               "name": "variant",
               "type": "'line' | 'default' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "default"
             }
           ],
           "nativeAttributes": "div",
@@ -10779,14 +11032,16 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to add a tag when you paste values into the tag input"
+              "description": "Whether to add a tag when you paste values into the tag input",
+              "default": "false"
             },
             {
               "name": "allowDuplicates",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to allow duplicate tags."
+              "description": "Whether to allow duplicate tags.",
+              "default": "false"
             },
             {
               "name": "allowOverflow",
@@ -10828,14 +11083,16 @@
               "type": "string | RegExp | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The character that serves has:\n- event key to trigger the addition of a new tag\n- character used to split tags when pasting into the input"
+              "description": "The character that serves has:\n- event key to trigger the addition of a new tag\n- character used to split tags when pasting into the input",
+              "default": ","
             },
             {
               "name": "dir",
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -10849,7 +11106,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether a tag can be edited after creation, by pressing `Enter` or double clicking."
+              "description": "Whether a tag can be edited after creation, by pressing `Enter` or double clicking.",
+              "default": "true"
             },
             {
               "name": "form",
@@ -10909,7 +11167,8 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The max number of tags"
+              "description": "The max number of tags",
+              "default": "Infinity"
             },
             {
               "name": "maxLength",
@@ -11093,7 +11352,8 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The interval in milliseconds to update the timer count."
+              "description": "The interval in milliseconds to update the timer count.",
+              "default": "1000"
             },
             {
               "name": "onComplete",
@@ -11265,7 +11525,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to auto-scroll the TOC container so the first active item\nis visible when active headings change."
+              "description": "Whether to auto-scroll the TOC container so the first active item\nis visible when active headings change.",
+              "default": "true"
             },
             {
               "name": "defaultActiveIds",
@@ -11279,7 +11540,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "getRootNode",
@@ -11314,7 +11576,8 @@
               "type": "ScrollBehavior | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The default scroll behavior used when auto-scrolling the TOC container\nand when scrolling to a heading (via link click or `api.scrollTo`).\nCan be overridden per-call by passing `behavior` to `api.scrollTo`."
+              "description": "The default scroll behavior used when auto-scrolling the TOC container\nand when scrolling to a heading (via link click or `api.scrollTo`).\nCan be overridden per-call by passing `behavior` to `api.scrollTo`.",
+              "default": "smooth"
             },
             {
               "name": "scrollEl",
@@ -11328,7 +11591,8 @@
               "type": "number | number[] | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The IntersectionObserver threshold. A value of `0` means the heading is\nactive as soon as even one pixel is visible within the root margin area."
+              "description": "The IntersectionObserver threshold. A value of `0` means the heading is\nactive as soon as even one pixel is visible within the root margin area.",
+              "default": "0"
             },
             {
               "name": "title",
@@ -11366,13 +11630,15 @@
               "name": "size",
               "type": "'default' | 'sm' | 'lg' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "default"
             },
             {
               "name": "variant",
               "type": "'default' | 'outline' | null | undefined",
               "required": false,
-              "kind": "variant"
+              "kind": "variant",
+              "default": "default"
             }
           ],
           "nativeAttributes": "button"
@@ -11398,14 +11664,16 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the toggle group allows empty selection.\n**Note:** This is ignored if `multiple` is `true`."
+              "description": "Whether the toggle group allows empty selection.\n**Note:** This is ignored if `multiple` is `true`.",
+              "default": "true"
             },
             {
               "name": "dir",
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -11445,7 +11713,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to loop focus inside the toggle group."
+              "description": "Whether to loop focus inside the toggle group.",
+              "default": "true"
             },
             {
               "name": "multiple",
@@ -11466,14 +11735,16 @@
               "type": "Orientation | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The orientation of the toggle group."
+              "description": "The orientation of the toggle group.",
+              "default": "horizontal"
             },
             {
               "name": "rovingFocus",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to use roving tab index to manage focus."
+              "description": "Whether to use roving tab index to manage focus.",
+              "default": "true"
             },
             {
               "name": "spacing",
@@ -11534,35 +11805,40 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The close delay of the tooltip."
+              "description": "The close delay of the tooltip.",
+              "default": "150"
             },
             {
               "name": "closeOnClick",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the tooltip should close on click"
+              "description": "Whether the tooltip should close on click",
+              "default": "true"
             },
             {
               "name": "closeOnEscape",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to close the tooltip when the Escape key is pressed."
+              "description": "Whether to close the tooltip when the Escape key is pressed.",
+              "default": "true"
             },
             {
               "name": "closeOnPointerDown",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to close the tooltip on pointerdown."
+              "description": "Whether to close the tooltip on pointerdown.",
+              "default": "true"
             },
             {
               "name": "closeOnScroll",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the tooltip should close on scroll"
+              "description": "Whether the tooltip should close on scroll",
+              "default": "true"
             },
             {
               "name": "defaultOpen",
@@ -11583,7 +11859,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "disabled",
@@ -11611,7 +11888,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the tooltip's content is interactive.\nIn this mode, the tooltip will remain open when user hovers over the content."
+              "description": "Whether the tooltip's content is interactive.\nIn this mode, the tooltip will remain open when user hovers over the content.",
+              "default": "false"
             },
             {
               "name": "onOpenChange",
@@ -11645,7 +11923,8 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The open delay of the tooltip."
+              "description": "The open delay of the tooltip.",
+              "default": "400"
             },
             {
               "name": "positioning",
@@ -11680,21 +11959,24 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to close the tour when the user presses the escape key"
+              "description": "Whether to close the tour when the user presses the escape key",
+              "default": "true"
             },
             {
               "name": "closeOnInteractOutside",
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to close the tour when the user clicks outside the tour"
+              "description": "Whether to close the tour when the user clicks outside the tour",
+              "default": "true"
             },
             {
               "name": "dir",
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "getRootNode",
@@ -11722,7 +12004,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether to allow keyboard navigation (right/left arrow keys to navigate between steps)"
+              "description": "Whether to allow keyboard navigation (right/left arrow keys to navigate between steps)",
+              "default": "true"
             },
             {
               "name": "onFocusOutside",
@@ -11771,7 +12054,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Prevents interaction with the rest of the page while the tour is open"
+              "description": "Prevents interaction with the rest of the page while the tour is open",
+              "default": "false"
             },
             {
               "name": "spotlightOffset",
@@ -11785,7 +12069,8 @@
               "type": "number | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The radius of the spotlight clip path"
+              "description": "The radius of the spotlight clip path",
+              "default": "4"
             },
             {
               "name": "statusChange",
@@ -11889,7 +12174,8 @@
               "type": "'ltr' | 'rtl' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "The document's text/writing direction."
+              "description": "The document's text/writing direction.",
+              "default": "ltr"
             },
             {
               "name": "expandedValue",
@@ -11909,7 +12195,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether clicking on a branch should open it or not"
+              "description": "Whether clicking on a branch should open it or not",
+              "default": "true"
             },
             {
               "name": "focusedValue",
@@ -12027,7 +12314,8 @@
               "type": "'multiple' | 'single' | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the tree supports multiple selection\n- \"single\": only one node can be selected\n- \"multiple\": multiple nodes can be selected"
+              "description": "Whether the tree supports multiple selection\n- \"single\": only one node can be selected\n- \"multiple\": multiple nodes can be selected",
+              "default": "single"
             },
             {
               "name": "translations",
@@ -12041,7 +12329,8 @@
               "type": "boolean | undefined",
               "required": false,
               "kind": "machine",
-              "description": "Whether the tree supports typeahead search"
+              "description": "Whether the tree supports typeahead search",
+              "default": "true"
             }
           ],
           "nativeAttributes": "div",

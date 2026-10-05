@@ -12,7 +12,9 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<DateInput>`,
   importSnippet: `import DateInput from "@/components/ui/date-input/date-input.marko";`,
-  usageSnippet: `<DateInput value:=date/>`,
+  usageSnippet: `<let/date=["2025-01-15"]/>
+
+<DateInput value:=date/>`,
   examples: [
     {
       name: "date-input-demo",

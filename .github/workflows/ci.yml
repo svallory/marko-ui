@@ -72,6 +72,22 @@ jobs:
       #   - tooling/** — already listed explicitly in `docs` and `registry`
       #     (the registry/style build scripts themselves); `cli` doesn't run
       #     any tooling script, so it's correctly absent there.
+      #   - The generators' import closure (`registry` only) — traced
+      #     statically from the five generators registry-drift ran before
+      #     build-cli-manifest joined (build-registry, build-demos-manifest,
+      #     build-usage-snippets, build-blocks-manifest, extract-api): packages/marko-ui/src/docs/**,
+      #     apps/docs/scripts/**, and apps/docs/src/lib/{component-*.ts,
+      #     components-list.ts, default-cell.ts, api-reference.json}. A PR
+      #     touching only one of them changes generated output, so it must
+      #     fire registry-drift. Re-trace when a generator gains an import.
+      #     (`docs` already covers all of them via apps/docs/** and
+      #     packages/marko-ui/**.)
+      #   - build:cli-manifest (the sixth generator script registry-drift runs, ygc.15) —
+      #     imports buildManifest/buildProgram from the CLI SOURCE, so its
+      #     input is all of packages/marko-ui/src/** plus
+      #     packages/marko-ui/package.json (the manifest records `cliVersion`,
+      #     so a version bump must regenerate it). Its output,
+      #     apps/docs/src/lib/cli-manifest.ts, is committed and diffed.
       # Pinned to the v4.0.3 tag's commit SHA (not a tag ref) per repo policy
       # on third-party actions.
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
@@ -103,6 +119,11 @@ jobs:
             registry:
               - 'packages/shadcn/**'
               - 'packages/marko-ui/src/registry/**'
+              # build:cli-manifest renders the whole command surface, so any
+              # CLI source change (or a version bump) can change
+              # apps/docs/src/lib/cli-manifest.ts.
+              - 'packages/marko-ui/src/**'
+              - 'packages/marko-ui/package.json'
               - 'apps/docs/src/data/directory.json'
               # Demo sources feed build:demos (demos-manifest.ts, the
               # per-component static routes under src/routes/docs/components/,
@@ -113,6 +134,21 @@ jobs:
               # runs on the PR that makes it stale.
               - 'apps/docs/src/demos/**'
               - 'apps/docs/src/lib/blocks-list.ts'
+              # The generators' own code and the modules they import (traced
+              # statically from build-registry.ts, build-demos-manifest.ts,
+              # build-usage-snippets.ts, build-blocks-manifest.ts and
+              # extract-api.ts): the docs model builder + renderer that
+              # build-registry embeds and build-usage-snippets renders, the
+              # docs-site page-data modules the usage-snippet generator builds
+              # its models through, and the generator scripts themselves. A PR
+              # touching only one of these changes generated output, so it
+              # must fire registry-drift.
+              - 'packages/marko-ui/src/docs/**'
+              - 'apps/docs/scripts/**'
+              - 'apps/docs/src/lib/component-*.ts'
+              - 'apps/docs/src/lib/components-list.ts'
+              - 'apps/docs/src/lib/default-cell.ts'
+              - 'apps/docs/src/lib/api-reference.json'
               - 'tooling/**'
               - 'tsconfig.json'
               - 'bun.lock'
@@ -207,7 +243,12 @@ jobs:
       #     registry output AND src/lib/blocks-list.ts.
       #   - api-reference.json (extract:api): fresh against the .marko
       #     sources under packages/shadcn/ui/**.
-      # All four generators were verified deterministic (two consecutive runs
+      #   - packages/shadcn/docs/<name>.json (also written by build-registry,
+      #     so not a seventh script): the docs model of every component,
+      #     shipped in @marko-ui/shadcn for the import distribution's
+      #     `marko-ui docs`; checked with git diff AND git status --porcelain,
+      #     like the demo trees.
+      # All six generators were verified deterministic (two consecutive runs
       # produce byte-identical output on an untouched tree), so `git diff
       # --exit-code` cannot flake on generator nondeterminism.
       - name: Build registry and check manifest for drift
@@ -215,6 +256,18 @@ jobs:
           bun run build:registry
           git diff --exit-code -- apps/docs/registry-manifest.json || {
             echo "::error file=apps/docs/registry-manifest.json::Registry output drifted from the committed manifest — run 'bun run build:registry' and commit the regenerated apps/docs/registry-manifest.json"
+            exit 1
+          }
+          # The import distribution's per-component docs models, written by
+          # build-registry into the published package. diff for edits,
+          # status --porcelain for added/removed components.
+          git diff --exit-code -- packages/shadcn/docs || {
+            echo "::error::packages/shadcn/docs is stale — run 'bun run build:registry' and commit the regenerated packages/shadcn/docs/<name>.json"
+            exit 1
+          }
+          test -z "$(git status --porcelain -- packages/shadcn/docs)" || {
+            echo "::error::packages/shadcn/docs has untracked or deleted files — run 'bun run build:registry' and commit the result"
+            git status --porcelain -- packages/shadcn/docs
             exit 1
           }
       - name: Check generated committed artifacts are fresh
@@ -230,9 +283,9 @@ jobs:
           # untracked files). The hand-maintained '$name' fallback lives in
           # the same directory and is never generated, so it can only show up
           # here if a change actually touched it — which SHOULD fail the gate.
-          GENERATED_DEMO_TREES="apps/docs/src/routes/docs/components apps/docs/src/tags/docs/demo-renderers"
+          GENERATED_DEMO_TREES="apps/docs/src/routes/docs/components apps/docs/src/tags/docs/demo-renderers apps/docs/src/usage-snippets"
           git diff --exit-code -- $GENERATED_DEMO_TREES || {
-            echo "::error::Generated component routes/renderers are stale — run 'bun run build:demos' and commit the regenerated apps/docs/src/routes/docs/components/<name>/ and apps/docs/src/tags/docs/demo-renderers/<name>.marko"
+            echo "::error::Generated component routes/renderers/usage snippets are stale — run 'bun run build:demos' and commit the regenerated apps/docs/src/routes/docs/components/<name>/, apps/docs/src/tags/docs/demo-renderers/<name>.marko and apps/docs/src/usage-snippets/<name>.marko"
             exit 1
           }
           test -z "$(git status --porcelain -- $GENERATED_DEMO_TREES)" || {
@@ -243,6 +296,11 @@ jobs:
           bun run build:blocks-manifest
           git diff --exit-code -- apps/docs/src/lib/blocks-manifest.ts || {
             echo "::error::Generated blocks manifest is stale — run 'bun run build:blocks-manifest' and commit the regenerated apps/docs/src/lib/blocks-manifest.ts"
+            exit 1
+          }
+          bun run build:cli-manifest
+          git diff --exit-code -- apps/docs/src/lib/cli-manifest.ts || {
+            echo "::error::Generated CLI manifest is stale — run 'bun run build:cli-manifest' and commit the regenerated apps/docs/src/lib/cli-manifest.ts"
             exit 1
           }
           bun run extract:api

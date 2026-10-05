@@ -21,6 +21,10 @@ interface PropertyEntry {
   required: boolean;
   kind: string;
   description?: string;
+  default?: string;
+  /** Present when the component fixes the value on its own `<zag>` tag. */
+  fixed?: string | true;
+  options?: string[];
 }
 interface PartEntry {
   name: string;
@@ -46,6 +50,12 @@ function findHref(components: ComponentEntry[], componentName: string): Property
   const href = part.properties.find((p) => p.name === "href");
   if (!href) throw new Error(`no href property on ${componentName}`);
   return href;
+}
+
+function allProperties(components: ComponentEntry[]): PropertyEntry[] {
+  return components.flatMap((component) =>
+    component.parts.flatMap((part) => part.properties),
+  );
 }
 
 describe("extract-api: union Input types", () => {
@@ -78,4 +88,149 @@ describe("extract-api: union Input types", () => {
       expect(part.properties.filter((p) => p.kind === "native")).toHaveLength(0);
     }
   });
+});
+
+// The API tables render a `default` column, and before defaults were
+// extracted it was an em dash on every single row: the docs told a reader
+// "this prop has no default" for all 1491 props, which is a different claim
+// from "we don't know". Two statically knowable sources exist — a cva
+// `defaultVariants` entry and a Zag machine prop's own `@default` JSDoc tag —
+// and both are asserted here against the real registry.
+//
+// The `variant` case is the regression: every component keeps its variant MAP
+// in classes.ts (`variants: { variant: button.variant }`), so the extractor
+// used to skip the whole cva config and record nothing for ANY component.
+describe("extract-api: default values", () => {
+  it(
+    "records cva defaultVariants and Zag @default tags, and nothing malformed",
+    { timeout: 60_000 },
+    async () => {
+      const env = { ...process.env };
+      delete env.AI_AGENT;
+      execFileSync("bun", ["tooling/extract-api.ts"], { cwd: REPO_ROOT, env });
+
+      const components = await readApiReference();
+      const properties = allProperties(components);
+
+      // cva `defaultVariants`. The variant map lives in classes.ts in every
+      // one of these, so this only passes if defaultVariants is read
+      // independently of the `variants` block.
+      const variantDefault = (componentName: string, prop: string): string | undefined => {
+        const component = components.find((c) => c.name === componentName);
+        if (!component) throw new Error(`no ${componentName} in api-reference.json`);
+        return component.parts
+          .flatMap((part) => part.properties)
+          .find((p) => p.name === prop && p.kind === "variant")?.default;
+      };
+      expect(
+        components
+          .find((c) => c.name === "button")!
+          .parts.find((p) => p.name === "button")!
+          .properties.filter((p) => p.kind === "variant")
+          .map((p) => [p.name, p.default]),
+      ).toEqual([
+        ["size", "default"],
+        ["variant", "default"],
+      ]);
+      expect(variantDefault("field", "orientation")).toBe("vertical");
+      expect(variantDefault("badge", "variant")).toBe("default");
+
+      // Zag `@default` JSDoc on machine props (accordion.types.d.ts documents
+      // `multiple` as `@default false`).
+      const accordion = components.find((c) => c.name === "accordion")!;
+      const accordionRoot = accordion.parts.find((p) => p.name === "accordion")!;
+      const multiple = accordionRoot.properties.find((p) => p.name === "multiple");
+      expect(multiple?.kind).toBe("machine");
+      expect(multiple?.default).toBe("false");
+
+      // Normalized for a table cell: no expression text, no leftover quotes.
+      const withDefault = properties.filter((p) => p.default !== undefined);
+      expect(withDefault.length).toBeGreaterThan(100);
+      for (const property of withDefault) {
+        expect(property.default, `${property.name} default`).not.toMatch(/\s/);
+        expect(property.default, `${property.name} default`).not.toContain('"');
+        expect(property.default, `${property.name} default`).not.toContain("`");
+      }
+
+      // Sanity: the props whose default ISN'T statically knowable are still
+      // recorded as unknown (the field absent), not as a fabricated value.
+      const direction = components
+        .find((c) => c.name === "button")!
+        .parts.find((p) => p.name === "button")!
+        .properties.find((p) => p.name === "class");
+      expect(direction?.default).toBeUndefined();
+    },
+  );
+});
+
+// What a component writes on its own `<zag>` tag is not a default: marko-zag
+// merges those attributes LAST (`buildMachineProps`: `{ id, ...picked, ...overrides }`),
+// so the caller's value is silently ignored. Documenting them as "Default
+// `false`" tells the reader they can change something they cannot — and
+// recording Zag's own `@default` instead contradicts the component outright
+// (`alert-dialog` hard-codes `closeOnEscape=false`; Zag documents `true`).
+// So: `fixed` with the value when it is a literal, `fixed: true` when it is an
+// expression, and nothing stated at all for a passthrough off `input`.
+describe("extract-api: props the component fixes on its own <zag> tag", () => {
+  it(
+    "records them as fixed, never as a default",
+    { timeout: 60_000 },
+    async () => {
+      const env = { ...process.env };
+      delete env.AI_AGENT;
+      execFileSync("bun", ["tooling/extract-api.ts"], { cwd: REPO_ROOT, env });
+
+      const components = await readApiReference();
+      const propOf = (componentName: string, prop: string): PropertyEntry | undefined => {
+        const component = components.find((c) => c.name === componentName);
+        if (!component) throw new Error(`no ${componentName} in api-reference.json`);
+        return component.parts
+          .flatMap((part) => part.properties)
+          .find((p) => p.name === prop);
+      };
+
+      // alert-dialog.marko:41-44 writes all three on the tag.
+      for (const [name, value] of [
+        ["role", "alertdialog"],
+        ["closeOnEscape", "false"],
+        ["closeOnInteractOutside", "false"],
+      ] as const) {
+        expect(propOf("alert-dialog", name)?.fixed, name).toBe(value);
+        // And NOT a default: that is the claim this test exists to prevent.
+        expect(propOf("alert-dialog", name)?.default, name).toBeUndefined();
+      }
+
+      // command.marko:91-93 does the same over the command machine.
+      expect(propOf("command", "open")?.fixed).toBe("true");
+      expect(propOf("command", "inputBehavior")?.fixed).toBe("autohighlight");
+      expect(propOf("command", "selectionBehavior")?.fixed).toBe("clear");
+
+      // dialog/sheet fix `role="dialog"`, so it is fixed even though the value
+      // happens to match Zag's own default.
+      expect(propOf("dialog", "role")?.fixed).toBe("dialog");
+      expect(propOf("sheet", "role")?.fixed).toBe("dialog");
+
+      // A prop the component passes THROUGH from its input is neither fixed
+      // nor default: the caller still controls it, and the fallback
+      // (`?? "horizontal"`) is not statically evaluable.
+      for (const [component, prop] of [
+        ["resizable", "orientation"],
+        ["input-otp", "count"],
+        ["tabs", "defaultValue"],
+      ] as const) {
+        expect(propOf(component, prop)?.fixed, prop).toBeUndefined();
+        expect(propOf(component, prop)?.default, prop).toBeUndefined();
+      }
+
+      // An untouched machine prop keeps Zag's `@default`.
+      expect(propOf("dialog", "closeOnEscape")?.fixed).toBeUndefined();
+      expect(propOf("dialog", "closeOnEscape")?.default).toBe("true");
+
+      // No prop in the registry is both.
+      const both = allProperties(components).filter(
+        (p) => p.default !== undefined && p.fixed !== undefined,
+      );
+      expect(both).toEqual([]);
+    },
+  );
 });

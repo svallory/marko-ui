@@ -5,11 +5,6 @@ import packageJson from "../../package.json"
 export const AGENTS_START_MARKER = "<!-- marko-ui:start -->"
 export const AGENTS_END_MARKER = "<!-- marko-ui:end -->"
 
-export type InstalledComponent = {
-  name: string
-  description?: string
-}
-
 export type AgentsSectionOptions = {
   /** `components.json`'s distribution. Absent means `copy`. */
   distribution?: "copy" | "import"
@@ -17,59 +12,55 @@ export type AgentsSectionOptions = {
 
 /**
  * The generated AGENTS.md section. Deliberately small: AGENTS.md is loaded
- * into every agent's context on every task, so it carries only what is
- * specific to THIS project (distribution, installed components) plus the
- * CLI pointers. Deep content lives in the `marko-ui` skill
+ * into every agent's context on every task, so it carries only what an agent
+ * cannot get elsewhere — the distribution, the installed component names and
+ * the CLI pointers. Everything else lives in the `marko-ui` skill
  * (`skills/marko-ui/SKILL.md` in the repo, installed by the `skills`
- * package — see ./skills.ts), which is loaded on demand.
+ * package — see ./skills.ts), which is loaded on demand, so nothing here
+ * needs to restate it.
+ *
+ * Components are names only. They used to carry a one-line description each,
+ * which cost ~25 tokens per component on EVERY task and duplicated what
+ * `marko-ui docs <name>` already answers on demand.
  *
  * Every command named here must exist: this text is an agent's only
  * instruction for the CLI, and it follows it literally. An earlier version
- * advertised `show <name> --props`, a flag the CLI never had.
+ * advertised `show <name> --props`, a flag the CLI never had. The check in
+ * `src/commands/agents.test.ts` re-derives this text's surface from the live
+ * program (and does the same for SKILL.md).
  */
 export function buildAgentsSection(
-  components: InstalledComponent[],
+  components: string[],
   options: AgentsSectionOptions = {}
 ) {
   const isImport = options.distribution === "import"
 
   const intro = isImport
-    ? `This project uses [marko-ui](${MARKO_UI_URL}) — shadcn-style components for
-Marko 6 — on the \`import\` distribution: every component is already
-available from the \`@marko-ui/shadcn\` package
-(\`import Button from "@marko-ui/shadcn/ui/button/button.marko"\`), with no
-install step. Restyle through the \`mu-*\` hook classes in the project's
-stylesheet; never edit files under node_modules.`
-    : `This project uses [marko-ui](${MARKO_UI_URL}) — shadcn-style components for
-Marko 6, installed as source under the project's \`ui\` directory. You own
-these files; edit them directly rather than wrapping them.
+    ? `marko-ui (<${MARKO_UI_URL}>) — shadcn-style components for Marko 6 — on
+the \`import\` distribution: components are already in \`@marko-ui/shadcn\`
+(\`import Button from "@marko-ui/shadcn/ui/button/button.marko"\`), no install
+step. Restyle via the \`mu-*\` hook classes in the project's stylesheet; never
+edit node_modules.`
+    : `marko-ui (<${MARKO_UI_URL}>) — shadcn-style components for Marko 6,
+installed as source under \`ui/\`: your files, edit them directly.
 
-Installed components:
-
-${
-  components.length
-    ? components
-        .map(
-          (component) =>
-            `- \`${component.name}\`${
-              component.description ? ` — ${component.description}` : ""
-            }`
-        )
-        .join("\n")
-    : "- (none installed yet — run `marko-ui add <name> -y`)"
-}`
+Installed: ${
+      components.length
+        ? components.map((name) => `\`${name}\``).join(", ")
+        : "none — run `marko-ui add <name> -y`"
+    }`
 
   const commands = [
-    "- `marko-ui docs <name>` — usage, props, and examples as markdown. Read it before using a component.",
+    "- `marko-ui docs <name>` — parts, props, events, essential examples. Read first; `--examples` for all.",
     "- `marko-ui search -q <query>` — find a component",
     isImport
       ? null
-      : "- `marko-ui add <name> -y` — install one (writes source files and its npm dependencies)",
-    "- `marko-ui show <name> --deps` — a component's npm and registry dependencies (`--files` lists its files)",
-    "- `marko-ui doctor --json` — verify project health (exit code 3 means a check failed)",
-    isImport
-      ? "- `marko-ui agents sync` — refresh this section and install the agent skills"
-      : "- `marko-ui agents sync` — refresh this section after adding or removing components",
+      : "- `marko-ui add <name> -y` — install one",
+    // Import has no `add`, so nothing in that workflow acts on a dependency
+    // listing: the npm package brings its own. It belongs to the copy flow.
+    isImport ? null : "- `marko-ui show <name> --deps` — a component's dependencies",
+    "- `marko-ui doctor --json` — project health (exit 3 = a check failed)",
+    "- `marko-ui agents sync` — refresh this section and install the agent skills",
   ]
     .filter(Boolean)
     .join("\n")
@@ -81,14 +72,11 @@ ${
 
 ${intro}
 
-Use the marko-ui CLI instead of guessing a component's API or writing one
-the registry already ships. Run it through the project's package runner
-(\`bunx marko-ui\`, \`npx marko-ui\`, \`pnpm dlx marko-ui\`):
+Use the CLI rather than guessing an API or writing a component the registry
+ships (\`bunx marko-ui\`):
 
 ${commands}
 
-Before writing or editing component code, load the \`marko-ui\` skill (and
-\`marko6\` for Marko 6 syntax). If they are not installed, run
-\`marko-ui agents sync\`.
+Load the \`marko-ui\` skill before writing component code; \`marko6\` covers Marko syntax.
 ${AGENTS_END_MARKER}`
 }

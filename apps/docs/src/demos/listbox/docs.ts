@@ -11,7 +11,12 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Listbox>`,
   importSnippet: `import Listbox from "@/components/ui/listbox/listbox.marko";`,
-  usageSnippet: `<Listbox items=fruits label="Favorite fruit" defaultValue=["apple"]/>`,
+  usageSnippet: `static const fruits = [
+  { value: "apple", label: "Apple" },
+  { value: "banana", label: "Banana" },
+];
+
+<Listbox items=fruits label="Favorite fruit" defaultValue=["apple"]/>`,
   examples: [
     {
       name: "listbox-demo",
@@ -30,15 +35,16 @@ export const docs: ComponentDocs = {
     },
     {
       name: "listbox-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, or use Marko's bind shorthand `value:=state`.",
     },
     {
       name: "listbox-compound",
+      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@option>` attribute tags instead of `items=` to compose each option directly in markup.",
-    },
-  ],
+    },],
 };

@@ -27,6 +27,10 @@ export type CliManifest = {
   cliVersion: string;
   commands: CliCommand[];
   exitCodes: Record<string, string>;
+  /** Stable machine-readable warning codes, next to the error codes in the
+   *  CLI's own manifest. Carried here so the docs page can list one
+   *  vocabulary for both outcomes. */
+  warningCodes?: string[];
   agentWorkflow: string[];
 };
 
@@ -94,6 +98,11 @@ export const CLI_MANIFEST: CliManifest = {
         {
           "flags": "--visual-style <name>",
           "description": "the visual style to use (rhea, nova, vega, lyra, maia, mira, luma, sera, new-york). selects the generated source for copy, and the precompiled CSS layer for import."
+        },
+        {
+          "flags": "--json",
+          "description": "output as JSON (the choices made, the files written, and any warnings).",
+          "defaultValue": false
         }
       ]
     },
@@ -143,6 +152,11 @@ export const CLI_MANIFEST: CliManifest = {
           "flags": "--dry-run",
           "description": "preview changes without writing files.",
           "defaultValue": false
+        },
+        {
+          "flags": "--json",
+          "description": "output as JSON (what was written, and any warnings).",
+          "defaultValue": false
         }
       ]
     },
@@ -168,6 +182,11 @@ export const CLI_MANIFEST: CliManifest = {
           "flags": "--name-only",
           "description": "only list files that differ.",
           "defaultValue": false
+        },
+        {
+          "flags": "--json",
+          "description": "output as JSON (per file status, and diffs for changed ones).",
+          "defaultValue": false
         }
       ]
     },
@@ -185,13 +204,32 @@ export const CLI_MANIFEST: CliManifest = {
       ],
       "options": [
         {
+          "flags": "-c, --cwd <cwd>",
+          "description": "the working directory. defaults to the current directory.",
+          "defaultValue": "current working directory"
+        },
+        {
           "flags": "-l, --list",
           "description": "list documented components.",
           "defaultValue": false
         },
         {
           "flags": "--json",
-          "description": "output as JSON (with --list).",
+          "description": "output as JSON (with --list, or the markdown itself).",
+          "defaultValue": false
+        },
+        {
+          "flags": "--examples",
+          "description": "print every example instead of the essential ones.",
+          "defaultValue": false
+        },
+        {
+          "flags": "--example <id...>",
+          "description": "print only the named examples. Every id is listed in the \"More examples\" section of the default output."
+        },
+        {
+          "flags": "--remote",
+          "description": "read the docs from the registry even for an installed component (default: the installed version's docs).",
           "defaultValue": false
         }
       ]
@@ -224,6 +262,11 @@ export const CLI_MANIFEST: CliManifest = {
         {
           "flags": "--deps",
           "description": "only list npm and registry dependencies.",
+          "defaultValue": false
+        },
+        {
+          "flags": "--json",
+          "description": "no-op: show always prints JSON.",
           "defaultValue": false
         }
       ]
@@ -331,14 +374,26 @@ export const CLI_MANIFEST: CliManifest = {
           "flags": "-s, --silent",
           "description": "mute output.",
           "defaultValue": false
+        },
+        {
+          "flags": "--json",
+          "description": "output as JSON (files written, and any manual steps left).",
+          "defaultValue": false
         }
       ]
     },
     {
       "name": "manifest",
       "aliases": [],
-      "description": "print a machine-readable description of the entire CLI",
-      "arguments": [],
+      "description": "describe the CLI, or one command, as machine-readable JSON",
+      "arguments": [
+        {
+          "name": "command",
+          "required": false,
+          "variadic": false,
+          "description": "describe only this command (name or alias)"
+        }
+      ],
       "options": []
     },
     {
@@ -371,6 +426,11 @@ export const CLI_MANIFEST: CliManifest = {
             {
               "flags": "-s, --silent",
               "description": "mute output.",
+              "defaultValue": false
+            },
+            {
+              "flags": "--json",
+              "description": "output as JSON (whether AGENTS.md changed, and which skills were installed).",
               "defaultValue": false
             }
           ]
@@ -460,7 +520,7 @@ export const CLI_MANIFEST: CliManifest = {
         {
           "name": "validate",
           "aliases": [],
-          "description": "validate a registry against the shadcn registry schema",
+          "description": "validate a registry against the registry item schema",
           "arguments": [
             {
               "name": "registry",
@@ -516,6 +576,15 @@ export const CLI_MANIFEST: CliManifest = {
     "3": "doctor/validate/agents-check found problems",
     "4": "network error or registry unreachable (registry-backed commands)"
   },
+  "warningCodes": [
+    "TS_ALLOW_IMPORTING_EXTENSIONS",
+    "LAYOUT_NOT_FOUND",
+    "DEPENDENCY_INSTALL_FAILED",
+    "ITEM_HAS_DOCS",
+    "MANUAL_STEPS_REMAIN",
+    "PROJECT_NOT_INITIALIZED",
+    "STALE_FILES_REMOVED"
+  ],
   "agentWorkflow": [
     "marko-ui search -q <query> — find items across configured registries",
     "marko-ui show <item> — inspect an item (add --files or --deps to narrow)",

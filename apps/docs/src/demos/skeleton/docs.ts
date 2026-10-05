@@ -47,8 +47,7 @@ export const docs: ComponentDocs = {
       name: "skeleton-rtl",
       title: "RTL",
       description: "Skeleton markup mirrors correctly under `dir=\"rtl\"`.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "`Skeleton` renders a plain `<div>` with no ARIA role of its own — it communicates loading state visually, not to assistive technology.",
     "Wrap the region being replaced in a live region (e.g. `aria-busy=\"true\"` or `aria-live=\"polite\"` on a parent) so screen reader users are told content is loading, and update or remove it once real content renders.",

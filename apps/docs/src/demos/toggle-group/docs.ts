@@ -43,12 +43,14 @@ Upstream expresses this as \`ToggleGroup\` > \`ToggleGroupItem\` children; our p
     },
     {
       name: "toggle-group-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, or use Marko's bind shorthand `value:=state`.",
     },
     {
       name: "toggle-group-compound",
+      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@item>` attribute tags instead of `items=` to compose each option directly in markup.",
@@ -93,7 +95,7 @@ Upstream expresses this as \`ToggleGroup\` > \`ToggleGroupItem\` children; our p
   accessibilityNotes: [
     'The root renders `role="group"`; each item is a native `<button type="button">` with `aria-pressed` reflecting its toggled state, so assistive tech announces the set and each item\'s state without extra ARIA wiring.',
     "Use `aria-label` or `aria-labelledby` on `ToggleGroup` to give the group an accessible name, especially when it has no visible heading (the font-weight-selector example instead pairs it with a visible `FieldLabel`).",
-    "Icon-only items need their own accessible name. `items=` and `<@item>` currently only forward `value`/`disabled`/`content` per item — there is no per-item `aria-label` passthrough — so an icon-only item must include a visually-hidden label in its content (see toggle-group-vertical.marko) rather than relying on an `aria-label` attribute, which the item button does not receive.",
+    "Icon-only items need their own accessible name. A per-item `<@item>` forwards `value`/`disabled`/`content` (and an `items=` entry adds `label`) — there is no per-item `aria-label` passthrough, and the item button does not receive one — so an icon-only item must carry a visually-hidden label in its content (see toggle-group-vertical.marko).",
     "Disabling `ToggleGroup` itself (not a single item) removes every item from the tab order and blocks pointer input across the whole group.",
   ],
   accessibilityKeyboard: [

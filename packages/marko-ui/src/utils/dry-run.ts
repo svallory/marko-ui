@@ -53,6 +53,15 @@ export type DryRunFont = {
 
 export type DryRunResult = {
   files: DryRunFile[]
+  /**
+   * The items the plan actually covers, and the ones pulled in beyond what was
+   * asked for — read off the SAME resolved tree the real add installs, so
+   * `add x --dry-run --json` and `add x --json` cannot report different items
+   * for the same request. Without them the dry run reported only what was
+   * typed, while listing that item's files AND its dependencies'.
+   */
+  items?: string[]
+  dependencyItems?: string[]
   /** Stale icon maps `add` would delete (paths relative to cwd). */
   removals?: string[]
   dependencies: string[]
@@ -96,6 +105,13 @@ export async function dryRunComponents(
   // Dependencies pass through deduplicated.
   result.dependencies = Array.from(new Set(tree.dependencies ?? []))
   result.devDependencies = Array.from(new Set(tree.devDependencies ?? []))
+
+  // The ITEMS the plan covers, split requested / pulled-in — the same two
+  // fields the resolver attaches for a real add. A dry run that reports only
+  // what was typed, while listing that item's dependencies' files, understates
+  // its own plan.
+  result.items = [...(tree.items ?? [])]
+  result.dependencyItems = [...(tree.dependencyItems ?? [])]
 
   // Docs pass through directly.
   result.docs = tree.docs ?? null

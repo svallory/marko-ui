@@ -8,6 +8,7 @@ import {
 import { Config } from "@/src/utils/get-config"
 import { TailwindVersion } from "@/src/utils/get-project-info"
 import { highlighter } from "@/src/utils/highlighter"
+import { rootsFor, writeGuarded, type WriteRoots } from "@/src/utils/path-guard"
 import { spinner } from "@/src/utils/spinner"
 import { transformCssVars } from "@/src/utils/updaters/update-css-vars"
 import postcss from "postcss"
@@ -27,13 +28,15 @@ export async function updateCss(
     overwriteCssVars?: boolean
     tailwindVersion?: TailwindVersion
     tailwindConfig?: z.infer<typeof registryItemTailwindSchema>["config"]
+    /** Allowed write roots; computed once by the command. */
+    roots?: WriteRoots
   }
-) {
+): Promise<string | undefined> {
   const hasCss = css && Object.keys(css).length > 0
   const hasCssVars = Object.keys(options.cssVars ?? {}).length > 0
 
   if (!config.resolvedPaths.tailwindCss || (!hasCss && !hasCssVars)) {
-    return
+    return undefined
   }
 
   options = {
@@ -69,8 +72,20 @@ export async function updateCss(
     output = await transformCss(output, css!)
   }
 
-  await fs.writeFile(cssFilepath, output, "utf8")
+  // B2: `cssFilepath` comes from components.json (`tailwind.css`). A
+  // hand-edited config pointing it at /tmp or into node_modules made `init`
+  // write there happily.
+  await writeGuarded(
+    cssFilepath,
+    output,
+    options.roots ?? rootsFor(config.resolvedPaths.cwd)
+  )
   cssSpinner.succeed()
+
+  // The absolute path of the file that was written, so the caller can report
+  // it as one of its own file changes. It used to return nothing, which left
+  // "did add write my stylesheet?" unanswerable without reading stderr.
+  return cssFilepath
 }
 
 export async function transformCss(

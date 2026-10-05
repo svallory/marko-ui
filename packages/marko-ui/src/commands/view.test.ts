@@ -23,7 +23,28 @@ vi.mock("@/src/utils/get-config", async (importOriginal) => ({
 }))
 
 vi.mock("@/src/registry/api", () => ({
-  getRegistryItems: vi.fn(() => [{ name: "button", files: [] }]),
+  getRegistryItems: vi.fn(() => [
+    {
+      name: "button",
+      files: [],
+      // Present on a real item: `show` must not print it.
+      componentDocs: {
+        name: "button",
+        title: "Button",
+        description: "Displays a button.",
+        installCommand: "bunx marko-ui add button -y",
+        usageTags: "<Button>",
+        importSnippet: "",
+        usageSnippet: "<Button />",
+        parts: [],
+        props: [],
+        events: [],
+        keyboard: [],
+        accessibilityNotes: [],
+        examples: [{ id: "demo", title: "Demo", source: "<Button />" }],
+      },
+    },
+  ]),
 }))
 
 vi.mock("@/src/utils/registries", () => ({
@@ -68,6 +89,38 @@ function mockProcessExit() {
     throw new Error(`process.exit:${code}`)
   })
 }
+
+describe("view command: the embedded docs model", () => {
+  // `componentDocs` is the model `marko-ui docs` renders — every example's
+  // source inlined, a few hundred KB per component. `show` answers "what
+  // would this install write", so it strips the key from the envelope's data
+  // rather than burying files and dependencies under documentation nobody
+  // asked for.
+  it("prints the item without componentDocs", async () => {
+    const exit = mockProcessExit()
+    // `printEnvelope` writes to stdout, not console.log.
+    const chunks: string[] = []
+    const out = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => {
+      chunks.push(String(chunk))
+      return true
+    })
+    let rejected: unknown
+    try {
+      await view.parseAsync(["node", "view", "button"], { from: "user" })
+    } catch (error) {
+      rejected = error
+    }
+    const printed = chunks.join("").trim().split("\n").map((line) => JSON.parse(line))
+    out.mockRestore()
+    exit.mockRestore()
+
+    expect(String((rejected as Error)?.message)).toMatch(/process\.exit:/)
+    // `show` prints one envelope, so the item is at `data[0]`.
+    expect(printed[0].$type).toBe("marko-ui/show")
+    expect(printed[0].data[0]).toMatchObject({ name: "button", files: [] })
+    expect(printed[0].data[0]).not.toHaveProperty("componentDocs")
+  })
+})
 
 describe("view command", () => {
   beforeEach(() => {

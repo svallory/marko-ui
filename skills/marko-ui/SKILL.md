@@ -23,15 +23,93 @@ No `components.json` means marko-ui is not set up: run `marko-ui init` (add `--a
 
 ## Workflow
 
-1. `marko-ui search -q <query>` — find a component (`--json` for machine output). The installed ones are listed in the project's `AGENTS.md`.
-2. `marko-ui docs <name>` — usage, props, keyboard contract, and examples as markdown. **Read this before writing markup for a component you have not used in this session.** `marko-ui docs --list` prints the index.
-3. `marko-ui show <name>` — the registry item as JSON; `--files` lists what would be written, `--deps` lists npm and registry dependencies.
-4. `marko-ui add <name> -y` — install (copy distribution). `--dry-run` previews the file changes; `--overwrite` replaces local files.
-5. `marko-ui diff <name>` — compare local edits against the registry version.
-6. `marko-ui doctor --json` — health checks; exit code 3 means something is broken and each failed check names its fix. Run it after `init`/`add` and before reporting the work done.
-7. `marko-ui agents sync` — refresh the component list in `AGENTS.md` after adding or removing components.
+1. `marko-ui search -q <query>` — find a component (`--json` for machine output). It matches whole words against each item's name, title and description; each extra word narrows the ranking, and items matching none of your words are left out. Every item costs context, so search before guessing a name. The installed ones are listed in the project's `AGENTS.md`.
+2. `marko-ui docs <name>` — the component's docs as markdown: install, usage, parts, props, events, keyboard/accessibility, then the essential examples. **Read this before writing markup for a component you have not used in this session.** It is deliberately small — at most three examples (the first plus the ones flagged essential), with the rest listed under "More examples". `--examples` prints every example; `--example <id…>` prints only the ones you name. `--list` prints the index. `docs <name> --json` returns the same markdown (and the structured model it was rendered from) in the envelope below. The markdown is written for you: demo sources come through with maintainer comments stripped, the prop list is one line per prop (`name: type = default — description`), a `= fixed X` cell means the component sets that value and yours is ignored, and `| undefined` is dropped since almost everything is optional (required props are marked); an absent default means not recorded, NOT "there is no default". Import paths in the snippets follow the project's own `components.json` (`distribution` + `aliases.ui`), so what you read is what lands in the project. For a component the project has INSTALLED, `docs` describes the installed version without the network — the copy distribution reads the copy `add` cached under `node_modules/.cache/marko-ui/`, the import distribution reads the docs inside the installed `@marko-ui/shadcn` — and omits the install line; stderr then says `source: installed (…)` (`data.components[].source` under `--json`). `--remote` is the way out of the installed version: it reads the registry's current docs (what an upgrade would bring) even for an installed component. A component that is not installed comes from the registry, with its exact `marko-ui add <name> -y`.
+3. `marko-ui show <name>` — the registry item as JSON; `--files` lists what would be written, `--deps` lists npm and registry dependencies. `show` is a JSON command in EVERY mode, so `--json` is accepted and changes nothing, **and a `show` failure is the `marko-ui/error` envelope on stdout even in a terminal** — the same document a pipe would get, not prose. Parse stdout either way.
+4. `marko-ui add <name> -y --json` — install (copy distribution). **Always pass `--json` when you are driving this yourself**: it returns which files were `created` / `updated` / `skipped`, which dependencies were installed, and any warnings, so you never have to parse the human output to find out what happened. `--dry-run` previews the same shape with `dryRun: true` and PLANNED statuses (`--dry-run --json`); `--overwrite` replaces local files.
+5. `marko-ui diff <name> --json` — compare local edits against the registry version: every file with a status (`unchanged` / `modified` / `missing`) and, for a modified one, the unified diff as plain text with no ANSI. `ok` is `true` whether or not anything differs — `diff` reports, it does not judge.
+6. `marko-ui doctor --json` — health checks; exit code 3 means something is broken and each failed check carries a `fix` field with the command (or one-line action) that fixes it. Run it after `init`/`add` and before reporting the work done.
+7. `marko-ui agents sync --json` — refresh the component list in `AGENTS.md` after adding or removing components. `agentsChanged` says whether the file actually changed; `skills` says which agent skills were installed vs already present.
 
-`marko-ui manifest` prints every command, flag, exit code, and error code as JSON when you need the exact surface.
+`marko-ui manifest` prints every command, flag, exit code, and error code as JSON when you need the exact surface; `marko-ui manifest <command>` prints just that one command (name or alias) plus the exit codes — cheaper when you are checking a single flag. An unknown name is a usage error (exit 2).
+
+## Reading JSON
+
+Every `--json` payload is one document: `{ "$type", "version", "ok", "data" }`. Branch on `$type` before reading `data` — `$type` is `marko-ui/search`, `marko-ui/status`, `marko-ui/show`, `marko-ui/docs`, `marko-ui/docs.list`, `marko-ui/doctor`, `marko-ui/registry.list` or `marko-ui/manifest`. It is printed MINIFIED on one line (a pipe or a program) and pretty-printed only when stdout is a terminal, because the reader of this output is usually a program and indentation is tokens you pay for. There is no `--pretty` flag.
+
+`search` items carry `name`, short `type` (`"ui"`, `"block"`), `description` and `registry` — nothing derivable. To install a result from a registry other than the default, pass `<registry>/<name>`; `addArgument` in `data` states that rule once, and only when a non-default registry is in the results.
+
+`status` reports `config.distribution`, `config.visualStyle` and `config.iconLibrary`; `config.resolvedPaths` gives `cwd` (absolute, once) and every other path RELATIVE to it.
+
+A failure is the `marko-ui/error` envelope described under [Reading errors](#reading-errors) — never prose. The one command where that holds in EVERY mode, terminal included, is `show`: it is a JSON command in every mode, so its failures are documents on stdout too.
+
+## Reading what a command changed
+
+`add`, `init`, `eject`, `diff` and `agents sync` all return the same three
+shapes, so one parser covers all of them:
+
+- `files`: `{ path, status }`, **relative to `cwd`** (given once at the top).
+- `warnings`: `{ code, message, fix }`. A warning is NOT a failure — the
+  command did its job, `ok` stays `true`, and the warning says what is left.
+  Codes are listed in `marko-ui manifest` under `warningCodes`. The human path
+  prints the SAME `message` and `fix`, so what you read and what you parse
+  cannot disagree.
+- `next`: commands worth running next. Act on it rather than re-deriving it.
+
+`status` values are a closed vocabulary, not prose:
+
+| status | means |
+|---|---|
+| `created` | this run wrote a file that did not exist |
+| `updated` | this run replaced an existing file |
+| `unchanged` | the file already matched the registry byte for byte |
+| `skipped` | the file exists, **differs**, and was left alone (`--overwrite` would have replaced it) |
+| `removed` | a stale icon map this run deleted |
+| `missing` | (`diff` only) the registry has it, the project does not |
+
+**`skipped` and `unchanged` are different facts.** Re-running `add` on an
+unchanged component reports `unchanged`, not `skipped`; `skipped` means the
+file had drifted and nothing replaced it. Read the status before telling a user
+something was installed — `created` is the only status that means "this run
+wrote it".
+
+For `add`, also check `items.resolved` (what was ACTUALLY installed, which
+includes registry dependencies pulled in beyond what you asked for — `add
+button` can resolve `utils` too), `dependencies` (`installed` / `present` /
+`failed`), and `dryRun: true` on a preview, where the statuses are PLANNED,
+not observed.
+
+## Reading errors
+
+**stdout carries the result; stderr carries every problem.** If you run the CLI with a pipe or capture stdout, you get the command's payload and nothing else — no log line, no warning, no failure text. Never parse stderr as data.
+
+With `--json`, a failure is **one** JSON object on stdout and nothing else, in this shape:
+
+```json
+{
+  "$type": "marko-ui/error",
+  "version": 1,
+  "ok": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Registry item \"buton\" was not found. Did you mean \"button\"?",
+    "suggestion": "Did you mean \"button\"?",
+    "details": { "itemName": "buton", "suggestions": ["button"] }
+  }
+}
+```
+
+Branch on `error.code`, never on the message text. Every code is listed in `marko-ui manifest` under `errorCodes` — the common ones are `NOT_FOUND` (unknown item), `NOT_CONFIGURED` (no `components.json`, or a registry that isn't configured), `INVALID_CONFIG`, `NETWORK_ERROR` (registry/docs host unreachable — exit 4), `FETCH_ERROR` (the host answered with an error status — exit 1), `MISSING_ENV_VARS`, `MONOREPO_ROOT` (run from a workspace, not the repo root), `USAGE_ERROR` (bad invocation, including an unknown command or flag), `CHECK_FAILED` (a `doctor`/`validate`/`agents --check` found problems), and `PROJECT_NOT_FOUND` (no Marko project at that directory).
+
+A connection failure (refused port, DNS failure, timeout) is `NETWORK_ERROR` with exit 4 on every registry-backed command — that is distinct from a server that answered with a 4xx/5xx, which is `FETCH_ERROR` with exit 1.
+
+`details.suggestions` carries "did you mean" candidates when the registry index was reachable, so you can retry without parsing prose. An unknown item name in `docs`, `show`, `add` or `diff` is the common case.
+
+`details` never carries a stack trace, an absolute path under your home directory, or a credential-bearing URL — paths are shortened and registry URLs have their query string and credentials stripped. A stack is on stderr only under `MARKO_UI_DEBUG`.
+
+One name can fail while the others succeed: `marko-ui docs nope button` prints button's markdown on stdout, reports `nope` on stderr, and exits 1.
+
+Exit codes are unchanged: `0` ok · `1` operational failure · `2` usage error · `3` a check found problems · `4` network or registry unreachable.
 
 ## Using components
 

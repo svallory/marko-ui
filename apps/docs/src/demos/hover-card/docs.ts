@@ -61,8 +61,7 @@ export const docs: ComponentDocs = {
       name: "hover-card-rtl",
       title: "RTL",
       description: "Set `dir=\"rtl\"` on the `HoverCard` (matching the surrounding document direction) so the positioner flips placement automatically.",
-    },
-  ],
+    },],
   accessibilityNotes: [
     "The trigger only gains hover-card behavior in addition to its native semantics — an `<a>` trigger stays a real, focusable link with its own `href`, so keyboard users can activate it directly even though the card itself opens on hover/focus.",
     "The card opens on trigger focus as well as hover, so keyboard-only users can reveal the preview by tabbing to the trigger — no pointer required.",

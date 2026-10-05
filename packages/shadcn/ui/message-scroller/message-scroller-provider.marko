@@ -29,7 +29,7 @@ export interface Input {
   defaultScrollPosition?: MessageScrollerDefaultScrollPosition;
   /** Distance from an edge that still counts as at-top/at-bottom. Defaults to 8. */
   scrollEdgeThreshold?: number;
-  /** Extra top margin for a newly anchored row, added to scrollMargin. Defaults to 64. */
+  /** Extra top margin for a newly anchored row, added to scrollMargin. Defaults to 64. Read once, when the controller is created: a later change has no effect until the provider remounts. */
   scrollPreviousItemPeek?: number;
   /** Default margin on the aligned edge for commands and visibility. Defaults to 0. */
   scrollMargin?: number;

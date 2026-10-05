@@ -1,6 +1,7 @@
 import path from "path"
 import { addOptionsSchema } from "@/src/commands/add"
 import { MARKO_UI_URL } from "@/src/registry/constants"
+import { RegistryErrorCode } from "@/src/registry/errors"
 import * as ERRORS from "@/src/utils/errors"
 import { getConfig } from "@/src/utils/get-config"
 import {
@@ -38,8 +39,16 @@ export async function preFlightAdd(options: z.infer<typeof addOptionsSchema>) {
       if (targets.length > 0) {
         formatMonorepoMessage("add [component]", targets)
         throw new CommandError(
-          "Run add from a workspace, not the monorepo root.",
-          { formatted: true }
+          "You are running add from a monorepo root. Use the -c flag to specify a workspace.",
+          {
+            code: RegistryErrorCode.MONOREPO_ROOT,
+            formatted: true,
+            suggestion: `Run add with -c <workspace>, e.g. marko-ui add -c ${targets[0].name}.`,
+            details: {
+              cwd: options.cwd,
+              targets: targets.map((target) => target.name),
+            },
+          }
         )
       }
     }
@@ -59,7 +68,7 @@ export async function preFlightAdd(options: z.infer<typeof addOptionsSchema>) {
       config: config!,
     }
   } catch (error) {
-    logger.break()
+    logger.errorBreak()
     logger.error(
       `An invalid ${highlighter.info(
         "components.json"
@@ -72,10 +81,15 @@ export async function preFlightAdd(options: z.infer<typeof addOptionsSchema>) {
     logger.error(
       `Learn more at ${highlighter.info(`${MARKO_UI_URL}/docs/components-json`)}.`
     )
-    logger.break()
+    logger.errorBreak()
     throw new CommandError(
       `Invalid components.json at ${options.cwd}.`,
-      { formatted: true }
+      {
+        formatted: true,
+        code: RegistryErrorCode.INVALID_CONFIG,
+        suggestion: `Run "marko-ui init" to regenerate a valid components.json, or see ${MARKO_UI_URL}/docs/components-json.`,
+        details: { cwd: options.cwd },
+      }
     )
   }
 }

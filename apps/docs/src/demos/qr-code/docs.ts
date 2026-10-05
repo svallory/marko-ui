@@ -40,6 +40,5 @@ export const docs: ComponentDocs = {
       title: "Controlled value",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`.",
-    },
-  ],
+    },],
 };

@@ -1,3 +1,4 @@
+import { existsSync, readFileSync, realpathSync } from "fs"
 import path from "path"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
@@ -99,6 +100,14 @@ export async function getMonorepoTargets(cwd: string) {
 }
 
 // Formats and logs the monorepo detection message.
+/**
+ * Formats and logs the monorepo detection message.
+ *
+ * Written to stderr: this is a diagnostic about a command that cannot run,
+ * not the command's result. It used to go through logger.log, which put a
+ * multi-line human error block on stdout — the one place a program reading
+ * the CLI must never find text.
+ */
 export function formatMonorepoMessage(
   command: string,
   targets: { name: string; hasConfig: boolean }[],
@@ -108,24 +117,24 @@ export function formatMonorepoMessage(
 ) {
   const cwdFlag = options?.cwdFlag ?? "-c"
 
-  logger.break()
-  logger.log(
+  logger.errorBreak()
+  logger.error(
     `It looks like you are running ${highlighter.info(
       command
     )} from a monorepo root.`
   )
-  logger.log(
-    `To use shadcn in a specific workspace, use the ${highlighter.info(
+  logger.error(
+    `To use marko-ui in a specific workspace, use the ${highlighter.info(
       cwdFlag
     )} flag:`
   )
-  logger.break()
+  logger.errorBreak()
 
   for (const target of targets) {
-    logger.log(`  shadcn ${command} ${cwdFlag} ${target.name}`)
+    logger.error(`  marko-ui ${command} ${cwdFlag} ${target.name}`)
   }
 
-  logger.break()
+  logger.errorBreak()
 }
 
 export async function getWorkspacePatterns(cwd: string) {
@@ -190,4 +199,51 @@ export function parsePnpmWorkspacePackages(content: string) {
   }
 
   return patterns
+}
+
+
+/**
+ * The workspace root that CONTAINS `cwd` (or IS `cwd`), or null when `cwd` is
+ * not inside any workspace.
+ *
+ * This is the root the CLI already detects for lockfile and workspace lookup
+ * (a `pnpm-workspace.yaml` or a package.json with `workspaces`). It is exported
+ * rather than re-implemented so the write guard and the package manager can
+ * never disagree about where "the project" ends.
+ *
+ * Climbs from the real path of `cwd` (a cwd reached through a symlink must not
+ * make the walk escape into the symlink's own parents) and returns the
+ * OUTERMOST ancestor that is a workspace root, so nested workspaces resolve to
+ * the repo the user means. `apps/web` inside a monorepo therefore returns the
+ * monorepo root even though `apps/web` is not itself a root: that is what lets
+ * `add` write into a sibling `packages/ui`.
+ */
+export function findWorkspaceRoot(cwd: string): string | null {
+  let dir: string
+  try {
+    dir = realpathSync(cwd)
+  } catch {
+    dir = path.resolve(cwd)
+  }
+
+  const isRoot = (candidate: string) => {
+    if (existsSync(path.join(candidate, "pnpm-workspace.yaml"))) return true
+    try {
+      const pkg = JSON.parse(
+        readFileSync(path.join(candidate, "package.json"), "utf8")
+      )
+      return Boolean(pkg?.workspaces)
+    } catch {
+      return false
+    }
+  }
+
+  let outer: string | null = null
+  for (;;) {
+    if (isRoot(dir)) outer = dir
+    const parent = path.dirname(dir)
+    if (parent === dir) break
+    dir = parent
+  }
+  return outer
 }

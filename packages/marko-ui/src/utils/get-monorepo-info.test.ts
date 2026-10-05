@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import {
   formatMonorepoMessage,
   getMonorepoTargets,
+  findWorkspaceRoot,
   getWorkspacePatterns,
   isMonorepoRoot,
 } from "./get-monorepo-info"
@@ -290,48 +291,122 @@ describe("getMonorepoTargets", () => {
 })
 
 describe("formatMonorepoMessage", () => {
-  it("should log the monorepo message with targets", () => {
-    const logSpy = vi.spyOn(logger, "log")
-    const breakSpy = vi.spyOn(logger, "break")
+  // This message is a diagnostic about a command that cannot run, so it is
+  // written through logger.error (stderr) rather than logger.log (stdout):
+  // stdout must carry only the command's result.
+  it("should log the monorepo message with targets on stderr", () => {
+    const errorSpy = vi.spyOn(logger, "error")
+    // The spacing goes with the error, not with stdout (defect-4 ruling).
+    const errorBreakSpy = vi.spyOn(logger, "errorBreak")
 
     formatMonorepoMessage("init", [
       { name: "apps/web", hasConfig: false },
       { name: "apps/docs", hasConfig: true },
     ])
 
-    expect(breakSpy).toHaveBeenCalled()
-    const allLogCalls = logSpy.mock.calls.map((c) => c[0] as string)
+    expect(errorBreakSpy).toHaveBeenCalled()
+    const allLogCalls = errorSpy.mock.calls.map((c) => c[0] as string)
 
     // Should mention monorepo root.
     expect(allLogCalls.some((msg) => msg.includes("monorepo root"))).toBe(true)
     // Should mention -c flag.
     expect(allLogCalls.some((msg) => msg.includes("-c"))).toBe(true)
-    // Should list both targets.
+    // Should list both targets, under this CLI's own name.
     expect(
-      allLogCalls.some((msg) => msg.includes("shadcn init -c apps/web"))
+      allLogCalls.some((msg) => msg.includes("marko-ui init -c apps/web"))
     ).toBe(true)
     expect(
-      allLogCalls.some((msg) => msg.includes("shadcn init -c apps/docs"))
+      allLogCalls.some((msg) => msg.includes("marko-ui init -c apps/docs"))
     ).toBe(true)
 
-    logSpy.mockRestore()
-    breakSpy.mockRestore()
+    errorSpy.mockRestore()
+    errorBreakSpy.mockRestore()
   })
 
   it("should use the correct command name", () => {
-    const logSpy = vi.spyOn(logger, "log")
+    const errorSpy = vi.spyOn(logger, "error")
 
     formatMonorepoMessage("add [component]", [
       { name: "apps/web", hasConfig: false },
     ])
 
-    const allLogCalls = logSpy.mock.calls.map((c) => c[0] as string)
+    const allLogCalls = errorSpy.mock.calls.map((c) => c[0] as string)
     expect(
       allLogCalls.some((msg) =>
-        msg.includes("shadcn add [component] -c apps/web")
+        msg.includes("marko-ui add [component] -c apps/web")
       )
     ).toBe(true)
 
-    logSpy.mockRestore()
+    errorSpy.mockRestore()
+  })
+
+  it("never advertises another CLI", () => {
+    const errorSpy = vi.spyOn(logger, "error")
+
+    formatMonorepoMessage("diff", [{ name: "apps/web", hasConfig: false }])
+
+    const allLogCalls = errorSpy.mock.calls.map((c) => c[0] as string)
+    expect(allLogCalls.join("\n")).not.toContain("shadcn")
+
+    errorSpy.mockRestore()
+  })
+})
+
+describe("findWorkspaceRoot", () => {
+  let base: string
+  beforeEach(async () => {
+    base = await fs.realpath(await fs.mkdtemp(path.join(require("os").tmpdir(), "marko-ui-wsroot-")))
+  })
+  afterEach(async () => {
+    await fs.remove(base)
+  })
+
+  const write = (rel: string, contents: object | string) =>
+    fs.outputFile(
+      path.join(base, rel),
+      typeof contents === "string" ? contents : JSON.stringify(contents)
+    )
+
+  it("climbs from a nested package to the workspace root that contains it", async () => {
+    await write("package.json", { name: "mono", workspaces: ["apps/*", "packages/*"] })
+    await write("apps/web/package.json", { name: "web" })
+    await fs.ensureDir(path.join(base, "apps/web/src/deep"))
+
+    expect(findWorkspaceRoot(path.join(base, "apps/web"))).toBe(base)
+    expect(findWorkspaceRoot(path.join(base, "apps/web/src/deep"))).toBe(base)
+  })
+
+  it("returns the root itself when called from the root", async () => {
+    await write("package.json", { name: "mono", workspaces: ["apps/*"] })
+    expect(findWorkspaceRoot(base)).toBe(base)
+  })
+
+  it("recognises pnpm-workspace.yaml", async () => {
+    await write("pnpm-workspace.yaml", "packages:\n  - apps/*\n")
+    await write("package.json", { name: "mono" })
+    await write("apps/web/package.json", { name: "web" })
+    expect(findWorkspaceRoot(path.join(base, "apps/web"))).toBe(base)
+  })
+
+  it("returns the OUTERMOST root for nested workspaces", async () => {
+    await write("package.json", { name: "outer", workspaces: ["inner"] })
+    await write("inner/package.json", { name: "inner", workspaces: ["pkg"] })
+    await write("inner/pkg/package.json", { name: "pkg" })
+    expect(findWorkspaceRoot(path.join(base, "inner/pkg"))).toBe(base)
+  })
+
+  it("returns null outside any workspace (a package.json without `workspaces` is not a root)", async () => {
+    await write("package.json", { name: "plain" })
+    await write("app/package.json", { name: "app" })
+    expect(findWorkspaceRoot(path.join(base, "app"))).toBeNull()
+    expect(findWorkspaceRoot(base)).toBeNull()
+  })
+
+  it("does not escape through a symlink: resolves the real path first", async () => {
+    await write("real/mono/package.json", { name: "mono", workspaces: ["apps/*"] })
+    await write("real/mono/apps/web/package.json", { name: "web" })
+    await fs.ensureDir(path.join(base, "links"))
+    await fs.symlink(path.join(base, "real/mono/apps/web"), path.join(base, "links/web"), "dir")
+    expect(findWorkspaceRoot(path.join(base, "links/web"))).toBe(path.join(base, "real/mono"))
   })
 })

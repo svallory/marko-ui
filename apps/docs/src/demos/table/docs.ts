@@ -63,6 +63,5 @@ import TableCaption from "@/components/ui/table/caption.marko";`,
       title: "RTL",
       description:
         "`Table` and its parts restyle for right-to-left reading direction with no extra markup — set `dir=\"rtl\"` on the `Table` root.",
-    },
-  ],
+    },],
 };

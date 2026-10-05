@@ -187,6 +187,88 @@ export const registryItemFontSchema = z.object({
   dependency: z.string().optional(),
 })
 
+// The structured component docs a `registry:ui` item can carry. Its own key,
+// NOT shadcn's `docs` string above: that one is prose meant for a human
+// reading a registry browser, and overwriting it would break every consumer
+// that reads it. The model is rendered by the CLI's own renderer (the same one
+// the docs site uses), which is why it ships as data rather than as markdown.
+const componentDocsPropSchema = z.object({
+  name: z.string(),
+  type: z.string(),
+  required: z.boolean(),
+  default: z.string().optional(),
+  fixed: z.union([z.string(), z.literal(true)]).optional(),
+  description: z.string().optional(),
+})
+
+const componentDocsPartSchema = z.object({
+  name: z.string(),
+  param: z.string().optional(),
+  repeatable: z.boolean().optional(),
+  attributes: z.array(componentDocsPropSchema).optional(),
+  description: z.string().optional(),
+})
+
+const componentDocsItemTypeSchema = z.object({
+  prop: z.string(),
+  typeName: z.string(),
+  fields: z.array(componentDocsPropSchema),
+})
+
+const componentDocsBodySchema = z.object({
+  param: z.string().optional(),
+  description: z.string().optional(),
+})
+
+const componentDocsEventSchema = z.object({
+  name: z.string(),
+  arg: z.string().optional(),
+  description: z.string().optional(),
+})
+
+export const componentDocsSchema = z.object({
+  name: z.string(),
+  title: z.string(),
+  description: z.string(),
+  installCommand: z.string(),
+  importInstallCommand: z.string().optional(),
+  usageTags: z.string(),
+  importSnippet: z.string(),
+  usageSnippet: z.string(),
+  requires: z.array(z.string()).optional(),
+  parts: z.array(componentDocsPartSchema),
+  props: z.array(componentDocsPropSchema),
+  events: z.array(componentDocsEventSchema),
+  tags: z.array(z.string()).optional(),
+  itemTypes: z.array(componentDocsItemTypeSchema).optional(),
+  body: componentDocsBodySchema.optional(),
+  nativeAttributes: z.string().optional(),
+  subcomponents: z
+    .array(
+      z.object({
+        name: z.string(),
+        props: z.array(componentDocsPropSchema),
+        parts: z.array(componentDocsPartSchema).optional(),
+        body: componentDocsBodySchema.optional(),
+        nativeAttributes: z.string().optional(),
+      }),
+    )
+    .optional(),
+  keyboard: z.array(z.object({ keys: z.string(), description: z.string() })),
+  accessibilityNotes: z.array(z.string()),
+  concepts: z.string().optional(),
+  composition: z.string().optional(),
+  examples: z.array(
+    z.object({
+      id: z.string(),
+      title: z.string(),
+      description: z.string().optional(),
+      source: z.string(),
+      essential: z.boolean().optional(),
+    }),
+  ),
+})
+
 // Common fields shared by all registry items.
 export const registryItemCommonSchema = z.object({
   $schema: z.string().optional(),
@@ -205,6 +287,13 @@ export const registryItemCommonSchema = z.object({
   envVars: registryItemEnvVarsSchema.optional(),
   meta: z.record(z.string(), z.any()).optional(),
   docs: z.string().optional(),
+  /** The structured, machine-readable docs model (see componentDocsSchema). */
+  // `.catch(undefined)`: docs are an ADDITIVE convenience. A registry item
+  // whose `componentDocs` is malformed (hand-edited registry, a half-deployed
+  // registry, a newer model than this CLI knows) must still install and still
+  // `show` — the failure has to be limited to `marko-ui docs`, not turn into a
+  // parse error on the whole item.
+  componentDocs: componentDocsSchema.optional().catch(undefined),
   categories: z.array(z.string()).optional(),
 })
 
@@ -326,11 +415,27 @@ export const registryResolvedItemsTreeSchema = registryItemCommonSchema
 
 export const searchResultItemSchema = z.object({
   name: z.string(),
-  title: z.string().optional(),
+  // Short form ("ui", "block"), not the wire form ("registry:ui"). The
+  // prefix is an implementation detail of the registry protocol; a reader of
+  // `search --json` types items by what they are, and the CLI already accepts
+  // both spellings on `--type`.
   type: z.string().optional(),
   description: z.string().optional(),
   registry: z.string(),
-  addCommandArgument: z.string(),
+})
+
+/**
+ * The item as it flows through search's LOCAL pipeline, before the final
+ * `searchResultsSchema.parse` strips it back to the public shape.
+ *
+ * `title` is kept here because ranking weighs a title match almost as heavily
+ * as a name match; it is not kept in the OUTPUT because it is derivable from
+ * `name` and every item carried it. zod's object parse drops unknown keys, so
+ * the one `searchResultsSchema.parse` at the end is what actually removes it —
+ * there is no second, hand-written projection to keep in sync.
+ */
+export const searchableResultItemSchema = searchResultItemSchema.extend({
+  title: z.string().optional(),
 })
 
 export const searchResultErrorSchema = z.object({

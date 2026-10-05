@@ -12,7 +12,16 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<DataTable>`,
   importSnippet: `import DataTable from "@/components/ui/data-table/data-table.marko";`,
-  usageSnippet: `<DataTable columns=columns data=data/>`,
+  usageSnippet: `static const columns = [
+  { accessorKey: "email", header: "Email" },
+  { accessorKey: "amount", header: "Amount" },
+];
+static const data = [
+  { email: "ken99@example.com", amount: 316 },
+  { email: "abe45@example.com", amount: 242 },
+];
+
+<DataTable columns=columns data=data/>`,
   examples: [
     {
       name: "data-table-demo",
@@ -41,7 +50,6 @@ export const docs: ComponentDocs = {
       name: "data-table-rtl",
       title: "RTL",
       description:
-        "The table works unchanged under `dir=\"rtl\"`; wrap it (or an ancestor) in `dir=\"rtl\"` and text alignment, sort-icon placement, and cell order follow the writing direction. See the [RTL guide](/docs/rtl) for site-wide setup.",
-    },
-  ],
+        "The table works unchanged under `dir=\"rtl\"`; wrap it (or an ancestor) in `dir=\"rtl\"` and text alignment, sort-icon placement, and cell order follow the writing direction. Every RTL example on this site does it the same way: a `dir=\"rtl\"` wrapper plus Arabic labels.",
+    },],
 };

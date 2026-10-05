@@ -11,8 +11,21 @@ export const docs: ComponentDocs = {
   // init`), so no import is required. The explicit-import form is
   // documented as the override/escape hatch.
   usageTags: `<DropdownMenu>`,
-  importSnippet: `import DropdownMenu from "@/components/ui/dropdown-menu/dropdown-menu.marko";`,
-  usageSnippet: `<DropdownMenu items=ITEMS select(value) { /* ... */ }>
+  // `<Button>` is a different registry component: `add dropdown-menu` does not
+  // install it, so the snippet imports it and the requirement is stated.
+  importSnippet: `import DropdownMenu from "@/components/ui/dropdown-menu/dropdown-menu.marko";
+import type { DropdownMenuItem } from "@/components/ui/dropdown-menu/dropdown-menu.marko";
+import Button from "@/components/ui/button/button.marko";`,
+  // The Usage snippet uses these; `add` does not install them.
+  requires: ["button"],
+  usageSnippet: `static const ITEMS = [
+  { value: "profile", label: "Profile" },
+  { value: "settings", label: "Settings" },
+  { type: "separator" },
+  { value: "logout", label: "Log out" },
+] satisfies DropdownMenuItem[];
+
+<DropdownMenu items=ITEMS select(value) { /* ... */ }>
   <@trigger|triggerProps|>
     <Button variant="outline" ...triggerProps>Open</Button>
   </@trigger>
@@ -33,7 +46,7 @@ export const docs: ComponentDocs = {
       name: "dropdown-menu-submenu",
       title: "Submenu",
       description:
-        "A `type: \"sub\"` entry with its own `subEntries` nests a secondary menu. Our submenu wiring supports one level of nesting — see the in-file comment for the upstream second-level flattening.",
+        "A `type: \"sub\"` entry with its own `subEntries` nests a secondary menu. Our submenu wiring supports one level of nesting: a `type: \"sub\"` entry inside a submenu's own `subEntries` is not wired, so upstream's second-level 'More options' items (Calendly, Slack, Webhook) are flattened directly into the 'Invite users' submenu instead of sitting behind their own nested trigger.",
     },
     {
       name: "dropdown-menu-shortcuts",
@@ -95,10 +108,11 @@ export const docs: ComponentDocs = {
       name: "dropdown-menu-complex",
       title: "Complex",
       description:
-        "A richer menu combining groups, icons, checkboxes, a radio group, and submenus. See the in-file comment for two technically-forced omissions (submenu nesting depth, icons inside submenus).",
+        "A richer menu combining groups, icons, checkboxes, a radio group, and submenus. Two technically-forced omissions: nesting is one level deep (upstream nests a third level in two places — 'Open Recent' > 'More Projects', 'Settings' > 'Notifications' — so each nested submenu's items are flattened into its parent, in order, with a separator marking the old nesting point), and icons cannot appear inside a submenu or on a `type: 'sub'` trigger (`subEntries` is plain `DropdownMenuItem[]`, and the sub branch renders its trigger as a plain string with no body slot) — which is why 'New File', 'Save' and 'Profile' keep their icons while 'Open Recent', 'Theme' and 'Settings' do not.",
     },
     {
       name: "dropdown-menu-compound",
+      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@item>` attribute tags instead of `items=` to compose the menu directly in markup — pass `type=\"separator\"` for a divider or `type=\"label\"` for a group label. Entries render in the order they are written. An item's text can come from either a `label=` attribute or a markup body, whichever you prefer.",
@@ -107,9 +121,8 @@ export const docs: ComponentDocs = {
       name: "dropdown-menu-rtl",
       title: "RTL",
       description:
-        "A `dir=\"rtl\"` wrapper with Arabic content, matching the precedent set by button/avatar/input's RTL demos. See the in-file comment: the underlying Zag menu machine does accept a `dir` prop for floating-ui placement flipping, but our `Input` type doesn't re-expose it yet (component-source change, out of scope here).",
-    },
-  ],
+        "A `dir=\"rtl\"` wrapper with Arabic content, matching the precedent set by button/avatar/input's RTL demos. The underlying Zag menu machine does accept a `dir` prop for floating-ui placement flipping, but our `Input` type doesn't re-expose it yet (component-source change, out of scope here).",
+    },],
   accessibilityKeyboard: [
     { keys: "Enter / Space", description: "Opens the menu when focused on the trigger; activates the highlighted item when the menu is open." },
     { keys: "ArrowDown / ArrowUp", description: "Moves the highlight to the next / previous item, wrapping at the ends." },

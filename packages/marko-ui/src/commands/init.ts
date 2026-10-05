@@ -28,7 +28,18 @@ import { isMonorepoRoot } from "@/src/utils/get-monorepo-info"
 import { getProjectConfig, getProjectInfo } from "@/src/utils/get-project-info"
 import { CommandError, handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
+import { rootsFor, writeGuarded } from "@/src/utils/path-guard"
 import { logger } from "@/src/utils/logger"
+import {
+  type CommandWarning,
+  type DependencyChange,
+  type FileChange,
+  nextSteps,
+  recordWarning,
+  WarningCode,
+} from "@/src/utils/command-result"
+import { printEnvelope } from "@/src/utils/json-output"
+import { setJsonMode } from "@/src/utils/output-mode"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
 import { select } from "@/src/utils/clack"
 import { isInteractive } from "@/src/utils/interactive"
@@ -61,6 +72,7 @@ export const initOptionsSchema = z.object({
   agents: z.boolean().optional(),
   distribution: z.enum(["copy", "import"]).optional(),
   visualStyle: z.string().optional(),
+  json: z.boolean().optional(),
 })
 
 export const init = new Command()
@@ -107,8 +119,14 @@ export const init = new Command()
     // the resolver.
     `the visual style to use (${VISUAL_STYLES.map((s) => s.name).join(", ")}). selects the generated source for copy, and the precompiled CSS layer for import.`
   )
+  .option(
+    "--json",
+    "output as JSON (the choices made, the files written, and any warnings).",
+    false
+  )
   .action(async (components, opts) => {
     try {
+      setJsonMode(Boolean(opts.json))
       // `...opts` FIRST, `cwd` last. This used to be the other way round, so
       // the raw `--cwd` string won: `init --yes --cwd apps/web` from a
       // workspace root kept the RELATIVE path as `options.cwd`, while every
@@ -150,6 +168,14 @@ export const init = new Command()
           )
         }
         await runAgentsSync(options.cwd, { silent: options.silent })
+        if (options.json) {
+          printInitResult(options.cwd, null, {
+            agentsOnly: true,
+            warnings: [],
+            files: [{ path: "AGENTS.md", status: "updated" }],
+          })
+          return
+        }
         logger.log(
           `${highlighter.success("Success!")} Agent setup completed.`
         )
@@ -157,7 +183,22 @@ export const init = new Command()
         return
       }
 
-      await runInit(options)
+      const initialized = await runInit(options)
+
+      if (options.json) {
+        printInitResult(options.cwd, initialized)
+        return
+      }
+
+      // N8: the human path listed only the stylesheet while the JSON for the
+      // SAME run also listed components.json — two renderings of one run
+      // disagreeing on the file list, which is the exact drift the shared
+      // result object exists to prevent. Printed from the same array.
+      if (!options.silent) {
+        for (const file of getInitResult(initialized).files) {
+          logger.log(`  ${highlighter.info(file.status)} ${file.path}`)
+        }
+      }
 
       logger.log(
         `${highlighter.success(
@@ -304,6 +345,21 @@ export async function runInit(
   // as it was (or remove it) and let the error through, rather than leave a
   // project that cannot be re-initialized and has no theme.
   let fullConfig: Config
+  // Collected as init runs, then attached to the returned config so BOTH
+  // renderings report the same warnings: `init --json` reads this array, and
+  // the human path prints each one as it happens. `ok` stays TRUE with
+  // warnings — init completed; something about the result needs attention.
+  const warnings: CommandWarning[] = []
+  // Every file init wrote, gathered as it writes them, so `init --json` can
+  // report the same list the human path prints. Collected here rather than
+  // diffed afterwards: a diff would not know about components.json itself.
+  // F3: init installs npm dependencies of its own (@tailwindcss/vite, the
+  // theme item's, and whatever `--agents` pulls in). The result had no
+  // `dependencies` field at all, so "what did init install?" was unanswerable.
+  const initDependencies: DependencyChange[] = []
+  const addedFiles: FileChange[] = [
+    { path: "components.json", status: previousComponentsJson ? "updated" : "created" },
+  ]
   try {
     fullConfig = await resolveConfigPaths(options.cwd, config)
 
@@ -311,19 +367,46 @@ export async function runInit(
     // a stock `create-marko` tsconfig rejects (TS5097). `init` already writes
     // components.json and patches CSS, so the compiler option belongs here too —
     // otherwise scaffold -> init -> add lands on a project that cannot typecheck.
-    await updateTsConfig(fullConfig, { silent: options.silent })
+    // tsconfig is only rewritten when the option was missing. Snapshot first
+    // so the result says `updated` only when it really changed — reporting a
+    // file as written that the writer left alone is the same class of lie as
+    // F3's `globals.css updated`.
+    const tsconfigBefore = await readIfExists(
+      path.resolve(options.cwd, "tsconfig.json")
+    )
+    await updateTsConfig(fullConfig, { silent: options.silent, warnings })
+    if ((await readIfExists(path.resolve(options.cwd, "tsconfig.json"))) !== tsconfigBefore) {
+      addedFiles.push({ path: "tsconfig.json", status: "updated" })
+    }
 
     // The CSS entry point must exist before any theme or component tries to
     // patch it. A `create-marko` scaffold ships no stylesheet at all, which is
     // what made `init` die with ENOENT on the (previously Next.js-shaped)
     // default path.
-    await ensureCssEntry(fullConfig, { silent: options.silent })
+    await ensureCssEntry(fullConfig, {
+      silent: options.silent,
+      cwd: options.cwd,
+    })
+    addedFiles.push({
+      path: path.relative(options.cwd, fullConfig.resolvedPaths.tailwindCss),
+      status: "created",
+    })
 
     // Creating the stylesheet is not enough — it has to actually load. A
     // `create-marko` scaffold imports no CSS anywhere (its layout uses an inline
     // `<style>`) and has no Vite config, so without this the theme and every
     // component utility are silently absent from the build output.
-    await wireCssEntry(fullConfig, { silent: options.silent })
+    await wireCssEntry(fullConfig, {
+      silent: options.silent,
+      warnings,
+      dependencies: initDependencies,
+      // F3: vite.config.ts and the layout import are files init writes, and
+      // they used to appear in NEITHER rendering. A caller cannot tell from
+      // the result that its Vite config was generated, or that +layout.marko
+      // was rewritten to import the stylesheet — which is the single fact
+      // `init` exists to get right.
+      files: addedFiles,
+    })
 
     // Resolve any namespaced registries referenced by the requested components.
     if (options.components?.length) {
@@ -371,10 +454,13 @@ export async function runInit(
       const components = Array.from(
         new Set([styleItem, ...(options.components ?? [])])
       )
-      await addComponents(components, fullConfig, {
+      const added = await addComponents(components, fullConfig, {
         overwrite: true,
         silent: options.silent,
       })
+      warnings.push(...(added?.warnings ?? []))
+      addedFiles.push(...(added?.files ?? []))
+      initDependencies.push(...(added?.dependencies ?? []))
 
       // Zero-import tags for installed components (<Badge>, <badge>, ...).
       await writeProjectTaglib(fullConfig)
@@ -393,7 +479,136 @@ export async function runInit(
     await runAgentsSync(options.cwd, { silent: options.silent })
   }
 
+  // package.json changes whenever a dependency is installed above; report it
+  // once, as `updated`, since init never creates a project.
+  if (initDependencies.some((dep) => dep.status === "installed")) {
+    addedFiles.push({ path: "package.json", status: "updated" })
+  }
+
+  attachInitResult(
+    fullConfig,
+    options.cwd,
+    warnings,
+    addedFiles,
+    initDependencies
+  )
+
   return fullConfig
+}
+
+/**
+ * What init did, attached to the returned config for the `--json` command to
+ * read. On the object rather than in a module-level singleton because
+ * `runInit` is also called by `add` (auto-init), and two of those running at
+ * once must not merge their results.
+ */
+function attachInitResult(
+  config: Config,
+  cwd: string,
+  warnings: CommandWarning[],
+  files: FileChange[],
+  dependencies: DependencyChange[] = []
+) {
+  Object.defineProperty(config, INIT_RESULT, {
+    value: { cwd, warnings, files: dedupeByPath(files), dependencies },
+    enumerable: false,
+    configurable: true,
+  })
+}
+
+/**
+ * One entry per path, LAST status winning.
+ *
+ * init can reach the same file from two directions — `ensureCssEntry` creates
+ * the stylesheet, then `addComponents` patches the theme into that SAME file —
+ * so the naive list reported `styles/globals.css` twice (created AND updated).
+ * A duplicate path is not a worse answer than one path, it is a wrong one:
+ * a caller counting files would double-count.
+ */
+function dedupeByPath(files: FileChange[]): FileChange[] {
+  const byPath = new Map<string, FileChange>()
+  for (const file of files) {
+    const previous = byPath.get(file.path)
+    // `created` BEATS a later `updated`. init creates the stylesheet and then
+    // patches the theme into the same file, so "last write wins" reported a
+    // file init CREATED as `updated` — the one status a caller could not get
+    // wrong about, wrong.
+    byPath.set(
+      file.path,
+      previous?.status === "created" ? previous : file
+    )
+  }
+  return Array.from(byPath.values()).sort((a, b) =>
+    a.path.localeCompare(b.path)
+  )
+}
+
+/**
+ * The `marko-ui/init` payload.
+ *
+ * The CHOICES are in it, not just the files: an agent that initialized a
+ * project needs to know which base color and visual style it got, because
+ * every later decision (a component's look, whether `add` needs the import
+ * distribution) depends on those and nothing else on disk records them
+ * cheaply.
+ *
+ * `ok` stays TRUE with warnings. A project whose CSS entry is not imported
+ * is initialized — the stylesheet exists and `init` did its job; a warning
+ * says what is left. Making it `ok: false` would make `init --json` in a
+ * CI check fail on every stock `create-marko` scaffold, which is exactly the
+ * case where the warning is most useful.
+ */
+function printInitResult(
+  cwd: string,
+  config: Config | null,
+  extra: {
+    agentsOnly?: boolean
+    warnings: CommandWarning[]
+    files: FileChange[]
+    dependencies?: DependencyChange[]
+  } = { warnings: [], files: [] }
+) {
+  const result = config ? getInitResult(config) : extra
+
+  printEnvelope("marko-ui/init", {
+    cwd,
+    agentsOnly: extra.agentsOnly ?? false,
+    choices: config
+      ? {
+          baseColor: config.tailwind.baseColor,
+          distribution: config.distribution,
+          visualStyle: config.visualStyle,
+          iconLibrary: config.iconLibrary ?? "lucide",
+          cssVariables: config.tailwind.cssVariables,
+          aliases: config.aliases,
+        }
+      : null,
+    files: result.files,
+    dependencies: result.dependencies,
+    warnings: result.warnings,
+    next: nextSteps([
+      "marko-ui add <name>",
+      extra.agentsOnly ? "" : "marko-ui agents sync",
+    ]),
+  })
+}
+
+/** Key under which {@link attachInitResult} stores its value. */
+export const INIT_RESULT = Symbol.for("marko-ui/initResult")
+
+export type InitResult = {
+  cwd: string
+  warnings: CommandWarning[]
+  files: FileChange[]
+  dependencies: DependencyChange[]
+}
+
+/** The init result attached to `config`, or an empty one. */
+export function getInitResult(config: Config | null): InitResult {
+  const result = config
+    ? (config as unknown as Record<symbol, InitResult | undefined>)[INIT_RESULT]
+    : undefined
+  return result ?? { cwd: "", warnings: [], files: [], dependencies: [] }
 }
 
 /**
@@ -452,7 +667,7 @@ export async function rollbackComponentsJson(
  */
 async function ensureCssEntry(
   config: Config,
-  options: { silent?: boolean } = {}
+  options: { silent?: boolean; cwd?: string } = {}
 ) {
   const cssPath = config.resolvedPaths.tailwindCss
   if (!cssPath) {
@@ -467,8 +682,13 @@ async function ensureCssEntry(
     // Falls through to creation.
   }
 
-  await fs.mkdir(path.dirname(cssPath), { recursive: true })
-  await fs.writeFile(cssPath, `@import "tailwindcss";\n`, "utf8")
+  // B2: `cssPath` is components.json's `tailwind.css`. A config pointing it
+  // outside the project (or into node_modules) made init create a file there.
+  await writeGuarded(
+    cssPath,
+    `@import "tailwindcss";\n`,
+    rootsFor(options.cwd ?? config.resolvedPaths.cwd)
+  )
 
   if (!options.silent) {
     const relative = path.relative(config.resolvedPaths.cwd, cssPath)
@@ -488,21 +708,53 @@ async function ensureCssEntry(
  */
 async function wireCssEntry(
   config: Config,
-  options: { silent?: boolean } = {}
+  options: {
+    silent?: boolean
+    warnings?: CommandWarning[]
+    /** Collects the files this step writes; omitted by other callers. */
+    files?: FileChange[]
+    /** Collects the npm dependencies this step installs. */
+    dependencies?: DependencyChange[]
+  } = {}
 ) {
+  const layoutPath = path.resolve(
+    config.resolvedPaths.cwd,
+    "src/routes/+layout.marko"
+  )
   const imported = await wireCssImport(config, options)
   const plugin = await ensureVitePlugin(config, options)
+
+  // F3: record what this step actually wrote.
+  if (imported === "added") {
+    options.files?.push({
+      path: path.relative(config.resolvedPaths.cwd, layoutPath),
+      status: "updated",
+    })
+  }
+  if (plugin === "created") {
+    options.files?.push({ path: "vite.config.ts", status: "created" })
+  }
 
   // The generated config imports @tailwindcss/vite, so it has to be installed
   // or the next `bun run build` fails on an unresolved import.
   if (plugin === "created") {
-    await updateDependencies([], ["@tailwindcss/vite"], config, {
-      silent: options.silent,
-    })
-  }
-
-  if (options.silent) {
-    return
+    const changes =
+      (await updateDependencies([], ["@tailwindcss/vite"], config, {
+        silent: options.silent,
+      })) ?? []
+    options.dependencies?.push(...changes)
+    if (changes.some((change) => change.status === "failed")) {
+      recordWarning(
+        options.warnings,
+        {
+          code: WarningCode.DEPENDENCY_INSTALL_FAILED,
+          message:
+            "Could not install @tailwindcss/vite, which the generated Vite config imports. The project will not build until it is installed.",
+          fix: "bun add -D @tailwindcss/vite",
+        },
+        options
+      )
+    }
   }
 
   if (imported === "no-layout") {
@@ -510,11 +762,17 @@ async function wireCssEntry(
     const relative = cssPath
       ? path.relative(config.resolvedPaths.cwd, cssPath)
       : "your stylesheet"
-    logger.warn(
-      `Could not find src/routes/+layout.marko to import ${highlighter.info(
-        relative
-      )}. Import it from your root layout, or the theme and component styles will not load.`
-    )
+    // Collected BEFORE the silent check: `--json` silences the human print,
+    // and this warning is the single most useful thing init can tell a
+    // program — it is the difference between "styled" and "silently
+    // unstyled", and a prose line an agent has to pattern-match to find.
+    // F5: ONE object, so the human now sees the `fix` it never saw before and
+    // the two renderings cannot drift by quoting.
+    recordWarning(options.warnings, {
+      code: WarningCode.LAYOUT_NOT_FOUND,
+      message: `Could not find src/routes/+layout.marko to import ${relative}. Import it from your root layout, or the theme and component styles will not load.`,
+      fix: `Add import "${relative}" to the <head> of src/routes/+layout.marko`,
+    }, options)
   }
 }
 
@@ -755,4 +1013,14 @@ async function promptForConfig(options: z.infer<typeof initOptionsSchema>): Prom
   })
 
   return { config, distribution, visualStyle }
+}
+
+
+/** A file's bytes, or null when it does not exist. Used to report truthfully. */
+async function readIfExists(file: string): Promise<string | null> {
+  try {
+    return await fs.readFile(file, "utf8")
+  } catch {
+    return null
+  }
 }

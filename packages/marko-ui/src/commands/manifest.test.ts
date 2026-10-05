@@ -1,5 +1,5 @@
 import { Command } from "commander"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { buildProgram } from "@/src/index"
 import { buildAgentWorkflow, buildManifest } from "./manifest"
@@ -54,11 +54,128 @@ describe("buildManifest", () => {
     expect(manifest.data.errorCodes).toContain("NOT_CONFIGURED")
   })
 
+  it("advertises the command-level error codes too", () => {
+    // These are not registry failures — they used to reach a program as bare
+    // prose with no code, so they had nothing to appear in this list.
+    const manifest = buildManifest(new Command().name("marko-ui"))
+    for (const code of [
+      "USAGE_ERROR",
+      "MONOREPO_ROOT",
+      "CHECK_FAILED",
+      "PROJECT_NOT_FOUND",
+    ]) {
+      expect(manifest.data.errorCodes).toContain(code)
+    }
+  })
+
+  it("documents the JSON error envelope and the stream contract", () => {
+    const manifest = buildManifest(new Command().name("marko-ui"))
+    // buildManifest returns a narrowed shape too (manifest <command>), so the
+    // whole-CLI-only fields are optional on the union.
+    const output = manifest.data.errorOutput
+    expect(output).toBeDefined()
+    if (!output) return
+
+    expect(output.jsonEnvelope.$type).toBe("marko-ui/error")
+    expect(output.jsonEnvelope.version).toBe(1)
+    expect(output.jsonEnvelope.ok).toBe(false)
+    expect(Object.keys(output.jsonEnvelope.error)).toContain("code")
+    expect(output.streams.stdout).toContain("result")
+    expect(output.streams.stderr).toContain("errors")
+  })
+
   it("every agent-workflow step survives validation against the LIVE program", () => {
     // Guards against advertising commands/flags that do not exist (the
     // doctor-class bug: prose restating a contract instead of consuming it).
     const program = buildProgram()
     const workflow = buildAgentWorkflow(program)
     expect(workflow).toHaveLength(5)
+  })
+})
+
+describe("buildManifest narrowed to one command", () => {
+  const program = buildProgram()
+
+  it("prints only that command, with the exit codes", () => {
+    const manifest = buildManifest(program, "add")
+
+    expect(manifest.data.commands).toHaveLength(1)
+    expect((manifest.data.commands[0] as any).name).toBe("add")
+    expect(manifest.data.exitCodes["3"]).toContain("doctor")
+    // Whole-CLI facts stay in the unnarrowed form.
+    expect("agentWorkflow" in manifest.data).toBe(false)
+    expect("errorCodes" in manifest.data).toBe(false)
+  })
+
+  it("resolves an alias to its command", () => {
+    const byAlias = buildManifest(program, "info") as any
+    expect(byAlias.data.commands[0].name).toBe("status")
+    expect(byAlias.data.commands[0].aliases).toContain("info")
+  })
+
+  it("keeps subcommands in the narrowed shape", () => {
+    const registry = buildManifest(program, "registry") as any
+    expect(registry.data.commands[0].subcommands.map((sub: any) => sub.name)).toEqual(
+      expect.arrayContaining(["list", "add"])
+    )
+  })
+
+  it("is far smaller than the whole manifest", () => {
+    const whole = JSON.stringify(buildManifest(program)).length
+    const one = JSON.stringify(buildManifest(program, "add")).length
+    expect(one).toBeLessThan(whole / 4)
+  })
+
+  it("rejects an unknown name with the usage exit code", () => {
+    let thrown: unknown
+    try {
+      buildManifest(program, "upgrade")
+    } catch (error) {
+      thrown = error
+    }
+
+    expect(thrown).toMatchObject({ exitCode: 2 })
+    // The message goes through the highlighter (quotes/colour), so assert on
+    // the words, not the exact rendering.
+    expect((thrown as Error).message).toContain("Unknown command")
+    expect((thrown as Error).message).toContain("upgrade")
+    // It lists what DOES exist, so the agent can recover in one more call.
+    expect((thrown as Error).message).toContain("add")
+  })
+})
+
+describe("the manifest command", () => {
+  it("prints JSON for a named command and exits 2 for an unknown one", async () => {
+    // Captured from process.stdout.write, not console.log: the command prints
+    // through printJson so that one helper owns every JSON document the CLI
+    // emits (and its pretty/compact split — see src/utils/json-output.ts).
+    const chunks: string[] = []
+    const write = vi
+      .spyOn(process.stdout, "write")
+      .mockImplementation((chunk: unknown) => {
+        chunks.push(String(chunk))
+        return true
+      })
+    const error = vi.spyOn(console, "error").mockImplementation(() => {})
+    const exit = vi.spyOn(process, "exit").mockImplementation(((code?: number) => {
+      throw new Error(`exit ${code}`)
+    }) as never)
+
+    try {
+      buildProgram().parse(["node", "marko-ui", "manifest", "search"], { from: "node" })
+      expect(JSON.parse(chunks.join("")).data.commands[0].name).toBe("search")
+
+      let code: number | undefined
+      try {
+        buildProgram().parse(["node", "marko-ui", "manifest", "upgrade"], { from: "node" })
+      } catch (thrown) {
+        code = Number(/exit (\d+)/.exec(String((thrown as Error).message))?.[1])
+      }
+      expect(code).toBe(2)
+    } finally {
+      write.mockRestore()
+      error.mockRestore()
+      exit.mockRestore()
+    }
   })
 })

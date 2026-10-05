@@ -11,7 +11,12 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<Select>`,
   importSnippet: `import Select from "@/components/ui/select/select.marko";`,
-  usageSnippet: `<Select items=fruits placeholder="Select a fruit"/>`,
+  usageSnippet: `static const fruits = [
+  { value: "apple", label: "Apple" },
+  { value: "banana", label: "Banana" },
+];
+
+<Select items=fruits placeholder="Select a fruit"/>`,
   composition: `\
 Select is a single unsplit component — it has no separate trigger/content/item
 parts to compose. Its anatomy (all internal, rendered from \`items=\` or
@@ -49,7 +54,7 @@ markup (see the Compound example below).`,
       name: "select-align-item",
       title: "Align item with trigger",
       description:
-        "Upstream toggles a real item-aligned positioning mode; @zag-js/select has no such concept, so this demo wires the switch to the closest analog — a `positioning.placement` change — see the in-file comment for the full deviation.",
+        "Upstream toggles a real item-aligned positioning mode; @zag-js/select has no such concept, so this demo wires the switch to the closest analog — a `positioning.placement` change, which swaps edge anchoring from bottom to top but never makes the selected item overlap the trigger the way upstream's mode does.",
     },
     {
       name: "select-groups",
@@ -93,17 +98,18 @@ markup (see the Compound example below).`,
     },
     {
       name: "select-controlled",
+      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`.",
     },
     {
       name: "select-compound",
+      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@option>` attribute tags instead of `items=` to compose each option directly in markup.",
-    },
-  ],
+    },],
   accessibilityKeyboard: [
     { keys: "Space / Enter", description: "Opens the listbox. When open, selects the highlighted item." },
     { keys: "ArrowDown / ArrowUp", description: "Opens the listbox, or moves the highlight to the next/previous item." },

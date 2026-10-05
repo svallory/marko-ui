@@ -12,7 +12,9 @@ export const docs: ComponentDocs = {
   // documented as the override/escape hatch.
   usageTags: `<DatePicker>`,
   importSnippet: `import DatePicker from "@/components/ui/date-picker/date-picker.marko";`,
-  usageSnippet: `<DatePicker valueChange=(date) => setDate(date)/>`,
+  usageSnippet: `<let/date=(undefined as string | undefined)/>
+
+<DatePicker value:=date/>`,
   // Upstream (base style) has no `DatePicker` root component at all — its
   // "date picker" is a hand-composed `Popover` + `Calendar` pairing, and
   // its Composition section documents exactly that tree:
@@ -93,6 +95,7 @@ export const docs: ComponentDocs = {
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, which receives the new ISO string (or `undefined` when cleared).",
+      essential: true,
     },
     {
       name: "date-picker-disabled",
@@ -114,18 +117,7 @@ export const docs: ComponentDocs = {
       title: "RTL",
       description:
         "Set `dir=\"rtl\"` on a wrapping element (matching the surrounding document direction); the trigger icon and positioner flip automatically.",
-    },
-    // date-picker-natural-language: SKIPPED. Upstream parses free text
-    // ("in 2 days", "next week") via the `chrono-node` npm package, which
-    // is not a dependency of this repo (nor of any other date-related
-    // port here) and this task's file territory (apps/docs/src/demos/
-    // date-picker/) can't add one. Porting a fake/partial parser would be
-    // exactly the kind of approximation the porting rules forbid, so this
-    // demo is left unported rather than faked. A faithful port would
-    // reuse the same InputGroup+Popover+Calendar shape as
-    // date-picker-input, swapping `parseInput`'s `new Date(text)` call
-    // for `chrono-node`'s `parseDate`, once that dependency is available.
-  ],
+    },],
   accessibilityNotes: [
     "The text input and the calendar trigger button share one `data-slot=\"date-picker-control\"` group; typing a valid date and picking one from the calendar both update the same controlled `value`.",
     "The calendar panel is a popover (`role` and `aria-expanded` on the trigger button come from `@zag-js/date-picker`'s `getTriggerProps()`), so it's reachable and dismissible with the same keyboard model as `Popover`.",

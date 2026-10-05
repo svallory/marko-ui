@@ -9,6 +9,15 @@ export interface ComponentDocsExample {
   title: string;
   /** One sentence of prose above the preview. Inline `code` spans are rendered. */
   description?: string;
+  /**
+   * Shown in `marko-ui docs <name>`'s default output (and only there; the
+   * page still shows every example). True only for an example that shows API
+   * an agent cannot infer from the props list — controlled state, attr-tag
+   * composition, form/validation use, async data — never for a visual
+   * variant, a size, an RTL flip or icon placement. At most three examples
+   * print by default, the first (hero) one included.
+   */
+  essential?: boolean;
 }
 
 export interface ComponentDocs {
@@ -21,6 +30,12 @@ export interface ComponentDocs {
   importSnippet: string;
   /** A minimal usage snippet shown under "Usage". */
   usageSnippet: string;
+  /**
+   * Other registry components the Usage snippet uses. `add <name>` does not
+   * bring them along, so the rendered docs say so and print the exact command
+   * (copy distribution only — under `import` they come from the package).
+   */
+  requires?: string[];
   /**
    * Examples in page order, rendered as `###` subsections under one parent
    * "Examples" heading (canonical docs hierarchy). The first one is also the

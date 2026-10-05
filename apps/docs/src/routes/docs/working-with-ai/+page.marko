@@ -56,6 +56,18 @@ static const JSON_ENVELOPE = `{
   "data": { "components": [] }
 }`;
 
+static const JSON_ERROR_ENVELOPE = `{
+  "$type": "marko-ui/error",
+  "version": 1,
+  "ok": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Registry item \\"buton\\" was not found. Did you mean \\"button\\"?",
+    "suggestion": "Did you mean \\"button\\"?",
+    "details": { "itemName": "buton", "suggestions": ["button"] }
+  }
+}`;
+
 <docs-article
   title="Working with AI"
   description="One command gives your coding agent the marko-ui CLI workflow, your installed component list, and the Marko 6 rules it gets wrong by default."
@@ -148,7 +160,7 @@ static const JSON_ENVELOPE = `{
 
   <ul>
     <li>the distribution (<code>copy</code> or <code>import</code>) and what that means for editing components;</li>
-    <li>the installed components with their descriptions (copy distribution);</li>
+    <li>the installed component names (copy distribution) — names only: a description per component costs tokens on every task and duplicates <code>marko-ui docs &lt;name&gt;</code>;</li>
     <li>the CLI commands the agent should use — <code>docs</code>, <code>search</code>, <code>add</code>, <code>show</code>, <code>doctor</code>, <code>agents sync</code>. <code>add</code> and <code>agents sync</code> appear in the section on the copy distribution; the import distribution lists <code>agents sync</code> only;</li>
     <li>an instruction to load the <code>marko-ui</code> and <code>marko6</code> skills before writing component code.</li>
   </ul>
@@ -289,6 +301,13 @@ static const JSON_ENVELOPE = `{
     this same manifest.
   </p>
 
+  <p>
+    <code>marko-ui manifest &lt;command&gt;</code> narrows that to a single command
+    (by name or alias, subcommands included) plus the exit codes — most of the cost
+    avoided when the only question is "does this flag exist?". An unknown name is a
+    usage error (exit 2).
+  </p>
+
   <h3>Exit codes</h3>
 
   <table>
@@ -311,19 +330,73 @@ static const JSON_ENVELOPE = `{
   <h3>JSON output envelopes</h3>
 
   <p>
-    <code>docs --list --json</code>, <code>doctor --json</code>, and
-    <code>registry list --json</code> return typed success envelopes with
-    <code>$type</code>, <code>version</code>, <code>ok</code>, and
-    <code>data</code>. For example, an empty documentation list looks like:
+    Every command that prints JSON prints the same envelope:
+    <code>docs --list</code>, <code>docs &lt;name&gt;</code>,
+    <code>doctor</code>, <code>registry list</code>, <code>search</code>,
+    <code>status</code> and <code>show</code>. Branch on <code>$type</code>
+    before reading <code>data</code> — it is <code>marko-ui/docs.list</code>,
+    <code>marko-ui/docs</code>, <code>marko-ui/doctor</code>,
+    <code>marko-ui/registry.list</code>, <code>marko-ui/search</code>,
+    <code>marko-ui/status</code> or <code>marko-ui/show</code>. For example, an
+    empty documentation list looks like:
   </p>
 
   <code-block language="json" code=JSON_ENVELOPE/>
 
   <p>
-    <code>info --json</code> (alias of <code>status --json</code>) and
-    <code>search --json</code> also provide structured output, but currently return
-    plain result objects without this envelope. <code>docs &lt;component&gt;</code>
-    returns markdown; its JSON option applies to listing components.
+    The document is printed <strong>minified on a single line</strong> unless
+    stdout is a terminal, where it is pretty-printed for a human. There is no
+    <code>--pretty</code> flag: the reader of this output is usually a program,
+    and indentation is tokens you pay for.
+  </p>
+
+  <p>
+    <code>search --json</code> items carry <code>name</code>, a short
+    <code>type</code> (<code>"ui"</code>, <code>"block"</code>),
+    <code>description</code> and <code>registry</code> — nothing derivable from
+    another field. <code>status --json</code> reports
+    <code>config.distribution</code>, <code>config.visualStyle</code> and
+    <code>config.iconLibrary</code>, and gives
+    <code>config.resolvedPaths.cwd</code> once with every other path relative
+    to it. <code>show</code> is always machine output, so
+    <code>show &lt;item&gt; --json</code> is accepted and changes nothing.
+  </p>
+
+  <h3>Errors and streams</h3>
+
+  <p>
+    <strong>stdout carries the result; stderr carries every problem.</strong>
+    Human-readable errors and warnings go to stderr, so a program that captures
+    stdout gets the command's payload and nothing else — no log line, no
+    warning, no failure text. With <code>--json</code>, a failure prints exactly
+    one JSON object on stdout and nothing else:
+  </p>
+
+  <code-block language="json" code=JSON_ERROR_ENVELOPE/>
+
+  <p>
+    Branch on <code>error.code</code>, never on the message text. Every code is
+    listed by <code>marko-ui manifest</code> under <code>errorCodes</code>. When
+    the registry index is reachable, an unknown item name in
+    <code>docs</code>, <code>show</code>, <code>add</code> or <code>diff</code>
+    comes back with "did you mean" candidates in
+    <code>error.details.suggestions</code>, so a typo is a retry rather than a
+    dead end. Human-mode failures print the code, the message and the
+    suggestion on stderr; the "open an issue on GitHub" boilerplate is reserved
+    for genuinely unexpected exceptions.
+  </p>
+
+  <p>
+    A connection failure — refused port, DNS failure, timeout — is
+    <code>NETWORK_ERROR</code> with exit code 4 on every registry-backed
+    command; a host that answered with an error status is
+    <code>FETCH_ERROR</code> with exit code 1.
+    <code>details</code> never carries a stack trace, an absolute path under
+    your home directory, or a credential-bearing registry URL: paths are
+    shortened and URLs have their query string and credentials stripped. A
+    stack reaches stderr only under <code>MARKO_UI_DEBUG</code>. One name can
+    fail while the others succeed — <code>marko-ui docs nope button</code> prints
+    button's markdown on stdout, reports <code>nope</code> on stderr, and exits 1.
   </p>
 
   <h3>Non-interactive flags</h3>
@@ -396,7 +469,27 @@ static const JSON_ENVELOPE = `{
   <p>
     In an agent session, <code>marko-ui docs &lt;component&gt;</code> pulls the
     documentation straight into the agent's context — usage, props, keyboard
-    contracts, and examples. The CLI fetches the markdown endpoint for the agent.
+    contracts, and examples. The CLI renders it locally from the docs model the
+    registry item already carries, so it works against the registry you
+    configured and needs no request to this site. For a component the
+    project has installed, the docs describe the installed version and need no
+    network at all: <code>add</code> keeps a copy of each component's docs in
+    <code>node_modules/.cache/marko-ui</code> (copy distribution), and an
+    import project reads the docs shipped inside <code>@marko-ui/shadcn</code>.
+    Pass <code>--remote</code> to read the registry instead.
+  </p>
+
+  // /llms.txt is written by scripts/prerender-handlers.ts after the crawl, so it
+  // exists only in the built site: `marko-run dev` answers 404 for this link, and
+  // the crawl logs one extra "not found" for it (harmless: the file is written
+  // right after). See AGENTS.md, "/llms.txt".
+  <p>
+    An agent that has no shell can start from
+    <a href="/llms.txt"><code>/llms.txt</code></a>: a plain-text index in the
+    <a href="https://llmstxt.org">llms.txt</a> format that says how to work with
+    marko-ui (which command answers which question, how to read the JSON
+    output, which skills to load, and the mistakes agents make most) and links
+    every component's markdown page and the registry.
   </p>
 
   <h2 id="check-your-setup">Check Your Setup</h2>

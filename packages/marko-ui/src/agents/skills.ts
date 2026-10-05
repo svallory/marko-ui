@@ -4,6 +4,7 @@ import {
   getPackageManager,
   getPackageRunnerCommand,
 } from "@/src/utils/get-package-manager"
+import { RegistryErrorCode } from "@/src/registry/errors"
 import { getProjectInfo } from "@/src/utils/get-project-info"
 import { CommandError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
@@ -121,7 +122,7 @@ export async function getWantedSkills(cwd: string) {
 export async function installAgentSkills(
   cwd: string,
   options: { silent?: boolean } = {}
-) {
+): Promise<{ installed: string[]; skipped: string[] }> {
   const wanted = await getWantedSkills(cwd)
   const runner = await getRunner(cwd)
   const missing = await getMissingSkills(cwd, wanted)
@@ -134,7 +135,10 @@ export async function installAgentSkills(
         )}). Update them with ${highlighter.info(`${runner} ${SKILLS_PACKAGE} update`)}.`
       )
     }
-    return
+    // Reported, not just printed: "were the skills already there?" is the
+    // question a program asking about this file actually has, and the
+    // "already installed" line was the only answer.
+    return { installed: [], skipped: wanted }
   }
 
   // Ask for every wanted skill, not just the missing ones: `skills add` is
@@ -154,16 +158,28 @@ export async function installAgentSkills(
       timeout: 180_000,
     })
     skillsSpinner.succeed()
+    return { installed: missing, skipped: wanted.filter((s) => !missing.includes(s)) }
   } catch (error) {
     skillsSpinner.fail()
     const reason =
       error instanceof Error
         ? (error.message.split("\n").find((line) => line.trim()) ?? "")
         : String(error)
+    // The structured facts go on the ERROR envelope's `details`, not on a
+    // `warnings` array: this throws, so there is no successful result to warn
+    // inside. That is also why SKILL_INSTALL_FAILED is not a WarningCode — the
+    // failure is an error (`MISSING_ENV_VARS`-shaped, exit 1), and a code that
+    // could never appear in a `warnings` array was advertising a path the
+    // shape does not have.
     throw new CommandError(
       `Could not install the agent skills (${reason}).\nInstall them manually with:\n  ${highlighter.info(
         formatted
-      )}\nor pass ${highlighter.info("--no-skill")} to skip them.`
+      )}\nor pass ${highlighter.info("--no-skill")} to skip them.`,
+      {
+        code: RegistryErrorCode.SKILL_INSTALL_FAILED,
+        suggestion: formatted,
+        details: { wanted, command: formatted, reason },
+      }
     )
   }
 }

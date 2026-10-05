@@ -13,6 +13,10 @@ import { manifest } from "@/src/commands/manifest"
 import { registry } from "@/src/commands/registry"
 import { search } from "@/src/commands/search"
 import { view } from "@/src/commands/view"
+import { RegistryErrorCode } from "@/src/registry/errors"
+import { normalizeError, CommandError } from "@/src/utils/handle-error"
+import { printJson } from "@/src/utils/json-output"
+import { isJsonModeForErrors } from "@/src/utils/output-mode"
 import { Command } from "commander"
 
 import packageJson from "../package.json"
@@ -62,7 +66,29 @@ function applyUsageErrorExitCode(command: Command) {
     if (error.exitCode === 0) {
       process.exit(0)
     }
-    process.exit(error.code?.startsWith("commander.") ? 2 : error.exitCode)
+
+    // A usage error reached with --json must still honor the contract: one
+    // marko-ui/error envelope on stdout, exit 2, and commander's own prose
+    // (which it writes to stderr) left where it is. Without this,
+    // `marko-ui frobnicate --json` printed prose where a program expected
+    // JSON and produced nothing it could parse.
+    if (error.exitCode === 2 || error.code?.startsWith("commander.")) {
+      if (isJsonModeForErrors()) {
+        const envelope = normalizeError(
+          new CommandError(error.message.replace(/^error:\s*/, ""), {
+            exitCode: 2,
+            code: RegistryErrorCode.USAGE_ERROR,
+            suggestion:
+              "Run `marko-ui manifest` for the full command, flag and argument surface.",
+          })
+        )
+        printJson(envelope.envelope)
+        process.exit(2)
+      }
+      process.exit(2)
+    }
+
+    process.exit(error.exitCode)
   })
   for (const sub of command.commands) {
     applyUsageErrorExitCode(sub)

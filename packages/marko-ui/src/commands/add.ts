@@ -3,10 +3,11 @@ import { buildDefaultConfig, runInit } from "@/src/commands/init"
 import { preFlightAdd } from "@/src/preflights/preflight-add"
 import { getRegistryItems, getShadcnRegistryIndex } from "@/src/registry/api"
 import { clearRegistryContext } from "@/src/registry/context"
+import { RegistryErrorCode } from "@/src/registry/errors"
 import { registryItemTypeSchema } from "@/src/registry/schema"
 import { isUniversalRegistryItem } from "@/src/registry/utils"
-import { addComponents } from "@/src/utils/add-components"
-import { dryRunComponents } from "@/src/utils/dry-run"
+import { addComponents, type AddResult } from "@/src/utils/add-components"
+import { dryRunComponents, type DryRunResult } from "@/src/utils/dry-run"
 import { formatDryRunResult } from "@/src/utils/dry-run-formatter"
 import { loadEnvFiles } from "@/src/utils/env-loader"
 import * as ERRORS from "@/src/utils/errors"
@@ -19,11 +20,20 @@ import {
 import { highlighter } from "@/src/utils/highlighter"
 import { isInteractive } from "@/src/utils/interactive"
 import { logger } from "@/src/utils/logger"
+import {
+  type CommandWarning,
+  nextSteps,
+  plannedToFileChanges,
+  WarningCode,
+} from "@/src/utils/command-result"
+import { printEnvelope } from "@/src/utils/json-output"
+import { setJsonMode } from "@/src/utils/output-mode"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
 import { confirm, exitIfEmptySelection, multiselect } from "@/src/utils/clack"
 import { spinner } from "@/src/utils/spinner"
 import { writeProjectTaglib } from "@/src/utils/taglib"
 import { Command } from "commander"
+import { getPackageInfo } from "@/src/utils/get-package-info"
 import { z } from "zod"
 
 export const addOptionsSchema = z.object({
@@ -35,6 +45,7 @@ export const addOptionsSchema = z.object({
   path: z.string().optional(),
   silent: z.boolean(),
   dryRun: z.boolean(),
+  json: z.boolean(),
 })
 
 export const add = new Command()
@@ -52,8 +63,13 @@ export const add = new Command()
   .option("-p, --path <path>", "the path to add the component to.")
   .option("-s, --silent", "mute output.", false)
   .option("--dry-run", "preview changes without writing files.", false)
+  .option("--json", "output as JSON (what was written, and any warnings).", false)
   .action(async (components, opts) => {
     try {
+      // Recorded first so a failure takes the JSON error path, and so the
+      // spinner and the human lists go quiet for the whole run — stdout must
+      // end up carrying exactly one document.
+      setJsonMode(Boolean(opts.json))
       const options = addOptionsSchema.parse({
         components,
         ...opts,
@@ -111,10 +127,13 @@ export const add = new Command()
           itemType !== "registry:base"
 
         if (isUniversalRegistryItem(registryItem) && !isDryRun) {
-          await addComponents(components, initialConfig, {
+          const universal = await addComponents(components, initialConfig, {
             ...options,
             interactive: shouldPrompt(options),
           })
+          if (options.json) {
+            printAddResult(options.cwd, components, universal, [])
+          }
           return
         }
         if (
@@ -184,6 +203,16 @@ export const add = new Command()
           { overwrite: options.overwrite }
         )
         previewSpinner.stop()
+        if (options.json) {
+          // N7: the prose that used to announce "add would run init first" is
+          // silenced under --json, and nothing replaced it — so the document
+          // described a plan against a project that does not exist yet. Both
+          // surfaces now say it.
+          printDryRunResult(options.cwd, options.components, previewResult, {
+            wouldInitialize: true,
+          })
+          return
+        }
         logger.log(formatDryRunResult(previewResult, options.components, {}))
         return
       }
@@ -225,7 +254,11 @@ export const add = new Command()
             options.cwd
           )}. Create a Marko app first (e.g. ${highlighter.info(
             "bun create marko@latest"
-          )}), then run ${highlighter.info("marko-ui init")}.`
+          )}), then run ${highlighter.info("marko-ui init")}.`,
+          {
+            code: RegistryErrorCode.PROJECT_NOT_FOUND,
+            details: { cwd: options.cwd },
+          }
         )
       }
 
@@ -259,29 +292,174 @@ export const add = new Command()
         )
         dryRunSpinner.stop()
 
+        if (options.json) {
+          printDryRunResult(options.cwd, options.components, dryRunResult)
+          return
+        }
+
         logger.log(formatDryRunResult(dryRunResult, options.components, {}))
         return
       }
 
       if (!initHasRun) {
-        await addComponents(options.components, config, {
+        const added = await addComponents(options.components, config, {
           ...options,
           // Threaded, not defaulted: the file writer asks before overwriting a
           // file that differs, and `-y` means "don't ask me anything".
           interactive: shouldPrompt(options),
         })
+
+        if (options.json) {
+          printAddResult(options.cwd, options.components, added, [], {
+            initialized: initHasRun,
+          })
+          return
+        }
+
         // Keep the project taglib (zero-import <Badge>/<badge> tags) in
         // sync with what is installed. No-op unless marko.json is ours.
         await writeProjectTaglib(config)
       }
 
     } catch (error) {
-      logger.break()
+      // No break here: handleError frames its own block, on stderr. A break
+      // before it put a bare newline on stdout for every `add` failure.
       handleError(error)
     } finally {
       clearRegistryContext()
     }
   })
+
+/**
+ * The `marko-ui/add` payload.
+ *
+ * `ok` stays TRUE even when the install could not finish cleanly: the files
+ * were written, and the unmet part is reported as a `warnings` entry with its
+ * own code and fix. A command that changed the project and could not install
+ * one npm package did not fail — it succeeded with something left to do, and
+ * saying otherwise would make `add --json` useless for the exact case it
+ * exists to report.
+ */
+function printAddResult(
+  cwd: string,
+  requested: string[],
+  result: AddResult,
+  warnings: CommandWarning[],
+  options: { initialized?: boolean } = {}
+) {
+  const next = nextSteps([
+    // The single most useful thing an agent can do next: read what it just
+    // installed. Free of context cost to name, expensive to forget.
+    requested.length === 1
+      ? `marko-ui docs ${requested[0]}`
+      : "marko-ui docs --list",
+    result.dependencies.some((dep) => dep.status === "failed")
+      ? "bun add"
+      : "",
+  ])
+
+  printEnvelope("marko-ui/add", {
+    cwd,
+    dryRun: false,
+    // `resolved` is what the CLI actually installed, NOT a copy of
+    // `requested`: `add button dialog` also installs `icon`, and a caller told
+    // two components landed when three did is worse than no report.
+    items: { requested, resolved: result.resolved },
+    files: result.files,
+    dependencies: result.dependencies,
+    registryDependencies: result.registryDependencies,
+    warnings: [...warnings, ...result.warnings],
+    next,
+    ...(options.initialized ? { initialized: true } : {}),
+  })
+}
+
+/**
+ * Whether a dry run would actually install this package, read from the
+ * project's own package.json — the same declared set `updateDependencies`
+ * skips. A package already declared is reported `present`, NOT
+ * "installed": re-resolving a bare name would rewrite its range, so the
+ * install would never have happened.
+ */
+function plannedDependency(
+  name: string,
+  cwd: string
+): { name: string; status: "present" | "would-install" } {
+  return {
+    name,
+    status: isDeclaredInPackageJson(cwd, name) ? "present" : "would-install",
+  }
+}
+
+/**
+ * The `marko-ui/add` payload for a dry run: the SAME shape as a real add,
+ * plus `dryRun: true`, and the planned statuses instead of observed ones.
+ *
+ * "Would be created" and "was created" are different claims, and mixing them
+ * is how an agent ends up telling a user a file is on disk when nothing ran.
+ * The flag is on the document, not inferred from the statuses.
+ */
+function printDryRunResult(
+  cwd: string,
+  requested: string[],
+  result: DryRunResult,
+  options: { wouldInitialize?: boolean } = {}
+) {
+  printEnvelope("marko-ui/add", {
+    cwd,
+    dryRun: true,
+    // B1: the plan's real item resolution, not a copy of what was typed. Same
+    // source as a real add, so `add x --dry-run --json` and `add x --json`
+    // agree about what a request resolves to.
+    items: {
+      requested,
+      resolved: result.items ?? requested,
+    },
+    files: [
+      ...plannedToFileChanges(result.files),
+      ...(result.css
+        ? [
+            {
+              path: result.css.path,
+              status:
+                result.css.action === "create" ? ("created" as const) : ("updated" as const),
+            },
+          ]
+        : []),
+    ].sort((a, b) => a.path.localeCompare(b.path)),
+    // F7: the dry run never installs anything, so "installed" was a lie for
+    // every package already in package.json — including on a project where
+    // the real run reports them all `present`. The same `declared` check the
+    // real installer uses decides `present` vs `would-install` here.
+    dependencies: [
+      ...result.dependencies.map((name) => plannedDependency(name, cwd)),
+      ...result.devDependencies.map((name) => plannedDependency(name, cwd)),
+    ],
+    registryDependencies: result.dependencyItems ?? [],
+    warnings: [
+      ...(options.wouldInitialize
+        ? [
+            {
+              code: WarningCode.PROJECT_NOT_INITIALIZED,
+              message:
+                "This project has no components.json. A real run would run marko-ui init with the defaults first, then add the requested items. Nothing was written.",
+              fix: "marko-ui init",
+            },
+          ]
+        : []),
+      ...(result.removals?.length
+        ? [
+            {
+              code: WarningCode.STALE_FILES_REMOVED,
+              message: `Would remove ${result.removals.length} stale icon map(s): ${result.removals.join(", ")}.`,
+              fix: "marko-ui add <name> --overwrite",
+            },
+          ]
+        : []),
+    ],
+    next: options.wouldInitialize ? ["marko-ui init"] : [],
+  })
+}
 
 /**
  * Whether `add` should ask before overwriting CSS with a style/theme item.
@@ -417,7 +595,7 @@ async function promptForRegistryComponents(
 ) {
   const registryIndex = await getShadcnRegistryIndex()
   if (!registryIndex) {
-    logger.break()
+    logger.errorBreak()
     handleError(new Error("Failed to fetch registry index."))
     return []
   }
@@ -450,3 +628,19 @@ async function promptForRegistryComponents(
 
 
 
+
+/**
+ * Is `name` already declared in the project's package.json (any of
+ * dependencies / devDependencies / optional / peer)? The same set
+ * `normalizeDependencyRequests` skips, read the same way, so the dry run and
+ * the real run cannot disagree about whether a package is already there.
+ */
+export function isDeclaredInPackageJson(cwd: string, name: string): boolean {
+  const packageInfo = getPackageInfo(cwd, false)
+  return [
+    ...Object.keys(packageInfo?.dependencies ?? {}),
+    ...Object.keys(packageInfo?.devDependencies ?? {}),
+    ...Object.keys(packageInfo?.optionalDependencies ?? {}),
+    ...Object.keys(packageInfo?.peerDependencies ?? {}),
+  ].includes(name)
+}

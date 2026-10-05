@@ -1,0 +1,20 @@
+import Drawer from "@marko-ui/shadcn/ui/drawer/drawer.marko";
+import Button from "@marko-ui/shadcn/ui/button/button.marko";
+
+// The plain drawer: a trigger, a title, some content and a footer with the
+// actions. `drawer-demo` is a 97-line responsive side/snap-point picker, which
+// is a showcase, not the first thing a reader should meet.
+<Drawer>
+  <@trigger|props|>
+    <Button type="button" ...props variant="outline">Open drawer</Button>
+  </@trigger>
+  <@title>Open drawer</@title>
+  <@description>The default drawer: a title, a body and a footer.</@description>
+  <div class="p-4 text-sm text-muted-foreground">
+    Drawer content goes in the tag's body.
+  </div>
+  <@footer>
+    <Button type="button" variant="outline">Cancel</Button>
+    <Button type="button">Save</Button>
+  </@footer>
+</Drawer>

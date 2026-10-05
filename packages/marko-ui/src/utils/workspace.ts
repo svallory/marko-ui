@@ -226,6 +226,13 @@ function parsePackageSpecifier(importPath: string) {
 
   const segments = importPath.split("/")
 
+  // No first segment means there is no package to resolve — an empty specifier
+  // is not a workspace package. Checked here rather than at the call site so
+  // `packageName` is non-nullable for every caller.
+  if (!segments[0]) {
+    return null
+  }
+
   if (importPath.startsWith("@")) {
     if (segments.length < 2) {
       return null
