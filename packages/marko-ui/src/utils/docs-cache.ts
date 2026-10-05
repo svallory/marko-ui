@@ -3,6 +3,7 @@ import path from "path"
 import { componentDocsSchema } from "@/src/registry/schema"
 import type { ResolvedItemDocs } from "@/src/registry/resolver"
 import { buildUrlAndHeadersForRegistryItem } from "@/src/registry/builder"
+import { isLocalFile } from "@/src/registry/utils"
 import type { Config } from "@/src/utils/get-config"
 import { logger } from "@/src/utils/logger"
 import { CLI_CACHE_DIR, rootsFor, writeGuarded } from "@/src/utils/path-guard"
@@ -99,8 +100,17 @@ export function isComponentInstalled(config: CacheConfig, name: string): boolean
   }
 }
 
-/** The registry URL an item address resolves to, without its query string. */
-function registryOf(source: string, config?: Config): string {
+/**
+ * Where an item came from, as recorded in the entry and printed by `docs`:
+ * the registry URL it resolves to (query string dropped, so a token in it is
+ * never stored), or — for an item added from a local file — its path
+ * RELATIVE to the project root, the same rule the error envelope follows: an
+ * absolute path would put a home directory into `docs --json` output.
+ */
+export function registryOf(source: string, projectRoot: string, config?: Config): string {
+  if (isLocalFile(source) || path.isAbsolute(source) || source.startsWith(".")) {
+    return displayPath(source, projectRoot)
+  }
   try {
     const built = buildUrlAndHeadersForRegistryItem(source, config)
     if (built?.url) return built.url.split("?")[0] ?? built.url
@@ -108,6 +118,18 @@ function registryOf(source: string, config?: Config): string {
     // An unresolvable address is recorded as given.
   }
   return source.split("?")[0] ?? source
+}
+
+/**
+ * A local path as recorded and printed: relative to the project root. Also
+ * applied when READING an entry, so an entry written by an older CLI with an
+ * absolute path never reaches stdout as one. URLs pass through.
+ */
+export function displayPath(source: string, projectRoot: string): string {
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(source)) return source
+  if (!path.isAbsolute(source) && !source.startsWith(".")) return source
+  const relative = path.relative(projectRoot, path.resolve(projectRoot, source))
+  return (relative || ".").split(path.sep).join("/")
 }
 
 /** The entry file for `name`, or `null` when the project has no cache directory. */
@@ -136,7 +158,7 @@ export async function writeDocsCacheEntries(
     const entry: DocsCacheEntry = {
       version: DOCS_CACHE_VERSION,
       name: item.name,
-      registry: registryOf(item.source, config),
+      registry: registryOf(item.source, config.resolvedPaths.cwd, config),
       contentHash: item.contentHash,
       componentDocs: item.componentDocs,
     }
@@ -175,7 +197,12 @@ export async function readDocsCacheEntry(
   try {
     const parsed = entrySchema.safeParse(JSON.parse(raw))
     if (!parsed.success || parsed.data.name !== name) return { miss: "invalid" }
-    return { entry: parsed.data }
+    return {
+      entry: {
+        ...parsed.data,
+        registry: displayPath(parsed.data.registry, config.resolvedPaths.cwd),
+      },
+    }
   } catch {
     return { miss: "invalid" }
   }

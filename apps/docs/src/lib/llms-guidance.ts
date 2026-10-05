@@ -17,7 +17,7 @@ export const LLMS_GUIDANCE = `## How to work with marko-ui
 If you can run commands, use the CLI (\`bunx marko-ui\`, or the project's runner) instead of this site: it is smaller and never prompts without a TTY.
 
 - Find a component: \`marko-ui search -q <words>\`; \`marko-ui docs --list\` prints every component with its description (the same index as below). Do not guess names.
-- Learn its API: \`marko-ui docs <name>\`. Read it BEFORE writing that component's markup. Lean by default; \`--examples\` prints every example, \`--example <id>\` one.
+- Learn its API: \`marko-ui docs <name>\`. Read it BEFORE writing that component's markup. Lean by default; \`--examples\` prints every example, \`--example <id>\` one. For an installed component it describes the installed version, offline; \`--remote\` reads the registry's current docs instead.
 - Install (copy distribution): \`marko-ui add <name> -y --json\`. In \`files[].status\`, \`created\` and \`updated\` mean this run wrote the file; \`unchanged\` and \`skipped\` mean it wrote nothing (\`skipped\`: the file differs and was left alone).
 - Dependencies and files: \`marko-ui show <name> --deps\`, \`marko-ui show <name> --files\`.
 - Project state: \`marko-ui status --json\`. After changes run \`marko-ui doctor --json\`: exit 3 means broken, and each failed check carries a \`fix\`.

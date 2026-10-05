@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from "vitest"
 import {
   DOCS_CACHE_VERSION,
   docsCacheDir,
+  displayPath,
   docsCacheFile,
   isComponentInstalled,
   readDocsCacheEntry,
@@ -194,5 +195,41 @@ describe("the write guard's cache allowance", () => {
     expect(isCliCachePath("/p/node_modules/.cache/marko-ui/docs/a.json", "/p")).toBe(true)
     expect(isCliCachePath("/p/apps/web/node_modules/.cache/marko-ui/a.json", "/p")).toBe(false)
     expect(isCliCachePath("/q/node_modules/.cache/marko-ui/a.json", "/p")).toBe(false)
+  })
+})
+
+describe("a local-file source is recorded relative to the project", () => {
+  it("stores and reads back a project-relative path, never an absolute one", async () => {
+    const root = project({ installed: ["button"] })
+    const local = path.join(root, "items", "button.json")
+    await writeDocsCacheEntries(configFor(root), [{ ...itemDocs("button"), source: local }])
+
+    const raw = JSON.parse(readFileSync(docsCacheFile(configFor(root), "button")!, "utf8"))
+    expect(raw.registry).toBe("items/button.json")
+    const read = await readDocsCacheEntry(configFor(root), "button")
+    expect("entry" in read && read.entry.registry).toBe("items/button.json")
+  })
+
+  it("keeps a path outside the project relative too", async () => {
+    const root = project({ installed: ["button"] })
+    await writeDocsCacheEntries(configFor(root), [
+      { ...itemDocs("button"), source: path.join(path.dirname(root), "shared", "button.json") },
+    ])
+    const raw = JSON.parse(readFileSync(docsCacheFile(configFor(root), "button")!, "utf8"))
+    expect(raw.registry).toBe("../shared/button.json")
+  })
+
+  it("relativizes an absolute path an older entry recorded, when it is read", async () => {
+    const root = project({ installed: ["button"] })
+    await writeDocsCacheEntries(configFor(root), [itemDocs("button")])
+    const file = docsCacheFile(configFor(root), "button")!
+    const entry = JSON.parse(readFileSync(file, "utf8"))
+    writeFileSync(file, JSON.stringify({ ...entry, registry: path.join(root, "vendor", "button.json") }))
+    const read = await readDocsCacheEntry(configFor(root), "button")
+    expect("entry" in read && read.entry.registry).toBe("vendor/button.json")
+  })
+
+  it("leaves a registry URL alone", () => {
+    expect(displayPath("https://example.test/r/button.json", "/p")).toBe("https://example.test/r/button.json")
   })
 })
