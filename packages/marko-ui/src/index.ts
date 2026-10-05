@@ -16,7 +16,7 @@ import { view } from "@/src/commands/view"
 import { RegistryErrorCode } from "@/src/registry/errors"
 import { normalizeError, CommandError } from "@/src/utils/handle-error"
 import { printJson } from "@/src/utils/json-output"
-import { isJsonMode } from "@/src/utils/output-mode"
+import { isJsonModeForErrors } from "@/src/utils/output-mode"
 import { Command } from "commander"
 
 import packageJson from "../package.json"
@@ -73,7 +73,7 @@ function applyUsageErrorExitCode(command: Command) {
     // `marko-ui frobnicate --json` printed prose where a program expected
     // JSON and produced nothing it could parse.
     if (error.exitCode === 2 || error.code?.startsWith("commander.")) {
-      if (isJsonMode()) {
+      if (isJsonModeForErrors()) {
         const envelope = normalizeError(
           new CommandError(error.message.replace(/^error:\s*/, ""), {
             exitCode: 2,

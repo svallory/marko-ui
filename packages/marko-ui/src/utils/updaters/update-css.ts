@@ -28,12 +28,12 @@ export async function updateCss(
     tailwindVersion?: TailwindVersion
     tailwindConfig?: z.infer<typeof registryItemTailwindSchema>["config"]
   }
-) {
+): Promise<string | undefined> {
   const hasCss = css && Object.keys(css).length > 0
   const hasCssVars = Object.keys(options.cssVars ?? {}).length > 0
 
   if (!config.resolvedPaths.tailwindCss || (!hasCss && !hasCssVars)) {
-    return
+    return undefined
   }
 
   options = {
@@ -71,6 +71,11 @@ export async function updateCss(
 
   await fs.writeFile(cssFilepath, output, "utf8")
   cssSpinner.succeed()
+
+  // The absolute path of the file that was written, so the caller can report
+  // it as one of its own file changes. It used to return nothing, which left
+  // "did add write my stylesheet?" unanswerable without reading stderr.
+  return cssFilepath
 }
 
 export async function transformCss(

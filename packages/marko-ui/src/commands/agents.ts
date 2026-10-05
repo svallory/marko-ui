@@ -11,11 +11,14 @@ import {
   installAgentSkills,
 } from "@/src/agents/skills"
 import { RegistryErrorCode } from "@/src/registry/errors"
+import type { CommandWarning } from "@/src/utils/command-result"
 import { getConfig } from "@/src/utils/get-config"
 import { getProjectComponents } from "@/src/utils/get-project-info"
 import { CommandError, handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
+import { printEnvelope } from "@/src/utils/json-output"
+import { setJsonMode } from "@/src/utils/output-mode"
 import { spinner } from "@/src/utils/spinner"
 import { Command } from "commander"
 import { z } from "zod"
@@ -25,6 +28,7 @@ const syncOptionsSchema = z.object({
   check: z.boolean(),
   skill: z.boolean(),
   silent: z.boolean(),
+  json: z.boolean().optional(),
 })
 
 export const agents = new Command()
@@ -51,13 +55,20 @@ agents
     "do not install (or check) the agent skills; AGENTS.md only."
   )
   .option("-s, --silent", "mute output.", false)
+  .option(
+    "--json",
+    "output as JSON (whether AGENTS.md changed, and which skills were installed).",
+    false
+  )
   .action(async (opts) => {
     try {
+      setJsonMode(Boolean(opts.json))
       const options = syncOptionsSchema.parse({
         cwd: path.resolve(opts.cwd),
         check: opts.check,
         skill: opts.skill,
         silent: opts.silent,
+        json: Boolean(opts.json),
       })
 
       const config = await getConfig(options.cwd)
@@ -112,14 +123,54 @@ agents
         return
       }
 
-      await runAgentsSync(options.cwd, {
+      const synced = await runAgentsSync(options.cwd, {
         silent: options.silent,
         skill: options.skill,
       })
+
+      if (options.json) {
+        printAgentsResult(options.cwd, synced)
+        return
+      }
     } catch (error) {
       handleError(error)
     }
   })
+
+/**
+ * The `marko-ui/agents.sync` payload. `agentsChanged` is the field that
+ * matters: `agents sync` printed nothing on stdout at all, so a program could
+ * not tell a sync that updated AGENTS.md from one that found it current.
+ */
+function printAgentsResult(
+  cwd: string,
+  result: {
+    agentsChanged: boolean
+    agentsPath: string
+    skills: { installed: string[]; skipped: string[] }
+    warnings: CommandWarning[]
+  }
+) {
+  printEnvelope("marko-ui/agents.sync", {
+    cwd,
+    agentsChanged: result.agentsChanged,
+    files: [
+      {
+        path: path.relative(cwd, result.agentsPath) || "AGENTS.md",
+        status: result.agentsChanged ? "updated" : "unchanged",
+      },
+    ],
+    skills: result.skills,
+    // A real warning, not an empty array: a skills install that failed is
+    // exactly what SKILL_INSTALL_FAILED names, and hardcoding `[]` meant a
+    // caller had no way to learn it from the document.
+    warnings: result.warnings,
+    // Nothing to do after a sync either way: the file is current and the
+    // skills are installed. N3 flagged the previous `changed ? [] : []` as a
+    // dead ternary, and the honest answer is that `next` is empty.
+    next: [],
+  })
+}
 
 /**
  * Writes the AGENTS.md section and installs the agent skills. Also called
@@ -131,9 +182,27 @@ agents
  */
 export async function runAgentsSync(
   cwd: string,
-  options: { silent?: boolean; skill?: boolean } = {}
-) {
+  options: {
+    silent?: boolean
+    skill?: boolean
+    json?: boolean
+    files?: { path: string; status: "unchanged" | "updated" }[]
+  } = {}
+): Promise<{
+  agentsChanged: boolean
+  agentsPath: string
+  skills: { installed: string[]; skipped: string[] }
+  warnings: CommandWarning[]
+}> {
   const { agentsPath, nextAgents } = await prepareAgentDocs(cwd)
+
+  // Compared BEFORE writing: "did AGENTS.md change?" is the question, and
+  // answering it by writing and reading back would make every sync look like
+  // it changed the file.
+  const before = existsSync(agentsPath)
+    ? await fs.readFile(agentsPath, "utf8")
+    : null
+  const agentsChanged = !agentsDocsAreCurrent(before, nextAgents)
 
   const writeSpinner = spinner("Writing AGENTS.md.", {
     silent: options.silent,
@@ -141,8 +210,24 @@ export async function runAgentsSync(
   await fs.writeFile(agentsPath, nextAgents, "utf8")
   writeSpinner.succeed()
 
-  if (options.skill !== false) {
-    await installAgentSkills(cwd, { silent: options.silent })
+  // A failed skills install THROWS (it is fatal by design), so it never
+  // reaches a `warnings` array — the structured facts belong on the error
+  // envelope instead, where `installAgentSkills` now puts them.
+  const skills =
+    options.skill === false
+      ? { installed: [] as string[], skipped: [] as string[] }
+      : ((await installAgentSkills(cwd, { silent: options.silent })) ?? {
+          installed: [] as string[],
+          skipped: [] as string[],
+        })
+
+  return {
+    agentsChanged,
+    agentsPath,
+    skills,
+    // Empty on success BY CONSTRUCTION: everything runAgentsSync can report
+    // here already worked. N3 called this hardcoded — it is, deliberately.
+    warnings: [],
   }
 }
 

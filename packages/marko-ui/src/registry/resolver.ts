@@ -553,7 +553,24 @@ export async function resolveRegistryTree(
     parsed.envVars = envVars
   }
 
-  return parsed
+  // The item NAMES, attached after the parse because the resolved-tree schema
+  // does not carry them. `add` has to report what it actually installed, and
+  // `add button dialog` also installs `icon` — a caller told it installed two
+  // components when three landed on disk is worse than no report at all.
+  // `dependencyItems` is the ones NOT named on the command line.
+  const requested = new Set(items.map((item) => item.name))
+  return Object.assign(parsed, {
+    items: payload.map((item) => item.name),
+    dependencyItems: payload
+      .filter((item) => !requested.has(item.name))
+      .map((item) => item.name),
+  }) as typeof parsed & ResolvedTreeNames
+}
+
+/** The item names a resolved tree carries, beyond its schema fields. */
+export type ResolvedTreeNames = {
+  items: string[]
+  dependencyItems: string[]
 }
 
 async function resolveDependenciesRecursively(

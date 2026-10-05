@@ -231,6 +231,8 @@ describe("addComponents", () => {
       devDependencies: [],
       files: [],
       cssVars: {},
+      items: ["button"],
+      dependencyItems: [],
     }
 
     await addComponents(

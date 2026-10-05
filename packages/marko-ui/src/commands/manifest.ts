@@ -1,4 +1,5 @@
 import { RegistryErrorCode } from "@/src/registry/errors"
+import { WarningCode } from "@/src/utils/command-result"
 import {
   ERROR_ENVELOPE_TYPE,
   ERROR_ENVELOPE_VERSION,
@@ -91,6 +92,14 @@ export function buildManifest(program: Command, commandName?: string) {
         // Stable machine-readable error codes carried by registry errors
         // (RegistryError.code in error output and thrown errors).
         errorCodes: Object.values(RegistryErrorCode),
+        // Stable machine-readable WARNING codes, for the commands that
+        // report something that needs attention without failing
+        // (`add`, `init`, `eject`, `diff`, `agents sync`). A warning is not
+        // an error: the command did its job, `ok` stays true, and the
+        // warning carries its own `fix`. Listed here, next to errorCodes, so
+        // one `manifest` call is the whole vocabulary a program needs to
+        // branch on either outcome.
+        warningCodes: Object.values(WarningCode),
         // How a failure reaches a machine. Stated here so a caller can rely
         // on it without reading the CLI's source: stdout carries only the
         // result, and with --json a failure is exactly one envelope of this

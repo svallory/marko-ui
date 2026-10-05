@@ -17,12 +17,22 @@ import {
 import { getProjectTailwindVersionFromConfig } from "@/src/utils/get-project-info"
 import { isInteractive } from "@/src/utils/interactive"
 import { isSafeTarget } from "@/src/utils/is-safe-target"
+import { RegistryError, RegistryErrorCode } from "@/src/registry/errors"
+import { CommandError } from "@/src/utils/handle-error"
+import { highlighter } from "@/src/utils/highlighter"
+import { green, yellow } from "kleur/colors"
 import { logger } from "@/src/utils/logger"
 import { spinner } from "@/src/utils/spinner"
 import {
   getTargetAliasKey,
   type TargetAliasKey,
 } from "@/src/utils/target-aliases"
+import type {
+  CommandWarning,
+  DependencyChange,
+  FileChange,
+} from "@/src/utils/command-result"
+import { WarningCode, toFileChanges } from "@/src/utils/command-result"
 import { updateCss } from "@/src/utils/updaters/update-css"
 import { updateDependencies } from "@/src/utils/updaters/update-dependencies"
 import { updateEnvVars } from "@/src/utils/updaters/update-env-vars"
@@ -49,11 +59,124 @@ export interface AddComponentsOptions {
 
 type AddWorkspaceComponentsOptions = AddComponentsOptions
 
+/**
+ * What an `add` (or `eject`, which reuses this engine) actually did.
+ *
+ * Returned rather than only printed: the caller is either a human (the
+ * existing spinner + list output, unchanged) or a program reading
+ * `--json`, and the two must never be computed from different sources.
+ */
+export type AddResult = {
+  /** cwd-relative, status-tagged, sorted. */
+  files: FileChange[]
+  dependencies: DependencyChange[]
+  warnings: CommandWarning[]
+  /**
+   * Every item the run ACTUALLY wrote files for, in the order they resolved:
+   * the requested ones plus whatever they pulled in. `items.resolved` used to
+   * be a copy of `requested`, which made `add button dialog` (which also
+   * installs `icon`) report that it installed two components when it
+   * installed three.
+   */
+  resolved: string[]
+  /**
+   * Items that were NOT named on the command line — the registry
+   * dependencies, by name. Empty for an item with no `registryDependencies`.
+   */
+  registryDependencies: string[]
+}
+
+/**
+ * Runs the fetch-and-write pipeline, and on a MID-WAY failure re-throws with
+ * the files that were already written attached to the error.
+ *
+ * An add that wrote four component files and then failed on the stylesheet has
+ * left the project in a state the caller must know about: a bare error saying
+ * "could not update CSS" invites a "just run it again", which is not obviously
+ * wrong, while a silent partial write is. `details.written` (cwd-relative, the
+ * same shape as a successful result's `files`) says what actually happened
+ * without the caller having to diff the filesystem.
+ */
 export async function addComponents(
   components: string[],
   config: Config,
   options: AddComponentsOptions
-) {
+): Promise<AddResult> {
+  const alreadyWritten: FileChange[] = []
+  try {
+    return await addComponentsInner(components, config, options, alreadyWritten)
+  } catch (error) {
+    if (alreadyWritten.length) {
+      // The original class's code is preserved when it is one we know:
+      // a partial write is still the failure it was (NETWORK_ERROR exit 4
+      // stays exit 4). A raw filesystem error is NOT left to the handler as
+      // UNKNOWN_ERROR with a bare `ENOTDIR` — that told the caller nothing
+      // they could act on and carried no advice at all.
+      const known = error instanceof RegistryError
+      throw new CommandError(
+        error instanceof Error ? error.message : String(error),
+        {
+          code: known
+            ? error.code
+            : isFileWriteFailure(error)
+              ? RegistryErrorCode.LOCAL_FILE_ERROR
+              : undefined,
+          exitCode: error instanceof CommandError ? error.exitCode : undefined,
+          suggestion: isFileWriteFailure(error)
+            ? "Check that the path is a directory, not a file, and that you can write to it. Files listed in details.written are on disk; remove them or re-run with --overwrite."
+            : undefined,
+          details: { written: dedupeFiles(alreadyWritten) },
+        }
+      )
+    }
+    // Nothing was written, so there is no partial state to report — but the
+    // same classification applies.
+    if (isFileWriteFailure(error)) {
+      throw new CommandError(
+        error instanceof Error ? error.message : String(error),
+        {
+          code: RegistryErrorCode.LOCAL_FILE_ERROR,
+          suggestion:
+            "Check that the path is a directory, not a file, and that you can write to it.",
+        }
+      )
+    }
+    throw error
+  }
+}
+
+/**
+ * `filesRemoved` entries the per-file accumulation could not have seen: a
+ * stale icon map is deleted by a separate step, not by the main write loop.
+ */
+function removalsNotYetReported(
+  groups: { filesRemoved?: string[] },
+  already: FileChange[]
+): FileChange[] {
+  const seen = new Set(already.map((file) => file.path))
+  return (groups.filesRemoved ?? [])
+    .filter((file) => !seen.has(file))
+    .map((file) => ({ path: file, status: "removed" as const }))
+}
+
+/** Last write wins per path, so a path is never listed twice. */
+function dedupeFiles(files: FileChange[]): FileChange[] {
+  const byPath = new Map<string, FileChange>()
+  for (const file of files) {
+    byPath.set(file.path, file)
+  }
+  return Array.from(byPath.values()).sort((a, b) =>
+    a.path.localeCompare(b.path)
+  )
+}
+
+async function addComponentsInner(
+  components: string[],
+  config: Config,
+  options: AddComponentsOptions,
+  /** Accumulates file changes as they are written, for the partial-write report. */
+  alreadyWritten: FileChange[]
+): Promise<AddResult> {
   options = {
     overwrite: false,
     silent: false,
@@ -72,45 +195,68 @@ export async function addComponents(
     workspaceConfig.ui &&
     workspaceConfig.ui.resolvedPaths.cwd !== config.resolvedPaths.cwd
   ) {
-    return await addWorkspaceComponents(components, config, workspaceConfig, {
-      ...options,
-    })
+    return await addWorkspaceComponents(
+      components,
+      config,
+      workspaceConfig,
+      { ...options },
+      alreadyWritten
+    )
   }
 
-  return await addProjectComponents(components, config, {
-    ...options,
-    skipFonts: options.skipFonts,
-  })
+  return await addProjectComponents(
+    components,
+    config,
+    { ...options, skipFonts: options.skipFonts },
+    alreadyWritten
+  )
 }
 
 async function addProjectComponents(
   components: string[],
   config: z.infer<typeof configSchema>,
-  options: AddComponentsOptions
-) {
+  options: AddComponentsOptions,
+  alreadyWritten: FileChange[]
+): Promise<AddResult> {
   if (!components.length) {
-    return
+    return emptyAddResult()
   }
 
   let tree = await resolveAndValidateRegistryTree(components, config, options)
 
   const tailwindVersion = await getProjectTailwindVersionFromConfig(config)
 
-  await updateDependencies(tree.dependencies, tree.devDependencies, config, {
-    silent: options.silent,
-    interactive: options.interactive,
-  })
+  const dependencies =
+    (await updateDependencies(tree.dependencies, tree.devDependencies, config, {
+      silent: options.silent,
+      interactive: options.interactive,
+    })) ?? []
 
   await updateEnvVars(tree.envVars, config, {
     silent: options.silent,
   })
 
-  await updateFiles(tree.files, config, {
-    overwrite: options.overwrite,
-    silent: options.silent,
-    interactive: options.interactive,
-    path: options.path,
-  })
+  const writtenGroups =
+    (await updateFiles(tree.files, config, {
+      overwrite: options.overwrite,
+      silent: options.silent,
+      interactive: options.interactive,
+      path: options.path,
+      // Reported file-by-file, so a write failing INSIDE the loop still tells
+      // the caller what already landed (B2).
+      written: alreadyWritten,
+    })) ?? {
+      filesCreated: [],
+      filesUpdated: [],
+      filesSkipped: [],
+      filesUnchanged: [],
+      filesRemoved: [],
+    }
+
+  // `written: alreadyWritten` above already accumulated these; this covers the
+  // files the writer reports but did not write one-by-one (the icon-map
+  // removals), so the partial-write list matches the real one.
+  alreadyWritten.push(...removalsNotYetReported(writtenGroups, alreadyWritten))
 
   // Write CSS last so the file watcher triggers a rebuild
   // after all component files and dependencies are in place.
@@ -120,7 +266,7 @@ async function addProjectComponents(
     config,
     options.overwriteCssVars
   )
-  await updateCss(tree.css, config, {
+  const cssPath = await updateCss(tree.css, config, {
     silent: options.silent,
     cssVars: tree.cssVars,
     overwriteCssVars,
@@ -131,16 +277,109 @@ async function addProjectComponents(
   if (tree.docs) {
     logger.info(tree.docs)
   }
+
+  const names = resolvedItemNames(tree)
+  return {
+    files: withCssFile(toFileChanges(writtenGroups), cssPath, config.resolvedPaths.cwd),
+    dependencies,
+    warnings: collectWarnings(dependencies, tree.docs),
+    resolved: names.resolved,
+    registryDependencies: names.registryDependencies,
+  }
+}
+
+/**
+ * What a resolved tree actually contains: every item it fetched, and which of
+ * those were pulled in rather than asked for.
+ *
+ * `items` and `dependencyItems` are exactly that split — `resolveRegistryTree`
+ * resolves the requested addresses first and recurses into
+ * `registryDependencies` into a second list. Reading the split off the tree
+ * is the point: reconstructing it from the requested names would report what
+ * the caller asked for, not what the CLI installed.
+ */
+export function resolvedItemNames(
+  tree: NonNullable<Awaited<ReturnType<typeof resolveRegistryTree>>>
+): { resolved: string[]; registryDependencies: string[] } {
+  // `items`/`dependencyItems` are NAME strings, attached by the resolver.
+  const resolved = uniqueNames([
+    ...(tree.items ?? []),
+    ...(tree.dependencyItems ?? []),
+  ])
+  const pulledIn = uniqueNames(tree.dependencyItems ?? [])
+  return { resolved, registryDependencies: pulledIn }
+}
+
+function uniqueNames(names: string[]): string[] {
+  return Array.from(new Set(names))
+}
+
+/** An `add` that changed nothing, in the same shape as one that changed a lot. */
+export function emptyAddResult(): AddResult {
+  return {
+    files: [],
+    dependencies: [],
+    warnings: [],
+    resolved: [],
+    registryDependencies: [],
+  }
+}
+
+/**
+ * The CSS entry is a file the command touched like any other, so it belongs
+ * in `files` — it used to be invisible to a program entirely, which made
+ * "did `add` write my stylesheet?" unanswerable without reading stderr.
+ */
+function withCssFile(
+  files: FileChange[],
+  cssPath: string | undefined,
+  cwd: string
+): FileChange[] {
+  if (!cssPath) return files
+  const relative = path.relative(cwd, cssPath)
+  if (files.some((file) => file.path === relative)) return files
+  const added: FileChange = { path: relative, status: "updated" }
+  return [...files, added].sort((a, b) => a.path.localeCompare(b.path))
+}
+
+/**
+ * Warnings, in the one shape both renderings use: a stable `code`, the human
+ * `message`, and the command that fixes it. The text here is the SAME text
+ * the human path prints, so what a person reads and what a program parses
+ * cannot drift.
+ */
+function collectWarnings(
+  dependencies: DependencyChange[],
+  docs: string | null | undefined
+): CommandWarning[] {
+  const warnings: CommandWarning[] = []
+  const failed = dependencies.filter((dep) => dep.status === "failed")
+  if (failed.length) {
+    warnings.push({
+      code: WarningCode.DEPENDENCY_INSTALL_FAILED,
+      message: `Could not install ${failed.map((dep) => dep.name).join(", ")}. Component files were still written.`,
+      fix: `Install them with your package manager, e.g. bun add ${failed.map((dep) => dep.name).join(" ")}`,
+    })
+  }
+  if (docs) {
+    warnings.push({
+      code: WarningCode.ITEM_HAS_DOCS,
+      message: docs,
+      fix: "marko-ui docs <name>",
+    })
+  }
+  return warnings
 }
 
 async function addWorkspaceComponents(
   components: string[],
   config: z.infer<typeof configSchema>,
   workspaceConfig: z.infer<typeof workspaceConfigSchema>,
-  options: AddWorkspaceComponentsOptions
-) {
+  options: AddWorkspaceComponentsOptions,
+  alreadyWritten: FileChange[]
+): Promise<AddResult> {
   if (!components.length) {
-    return
+    return emptyAddResult()
   }
 
   let tree = await resolveAndValidateRegistryTree(components, config, options)
@@ -148,6 +387,7 @@ async function addWorkspaceComponents(
   const filesCreated: string[] = []
   const filesUpdated: string[] = []
   const filesSkipped: string[] = []
+  const filesUnchanged: string[] = []
 
   const rootSpinner = spinner(`Installing components.`)?.start()
 
@@ -162,15 +402,16 @@ async function addWorkspaceComponents(
   )
 
   // 1. Update dependencies.
-  await updateDependencies(
-    tree.dependencies,
-    tree.devDependencies,
-    mainTargetConfig,
-    {
-      silent: true,
-      interactive: options.interactive,
-    }
-  )
+  const workspaceDependencies =
+    (await updateDependencies(
+      tree.dependencies,
+      tree.devDependencies,
+      mainTargetConfig,
+      {
+        silent: true,
+        interactive: options.interactive,
+      }
+    )) ?? []
 
   // 3. Update environment variables.
   if (tree.envVars) {
@@ -234,15 +475,24 @@ async function addWorkspaceComponents(
       )) ?? targetConfig.resolvedPaths.cwd
 
     // Update files for this target config.
-    const files = await updateFiles(targetFiles, targetConfig, {
-      overwrite: options.overwrite,
-      silent: true,
-      interactive: options.interactive,
+    const files =
+      (await updateFiles(targetFiles, targetConfig, {
+        overwrite: options.overwrite,
+        silent: true,
+        interactive: options.interactive,
       rootSpinner,
-      isWorkspace: true,
-      path: options.path,
-      plannedFiles,
-    })
+        isWorkspace: true,
+        path: options.path,
+        plannedFiles,
+        // B2, workspace path: same per-file accumulation.
+        written: alreadyWritten,
+      })) ?? {
+      filesCreated: [],
+      filesUpdated: [],
+      filesSkipped: [],
+      filesUnchanged: [],
+      filesRemoved: [],
+    }
 
     filesCreated.push(
       ...files.filesCreated.map((file) =>
@@ -256,6 +506,11 @@ async function addWorkspaceComponents(
     )
     filesSkipped.push(
       ...files.filesSkipped.map((file) =>
+        path.relative(typeWorkspaceRoot, path.join(packageRoot, file))
+      )
+    )
+    filesUnchanged.push(
+      ...(files.filesUnchanged ?? []).map((file) =>
         path.relative(typeWorkspaceRoot, path.join(packageRoot, file))
       )
     )
@@ -291,6 +546,15 @@ async function addWorkspaceComponents(
   ).sort()
   const dedupedSkipped = Array.from(new Set(filesSkipped)).sort()
 
+  // Collected BEFORE the human printing below, and from the same arrays, so
+  // the two renderings cannot disagree about what happened.
+  const resultFiles = toFileChanges({
+    filesCreated: dedupedCreated,
+    filesUpdated: dedupedUpdated,
+    filesSkipped: dedupedSkipped,
+    filesUnchanged: Array.from(new Set(filesUnchanged)).sort(),
+  })
+
   const hasUpdatedFiles = dedupedCreated.length || dedupedUpdated.length
   if (!hasUpdatedFiles && !dedupedSkipped.length) {
     spinner(`No files updated.`, {
@@ -298,6 +562,11 @@ async function addWorkspaceComponents(
     })?.info()
   }
 
+  // The file list on stdout carries its status PER LINE, not just in the
+  // spinner headers on stderr. That is the whole point: stdout alone used to
+  // be a bare list of paths, so a fresh install and a re-run that skipped
+  // everything printed the same thing, and only stderr (a spinner frame) said
+  // which happened.
   if (dedupedCreated.length) {
     spinner(
       `Created ${dedupedCreated.length} ${
@@ -308,7 +577,7 @@ async function addWorkspaceComponents(
       }
     )?.succeed()
     for (const file of dedupedCreated) {
-      logger.log(`  - ${file}`)
+      logger.log(`  ${green("created")} ${file}`)
     }
   }
 
@@ -322,7 +591,7 @@ async function addWorkspaceComponents(
       }
     )?.info()
     for (const file of dedupedUpdated) {
-      logger.log(`  - ${file}`)
+      logger.log(`  ${yellow("updated")} ${file}`)
     }
   }
 
@@ -336,12 +605,21 @@ async function addWorkspaceComponents(
       }
     )?.info()
     for (const file of dedupedSkipped) {
-      logger.log(`  - ${file}`)
+      logger.log(`  ${yellow("skipped")} ${file}`)
     }
   }
 
   if (tree.docs) {
     logger.info(tree.docs)
+  }
+
+  const names = resolvedItemNames(tree)
+  return {
+    files: resultFiles,
+    dependencies: workspaceDependencies,
+    warnings: collectWarnings(workspaceDependencies, tree.docs),
+    resolved: names.resolved,
+    registryDependencies: names.registryDependencies,
   }
 }
 
@@ -422,4 +700,26 @@ export function validateFilesTarget(
       )
     }
   }
+}
+
+
+/**
+ * A failure to write a file, as opposed to anything else that can go wrong in
+ * an add.
+ *
+ * The errno is the tell: ENOTDIR (a path component is a regular file),
+ * EACCES/EPERM (no permission), ENOSPC (disk full), EROFS (read-only mount).
+ * These used to reach the error handler as `UNKNOWN_ERROR` with the bare errno
+ * as the message — the one class of failure where the CLI genuinely CAN tell
+ * the user what to do, reported as if it could not.
+ */
+export function isFileWriteFailure(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) return false
+  const code = (error as { code?: unknown }).code
+  return (
+    typeof code === "string" &&
+    ["ENOTDIR", "EACCES", "EPERM", "ENOSPC", "EROFS", "EISDIR", "EMFILE"].includes(
+      code
+    )
+  )
 }

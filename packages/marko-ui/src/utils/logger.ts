@@ -1,4 +1,5 @@
 import { highlighter } from "@/src/utils/highlighter"
+import { isJsonMode } from "@/src/utils/output-mode"
 
 /**
  * Diagnostic output.
@@ -22,6 +23,15 @@ import { highlighter } from "@/src/utils/highlighter"
  * whose failure is also rendered by `handleError` is a bug (the error path
  * prints exactly once, from `handleError`). Use `logger.warn` for a
  * non-fatal note the user should see but that does not end the run.
+ *
+ * **Under `--json`, the stdout writers print NOTHING.** That is the whole
+ * reason this is one function rather than a check in every command: the
+ * contract is "stdout carries exactly one document", and a command that
+ * narrates progress through `logger.info` before reaching its envelope would
+ * otherwise prepend prose to the JSON and break every parser. Suppressed at
+ * the choke point so it cannot be forgotten per call site. The stderr writers
+ * are NOT suppressed: a real warning still belongs on stderr in `--json`
+ * mode, where nothing else will show it.
  */
 
 /**
@@ -60,15 +70,19 @@ export const logger = {
     console.error(highlighter.warn(args.join(" ")))
   },
   info(...args: unknown[]) {
+    if (isJsonMode()) return
     console.log(highlighter.info(args.join(" ")))
   },
   success(...args: unknown[]) {
+    if (isJsonMode()) return
     console.log(highlighter.success(args.join(" ")))
   },
   log(...args: unknown[]) {
+    if (isJsonMode()) return
     console.log(args.join(" "))
   },
   break() {
+    if (isJsonMode()) return
     console.log("")
   },
   /** A blank line on stderr, for spacing around error output. */

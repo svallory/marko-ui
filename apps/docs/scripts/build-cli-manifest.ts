@@ -58,6 +58,10 @@ export type CliManifest = {
   cliVersion: string;
   commands: CliCommand[];
   exitCodes: Record<string, string>;
+  /** Stable machine-readable warning codes, next to the error codes in the
+   *  CLI's own manifest. Carried here so the docs page can list one
+   *  vocabulary for both outcomes. */
+  warningCodes?: string[];
   agentWorkflow: string[];
 };
 `;
@@ -67,6 +71,7 @@ const data = `export const CLI_MANIFEST: CliManifest = ${JSON.stringify(
     cliVersion: manifest.data.cliVersion,
     commands: manifest.data.commands,
     exitCodes: manifest.data.exitCodes,
+    warningCodes: manifest.data.warningCodes,
     agentWorkflow: manifest.data.agentWorkflow,
   },
   null,

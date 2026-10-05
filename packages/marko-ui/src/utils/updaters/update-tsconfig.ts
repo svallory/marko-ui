@@ -3,6 +3,11 @@ import path from "path"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import { spinner } from "@/src/utils/spinner"
+import {
+  type CommandWarning,
+  recordWarning,
+  WarningCode,
+} from "@/src/utils/command-result"
 import type { Config } from "@/src/utils/get-config"
 
 /**
@@ -120,7 +125,7 @@ function stripJsoncComments(source: string): string {
  */
 export async function updateTsConfig(
   config: Config,
-  options: { silent?: boolean } = {}
+  options: { silent?: boolean; warnings?: CommandWarning[] } = {}
 ) {
   const tsconfigPath = path.resolve(config.resolvedPaths.cwd, "tsconfig.json")
 
@@ -136,21 +141,15 @@ export async function updateTsConfig(
   // TS5096 and break typecheck outright. Name the manual step instead of
   // silently making things worse, or silently doing nothing.
   if (!allowsTsExtensionImports(content)) {
-    if (!options.silent) {
-      logger.warn(
-        `tsconfig.json emits output, so ${highlighter.info(
-          "allowImportingTsExtensions"
-        )} cannot be set (TS5096). Components import with explicit ${highlighter.info(
-          ".ts"
-        )} extensions, so add ${highlighter.info(
-          '"noEmit": true'
-        )} (apps), ${highlighter.info(
-          '"emitDeclarationOnly": true'
-        )}, or ${highlighter.info(
-          '"rewriteRelativeImportExtensions": true'
-        )} (TS 5.7+), then re-run ${highlighter.info("marko-ui init")}.`
-      )
-    }
+    // ONE warning object, printed by the same helper that serializes it.
+    // The two renderings previously held two strings, which is how the human
+    // copy ended up without a `fix` and with different quoting.
+    recordWarning(options.warnings, {
+      code: WarningCode.TS_ALLOW_IMPORTING_EXTENSIONS,
+      message:
+        'tsconfig.json emits output, so "allowImportingTsExtensions" cannot be set (TS5096). Components import with explicit .ts extensions, so add "noEmit": true (apps), "emitDeclarationOnly": true, or "rewriteRelativeImportExtensions": true (TS 5.7+), then re-run marko-ui init.',
+      fix: 'Add "noEmit": true to compilerOptions in tsconfig.json',
+    }, options)
     return
   }
 
@@ -159,14 +158,16 @@ export async function updateTsConfig(
     // Either the option is already set (nothing to do, the idempotent path) or
     // there is no compilerOptions block to extend — which needs saying, since
     // the components will not typecheck without it.
-    if (!options.silent && !/"compilerOptions"\s*:\s*\{/.test(content)) {
-      logger.warn(
-        `tsconfig.json has no ${highlighter.info(
-          "compilerOptions"
-        )} block. Add ${highlighter.info(
-          '"allowImportingTsExtensions": true'
-        )} to it, or components will not typecheck.`
-      )
+    // N4: collected regardless of `silent`, like the TS5096 case above. It
+    // used to sit INSIDE the silent check, so `init -s --json` silently lost
+    // a warning the non-silent run reported.
+    if (!/"compilerOptions"\s*:\s*\{/.test(content)) {
+      recordWarning(options.warnings, {
+        code: WarningCode.TS_ALLOW_IMPORTING_EXTENSIONS,
+        message:
+          'tsconfig.json has no "compilerOptions" block. Add "allowImportingTsExtensions": true to it, or components will not typecheck.',
+        fix: 'Add "compilerOptions": { "allowImportingTsExtensions": true } to tsconfig.json',
+      }, options)
     }
     return
   }

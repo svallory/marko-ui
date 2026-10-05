@@ -286,11 +286,45 @@ Registry components express this via marko-zag's `<zag>` tag (`packages/shadcn`'
 
 `normalizeProps` is Marko-specific: `class`/`for` renames, style-object hyphenation, `event.currentTarget` shadowing (Marko delegates events), SSR handler stripping. `<zag>`/`connect()` apply it by default, so most components never import it.
 
-## Agent-facing CLI documentation
+## Result objects for commands that change things
+
+`add`, `init`, `eject`, `diff` and `agents sync` all take `--json` and return ONE shape, owned
+by `packages/marko-ui/src/utils/command-result.ts`: `files` (`{path, status}`, relative to the
+`cwd` given once), `warnings` (`{code, message, fix}`, codes in `WarningCode`, listed by
+`marko-ui manifest` under `warningCodes` next to `errorCodes`), and `next`. Three rules:
+
+- **A warning is not a failure.** `ok` stays `true` — a project whose CSS entry is not imported
+  IS initialized. Making it false would fail a CI check on every stock `create-marko` scaffold,
+  which is exactly where the warning matters most.
+- **`skipped` and `unchanged` are different facts**: `skipped` = exists and differs, left alone
+  (`--overwrite` would have replaced it); `unchanged` = already matched. `add`'s vocabulary is
+  `created`/`updated`/`skipped`/`unchanged`/`removed`; `diff`'s is `unchanged`/`modified`/
+  `missing` — deliberately different questions, deliberately different words.
+- **`add --dry-run --json` returns the same shape plus `dryRun: true` and PLANNED statuses.**
+  "Would be created" and "was created" must never share a vocabulary.
+
+The results are RETURNED from `addComponents` / `updateDependencies` / `updateCss` rather than
+recomputed by the command, because a second code path computing the same facts is how the human
+and machine renderings drift apart. If you add a fact to the human output, add it to the
+`AddResult` too.
 
 Verify JSON shape in the command implementation before documenting a shared envelope.
 **EVERY JSON document the CLI prints goes through `packages/marko-ui/src/utils/json-output.ts`**
 (`printJson` / `printEnvelope`), and no command calls `JSON.stringify` for output itself.
+**`logger.info`/`log`/`success`/`break` print NOTHING under `--json`** — that suppression lives
+in `logger.ts` on purpose. Those are the stdout writers, so a command that narrates progress
+before reaching its envelope prepends prose to the document and breaks every parser; that is
+exactly what `add --dry-run --json` did ("This project is not initialized…") until the check
+was moved into the logger. The stderr writers (`error`, `warn`, `debug`) are NOT suppressed: a
+real warning still belongs on stderr in `--json` mode. Never "fix" a `--json` command by
+adding a `logger.info`; the answer is the envelope.
+**`isJsonMode()` reads ONLY the recorded mode — it does not fall back to argv.** The old
+fallback misfired on a command with no `--json` flag: `registry add -- --json` parses
+`--json` as a positional, and the CLI answered with a JSON error envelope and swallowed that
+command's `logger.info` output. The one caller that legitimately runs before any action exists
+— `index.ts`'s commander hook — uses `isJsonModeForErrors()`, which reads argv but STOPS at
+the `--` separator so a post-`--` positional is not mistaken for the flag. `handleError` uses
+the recorded mode: it runs from a command's own catch, after the action recorded the flag.
 Two facts to know before changing anything here:
 - **Minified unless stdout is a TTY.** `jsonIndent(stream)` returns 2 for a terminal and 0
   otherwise, because the reader is usually an AI agent and pretty-printed JSON costs 28-43%
