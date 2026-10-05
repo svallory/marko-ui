@@ -140,7 +140,7 @@ jobs:
       - run: bun install --frozen-lockfile
       - name: Cache the built registry
         id: cache
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: apps/docs/public/r
           # Everything build-registry.ts reads (see ci.yml's `registry` filter).
@@ -182,7 +182,7 @@ jobs:
         with:
           bun-version: 1.3.11
       - run: bun install --frozen-lockfile
-      - uses: actions/setup-node@7f84f1d52d0c56afb45c62fee31a93b843cea4d6 # v4
+      - uses: actions/setup-node@54337e0d02de9202d0948aaff36ad556375497b9 # v4
         with:
           node-version: 24
       # The pm.* and pty scenarios skip (not fail) when a tool is missing, so a
@@ -238,7 +238,7 @@ jobs:
         with:
           bun-version: 1.3.11
       - run: bun install --frozen-lockfile
-      - uses: actions/setup-node@7f84f1d52d0c56afb45c62fee31a93b843cea4d6 # v4
+      - uses: actions/setup-node@54337e0d02de9202d0948aaff36ad556375497b9 # v4
         with:
           node-version: ${{ matrix.node }}
       - name: Download the shared registry build
@@ -282,7 +282,7 @@ jobs:
         with:
           bun-version: 1.3.11
       - run: bun install --frozen-lockfile
-      - uses: actions/setup-node@7f84f1d52d0c56afb45c62fee31a93b843cea4d6 # v4
+      - uses: actions/setup-node@54337e0d02de9202d0948aaff36ad556375497b9 # v4
         with:
           node-version: 24
       - name: Run core kind
