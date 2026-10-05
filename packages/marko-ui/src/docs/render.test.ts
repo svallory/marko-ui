@@ -496,3 +496,33 @@ describe("renderComponentDocs: union shapes", () => {
     expect(md).toContain("#### `menu`\n\n- radioChange(string, value: string)");
   });
 });
+
+describe("renderComponentDocs: an installed component", () => {
+  const withRequires = model({ requires: ["icon"], usageSnippet: '<Button><Icon name="X"/></Button>' });
+
+  it("copy: omits the Install section but still names a requirement's add", () => {
+    const md = renderComponentDocs(withRequires, "essential", {
+      importStyle: { kind: "copy", uiAlias: "@/components/ui" },
+      installed: true,
+    });
+    expect(md).not.toContain("## Install");
+    expect(md).not.toContain("bunx marko-ui add button -y");
+    expect(md).toContain("bunx marko-ui add icon -y");
+  });
+
+  it("import: omits the package install line; the Usage imports remain", () => {
+    const md = renderComponentDocs(withRequires, "essential", {
+      importStyle: { kind: "import" },
+      installed: true,
+    });
+    expect(md).not.toContain("## Install");
+    expect(md).not.toContain("bun add");
+    expect(md).toContain('import Button from "@marko-ui/shadcn/ui/button/button.marko";');
+  });
+
+  it("not installed: keeps the exact add command", () => {
+    const md = renderComponentDocs(withRequires, "essential", { installed: false });
+    expect(md).toContain("## Install");
+    expect(md).toContain("bunx marko-ui add button -y");
+  });
+});

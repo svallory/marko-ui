@@ -25,6 +25,13 @@ import { logger } from "@/src/utils/logger"
 import { setJsonMode } from "@/src/utils/output-mode"
 import { ensureRegistriesInConfig } from "@/src/utils/registries"
 import { closestNames } from "@/src/utils/suggest"
+import {
+  isComponentInstalled,
+  readDocsCacheEntry,
+  writeDocsCacheEntries,
+} from "@/src/utils/docs-cache"
+import { registryItemContentHash } from "@/src/registry/resolver"
+import { componentDocsSchema } from "@/src/registry/schema"
 import { Command } from "commander"
 import fsExtra from "fs-extra"
 import { z } from "zod"
@@ -35,6 +42,7 @@ const docsOptionsSchema = z.object({
   json: z.boolean(),
   examples: z.boolean(),
   example: z.array(z.string()),
+  remote: z.boolean(),
 })
 
 /**
@@ -66,6 +74,11 @@ export const docs = new Command()
     "--example <id...>",
     "print only the named examples. Every id is listed in the \"More examples\" section of the default output.",
   )
+  .option(
+    "--remote",
+    "read the docs from the registry even for an installed component (default: the installed version's docs).",
+    false,
+  )
   .action(async (components: string[], opts) => {
     try {
       // Recorded before anything can fail so a failure takes the JSON error
@@ -83,6 +96,7 @@ export const docs = new Command()
         json: opts.json,
         examples: Boolean(opts.examples),
         example: opts.example ?? [],
+        remote: Boolean(opts.remote),
       })
 
       await loadEnvFiles(options.cwd)
@@ -139,22 +153,89 @@ export const docs = new Command()
       // to `--list` only — so an agent asking for the JSON of one component got
       // something it had to re-parse, and the guard could not tell the two
       // apart.
-      const documents: { name: string; markdown: string; docs: ComponentDocs }[] = []
+      const documents: {
+        name: string
+        markdown: string
+        docs: ComponentDocs
+        source: DocsSource
+      }[] = []
+
+      // A project is a directory with a components.json; without one there is
+      // nothing installed and the registry answers, exactly as before.
+      const project = fsExtra.existsSync(path.resolve(options.cwd, "components.json"))
+      const installedPackage =
+        project && config.distribution === "import"
+          ? findInstalledPackage(options.cwd)
+          : null
+      let notedOldPackage = false
 
       for (const name of components) {
-        // A 404 for one name is a MISS, not a thrown error: `docs nope button`
-        // must still print button. `getRegistryItems` throws for an item that
-        // is not there, which used to abort the whole loop and lose the pages
-        // that DID resolve.
-        let item: RegistryItem | undefined
-        try {
-          const found = await getRegistryItems([name], { config })
-          item = found[0]
-        } catch (error) {
-          if (!(error instanceof RegistryItemNotFoundError)) throw error
-          item = undefined
+        const installed = project && isInstalled(config, name, installedPackage)
+
+        // 1. The installed version's docs, unless --remote: the copy
+        //    distribution's cache (written by `add`), or the docs the installed
+        //    @marko-ui/shadcn package carries. No network.
+        let local: { model: ComponentDocs; source: DocsSource } | null = null
+        if (project && !options.remote) {
+          if (config.distribution === "import") {
+            if (installedPackage && !installedPackage.hasDocs && !notedOldPackage) {
+              notedOldPackage = true
+              logger.warn(
+                `@marko-ui/shadcn ${installedPackage.version} ships no docs data; reading the registry instead.`
+              )
+            }
+            local = await readPackageDocs(installedPackage, name)
+          } else {
+            const cached = await readDocsCacheEntry(config, name)
+            if ("entry" in cached) {
+              local = {
+                model: cached.entry.componentDocs as ComponentDocs,
+                source: {
+                  kind: "cache",
+                  registry: cached.entry.registry,
+                  contentHash: cached.entry.contentHash,
+                },
+              }
+            }
+          }
         }
-        const model = item?.componentDocs
+
+        let model: ComponentDocs | undefined = local?.model
+        let source: DocsSource = local?.source ?? { kind: "registry" }
+        if (!model) {
+          // 2. The registry. A 404 for one name is a MISS, not a thrown error:
+          // `docs nope button` must still print button. `getRegistryItems`
+          // throws for an item that is not there, which used to abort the
+          // whole loop and lose the pages that DID resolve.
+          let item: RegistryItem | undefined
+          try {
+            const found = await getRegistryItems([name], { config })
+            item = found[0]
+          } catch (error) {
+            if (!(error instanceof RegistryItemNotFoundError)) throw error
+            item = undefined
+          }
+          model = item?.componentDocs as ComponentDocs | undefined
+          // An installed copy component with no cache entry (installed before
+          // the cache existed, or the cache was cleared): store it now, so the
+          // next call is local.
+          if (
+            model &&
+            item &&
+            installed &&
+            config.distribution !== "import"
+          ) {
+            await writeDocsCacheEntries(config, [
+              {
+                name,
+                source: name,
+                contentHash: registryItemContentHash(item),
+                componentDocs: item.componentDocs!,
+              },
+            ])
+          }
+          source = { kind: "registry" }
+        }
         if (!model) {
           // A typo is the overwhelmingly common reason. The index may be
           // unreachable (in which case there is nothing to suggest), so
@@ -182,7 +263,10 @@ export const docs = new Command()
         // Without this the Usage block and the examples disagreed — Usage
         // printed the copy path while every example printed the package path,
         // so neither was copy-pasteable.
-        const markdown = renderComponentDocs(model, selection, { importStyle })
+        const markdown = renderComponentDocs(model, selection, {
+          importStyle,
+          installed,
+        })
         if (options.json) {
           // The model rides along as data, but WITHOUT every example's
           // source: embedding all 17 of button's examples made the envelope
@@ -193,8 +277,14 @@ export const docs = new Command()
             name,
             markdown,
             docs: { ...model, examples: selectedExampleDocs(model, selection) },
+            source,
           })
         } else {
+          // Where the page came from, when it is not the live registry — on
+          // stderr, so stdout stays exactly the markdown.
+          if (source.kind !== "registry") {
+            console.error(`source: ${describeSource(source)}`)
+          }
           process.stdout.write(markdown)
         }
       }
@@ -346,4 +436,84 @@ async function documentedComponentNames(): Promise<string[]> {
   return (index ?? [])
     .filter((item) => item.type === "registry:ui")
     .map((item) => item.name)
+}
+/** Where one rendered page came from. */
+export type DocsSource =
+  | { kind: "registry" }
+  | { kind: "cache"; registry: string; contentHash: string }
+  | { kind: "package"; package: "@marko-ui/shadcn"; version: string }
+
+function describeSource(source: DocsSource): string {
+  if (source.kind === "cache") return "installed (cache)"
+  if (source.kind === "package") return `installed (${source.package} ${source.version})`
+  return "registry"
+}
+
+/** The installed @marko-ui/shadcn package an import project resolves. */
+type InstalledPackage = { dir: string; version: string; hasDocs: boolean }
+
+/**
+ * Finds `node_modules/@marko-ui/shadcn` the way Node resolution would: the
+ * nearest one walking up from the project. Returns null when it is not
+ * installed. Read-only — nothing here writes.
+ */
+export function findInstalledPackage(cwd: string): InstalledPackage | null {
+  let dir = path.resolve(cwd)
+  for (;;) {
+    const pkgDir = path.join(dir, "node_modules", "@marko-ui", "shadcn")
+    const manifest = path.join(pkgDir, "package.json")
+    if (fsExtra.existsSync(manifest)) {
+      let version = "unknown"
+      try {
+        version = String(fsExtra.readJsonSync(manifest).version ?? "unknown")
+      } catch {
+        // An unreadable manifest still names an installed package.
+      }
+      return {
+        dir: pkgDir,
+        version,
+        hasDocs: fsExtra.existsSync(path.join(pkgDir, "docs")),
+      }
+    }
+    const parent = path.dirname(dir)
+    if (parent === dir) return null
+    dir = parent
+  }
+}
+
+/**
+ * Whether the component is installed in the project: copy, its directory
+ * under `aliases.ui` holds a template; import, the installed package carries
+ * the component.
+ */
+function isInstalled(
+  config: Config,
+  name: string,
+  pkg: InstalledPackage | null
+): boolean {
+  if (config.distribution === "import") {
+    return Boolean(
+      pkg && fsExtra.existsSync(path.join(pkg.dir, "ui", name))
+    )
+  }
+  return isComponentInstalled(config, name)
+}
+
+/** The docs model the installed package ships for `name`, or null. */
+async function readPackageDocs(
+  pkg: InstalledPackage | null,
+  name: string
+): Promise<{ model: ComponentDocs; source: DocsSource } | null> {
+  if (!pkg?.hasDocs) return null
+  const file = path.join(pkg.dir, "docs", `${name}.json`)
+  try {
+    const parsed = componentDocsSchema.safeParse(await fsExtra.readJson(file))
+    if (!parsed.success) return null
+    return {
+      model: parsed.data as ComponentDocs,
+      source: { kind: "package", package: "@marko-ui/shadcn", version: pkg.version },
+    }
+  } catch {
+    return null
+  }
 }

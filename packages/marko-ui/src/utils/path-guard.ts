@@ -129,6 +129,35 @@ export function isInsideNodeModules(real: string, root: string): boolean {
     .some((segment) => segment === "node_modules")
 }
 
+/** `node_modules/.cache/marko-ui`, relative to an allowed root. */
+export const CLI_CACHE_DIR = path.join("node_modules", ".cache", "marko-ui")
+
+/**
+ * True when `real` is inside `<root>/node_modules/.cache/marko-ui/` — the
+ * CLI's own cache, and the only place under a `node_modules` the CLI writes.
+ *
+ * `node_modules/.cache/<tool>` is the established convention for exactly
+ * this (babel-loader, eslint, terser, ava via find-cache-dir): it is ignored
+ * wherever `node_modules` is, it disappears with a clean install, and nothing
+ * in it is a dependency. The allowance is narrow on purpose:
+ * - exactly at the root's own top-level `node_modules`, never a nested one, so
+ *   `node_modules/pkg/node_modules/.cache/marko-ui` is still refused;
+ * - judged on the REAL path, so a `node_modules` that is a symlink to
+ *   somewhere else resolves outside the root and is refused like any other
+ *   escape;
+ * - only for a caller that passes `allowCliCache`, i.e. the docs cache
+ *   writer — a registry file targeting this directory is still refused.
+ */
+export function isCliCachePath(real: string, root: string): boolean {
+  const relative = path.relative(root, real)
+  if (relative.startsWith("..") || path.isAbsolute(relative)) return false
+  const segments = relative.split(/[\\/]+/).filter(Boolean)
+  const prefix = CLI_CACHE_DIR.split(/[\\/]+/)
+  if (segments.length <= prefix.length) return false
+  if (!prefix.every((segment, index) => segments[index] === segment)) return false
+  return !segments.slice(prefix.length).includes("node_modules")
+}
+
 /**
  * Throws unless `target` may be written by the CLI.
  *
@@ -138,13 +167,18 @@ export function isInsideNodeModules(real: string, root: string): boolean {
 export function assertWritable(
   target: string,
   roots: WriteRoots,
-  label: "write" | "delete" = "write"
+  label: "write" | "delete" = "write",
+  options: { allowCliCache?: boolean } = {}
 ): void {
   const real = realpathOfTarget(target)
   const allowed = allowedRoots(roots)
 
   for (const root of allowed) {
     if (!isInside(root, real)) continue
+
+    // The ONE exception, and only for the caller that asks for it: the CLI's
+    // own cache at `<root>/node_modules/.cache/marko-ui/`. See isCliCachePath.
+    if (options.allowCliCache && isCliCachePath(real, root)) return
 
     // Inside an allowed root, but reaching into a dependency from it is still
     // forbidden — that is the symlinked-package case.
@@ -221,9 +255,11 @@ export async function writeGuarded(
   target: string,
   contents: string,
   roots: WriteRoots,
-  options: { label?: "write" | "delete" } = {}
+  options: { label?: "write" | "delete"; allowCliCache?: boolean } = {}
 ): Promise<void> {
-  assertWritable(target, roots, options.label ?? "write")
+  assertWritable(target, roots, options.label ?? "write", {
+    allowCliCache: options.allowCliCache,
+  })
   const { promises: fs } = await import("fs")
   await fs.mkdir(path.dirname(target), { recursive: true })
   await fs.writeFile(target, contents, "utf8")

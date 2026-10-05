@@ -1258,6 +1258,7 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
+        "itemDocs": [],
         "items": [
           "button-variant-a",
           "button-variant-b",
@@ -1300,6 +1301,7 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
+        "itemDocs": [],
         "items": [
           "button-variant-b",
           "button-variant-a",
@@ -1345,6 +1347,7 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
+        "itemDocs": [],
         "items": [
           "button-variant-a",
           "component-with-explicit-target",
@@ -1383,6 +1386,7 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
+        "itemDocs": [],
         "items": [
           "lib-utils",
           "lib-and-ui-conflict",
@@ -1470,6 +1474,7 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
+        "itemDocs": [],
         "items": [
           "nested-a",
           "nested-b",
@@ -1551,6 +1556,7 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
+        "itemDocs": [],
         "items": [
           "utils-set-a",
           "utils-set-b",
@@ -1618,6 +1624,7 @@ describe("resolveRegistryTree - potential target conflicts", async () => {
           },
         ],
         "fonts": undefined,
+        "itemDocs": [],
         "items": [
           "base-button",
           "extended-button",
@@ -1812,6 +1819,7 @@ describe("resolveRegistryTree - cross-registry dependencies", async () => {
           },
         ],
         "fonts": undefined,
+        "itemDocs": [],
         "items": [
           "login-01",
           "login-02",
@@ -1876,6 +1884,7 @@ describe("resolveRegistryTree - cross-registry dependencies", async () => {
           },
         ],
         "fonts": undefined,
+        "itemDocs": [],
         "items": [
           "login-01",
           "login-02",
@@ -2184,6 +2193,7 @@ describe("resolveRegistryTree - comprehensive cross-registry tests", async () =>
           },
         ],
         "fonts": undefined,
+        "itemDocs": [],
         "items": [
           "theme-provider",
           "chart-utils",
@@ -2324,6 +2334,7 @@ describe("resolveRegistryTree - comprehensive cross-registry tests", async () =>
           },
         ],
         "fonts": undefined,
+        "itemDocs": [],
         "items": [
           "theme-provider",
           "chart-utils",
@@ -2661,5 +2672,16 @@ describe("resolveRegistryTree - last wins behavior", async () => {
       "--foreground": "#000000", // From base (not overridden)
       "--primary": "#0066cc", // From override (new property)
     })
+  })
+})
+
+describe("registryItemContentHash", () => {
+  it("hashes the item's content, independent of the address it was requested by", async () => {
+    const { registryItemContentHash } = await import("./resolver")
+    const item = { name: "button", type: "registry:ui", files: [] }
+    const hash = registryItemContentHash(item)
+    expect(hash).toMatch(/^[0-9a-f]{64}$/)
+    expect(registryItemContentHash({ ...item, _source: "@acme/button" })).toBe(hash)
+    expect(registryItemContentHash({ ...item, title: "Button" })).not.toBe(hash)
   })
 })

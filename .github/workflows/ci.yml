@@ -243,6 +243,11 @@ jobs:
       #     registry output AND src/lib/blocks-list.ts.
       #   - api-reference.json (extract:api): fresh against the .marko
       #     sources under packages/shadcn/ui/**.
+      #   - packages/shadcn/docs/<name>.json (also written by build-registry,
+      #     so not a seventh script): the docs model of every component,
+      #     shipped in @marko-ui/shadcn for the import distribution's
+      #     `marko-ui docs`; checked with git diff AND git status --porcelain,
+      #     like the demo trees.
       # All six generators were verified deterministic (two consecutive runs
       # produce byte-identical output on an untouched tree), so `git diff
       # --exit-code` cannot flake on generator nondeterminism.
@@ -251,6 +256,18 @@ jobs:
           bun run build:registry
           git diff --exit-code -- apps/docs/registry-manifest.json || {
             echo "::error file=apps/docs/registry-manifest.json::Registry output drifted from the committed manifest — run 'bun run build:registry' and commit the regenerated apps/docs/registry-manifest.json"
+            exit 1
+          }
+          # The import distribution's per-component docs models, written by
+          # build-registry into the published package. diff for edits,
+          # status --porcelain for added/removed components.
+          git diff --exit-code -- packages/shadcn/docs || {
+            echo "::error::packages/shadcn/docs is stale — run 'bun run build:registry' and commit the regenerated packages/shadcn/docs/<name>.json"
+            exit 1
+          }
+          test -z "$(git status --porcelain -- packages/shadcn/docs)" || {
+            echo "::error::packages/shadcn/docs has untracked or deleted files — run 'bun run build:registry' and commit the result"
+            git status --porcelain -- packages/shadcn/docs
             exit 1
           }
       - name: Check generated committed artifacts are fresh

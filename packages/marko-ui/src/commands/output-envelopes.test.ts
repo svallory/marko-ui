@@ -266,7 +266,7 @@ describe("docs <name> --json", () => {
     expectEnvelope(envelope)
     expect(envelope.$type).toBe("marko-ui/docs")
     // Rendered locally from the registry item's model — no fetch of the docs
-    // site, so the version is the one the project installed.
+    // site.
     expect(envelope.data).toEqual({
       components: [
         {
@@ -275,6 +275,8 @@ describe("docs <name> --json", () => {
           // The model the markdown was rendered from rides along, so a caller
           // wanting parts/props/events as data need not parse markdown.
           docs: expect.objectContaining({ name: "button", props: [] }),
+          // Where the page came from: no project here, so the registry.
+          source: { kind: "registry" },
         },
       ],
     })

@@ -38,6 +38,7 @@ import { updateCss } from "@/src/utils/updaters/update-css"
 import { updateDependencies } from "@/src/utils/updaters/update-dependencies"
 import { updateEnvVars } from "@/src/utils/updaters/update-env-vars"
 import { updateFiles } from "@/src/utils/updaters/update-files"
+import { writeDocsCacheEntries } from "@/src/utils/docs-cache"
 import { z } from "zod"
 
 export interface AddComponentsOptions {
@@ -285,6 +286,10 @@ async function addProjectComponents(
   if (tree.docs) {
     logger.info(tree.docs)
   }
+
+  // Each installed ui item's docs model, kept locally so `docs` describes the
+  // version on disk without the network (see docs-cache.ts). Best-effort.
+  await writeDocsCacheEntries(config, tree.itemDocs ?? [])
 
   const names = resolvedItemNames(tree)
   return {
@@ -623,6 +628,10 @@ async function addWorkspaceComponents(
   if (tree.docs) {
     logger.info(tree.docs)
   }
+
+  // Cached against the project `docs` runs in (where components.json is),
+  // whichever workspace package the files landed in.
+  await writeDocsCacheEntries(config, tree.itemDocs ?? [])
 
   const names = resolvedItemNames(tree)
   return {

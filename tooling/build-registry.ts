@@ -42,6 +42,7 @@ import { createStyleMap, type StyleMap } from "./style-map";
 import { transformComponent } from "./transform-component";
 import type { RegistryItem } from "@/src/registry/schema"
 import { buildAllApiDocModels, titleize } from "./build-api-doc-model";
+import type { ComponentDocs as ComponentDocsModel } from "../packages/marko-ui/src/docs/index";
 import directory from "../apps/docs/src/data/directory.json";
 
 const ROOT = new URL("../packages/shadcn/", import.meta.url).pathname;
@@ -50,6 +51,11 @@ const LIB_DIR = join(ROOT, "lib");
 const STYLES_DIR = join(ROOT, "styles");
 const BLOCKS_DIR = join(ROOT, "blocks");
 const OUT_DIR = join(ROOT, "../../apps/docs/public/r");
+// The import distribution's docs: one model per component, shipped INSIDE
+// @marko-ui/shadcn (`files`/`exports` carry `./docs/*`) so `marko-ui docs`
+// in an import project reads the version it installed, with no network. The
+// same models the registry items embed — one builder, two destinations.
+const PACKAGE_DOCS_DIR = join(ROOT, "docs");
 
 // The drift manifest: every emitted file's path + sha256, committed at
 // apps/docs/registry-manifest.json and compared by CI's registry-drift job
@@ -412,29 +418,11 @@ async function emitThemeVariants(): Promise<Emission[]> {
 // The style-less components: the authored `ui/*` source verbatim (mu-* hook
 // classes intact), at `/<name>.json`. This is what the `import` distribution
 // (`@marko-ui/shadcn`) and debugging want.
-async function emitComponents(components: string[]): Promise<Emission[]> {
+async function emitComponents(
+  components: string[],
+  docModels: Map<string, ComponentDocsModel>,
+): Promise<Emission[]> {
   const emissions: Emission[] = [];
-  // The structured docs model, built once for all components from the files on
-  // disk (the imported docs.ts module, the demo .marko files, the component's
-  // own source and api-reference.json). Reading those directly is what keeps
-  // this out of a cycle with build:demos: the demos manifest is generated FROM
-  // the registry this function writes.
-  //
-  // `title`/`description` are passed in from the SAME meta this puts in the
-  // item, because the docs site rebuilds the model from that item's snapshot —
-  // a model whose title came from somewhere else would make the two answers
-  // differ, which is the defect `docs-parity.test.ts` guards against.
-  const docSources = await Promise.all(
-    components.map(async (name) => {
-      const meta = await readMeta(join(UI_DIR, name));
-      return {
-        name,
-        title: meta.title || titleize(name),
-        description: meta.description ?? "",
-      };
-    }),
-  );
-  const docModels = await buildAllApiDocModels(docSources);
   for (const name of components) {
     const dir = join(UI_DIR, name);
     const meta = await readMeta(dir);
@@ -475,7 +463,10 @@ async function emitComponents(components: string[]): Promise<Emission[]> {
 // Per-style items are excluded from the index: style is a distribution /
 // fetch-time concern, not a distinct component identity, so the CLI's picker
 // must not see 9 "button" entries just because 8 styles exist.
-async function emitPerStyleComponents(authoredComponents: string[]): Promise<Emission[]> {
+async function emitPerStyleComponents(
+  authoredComponents: string[],
+  docModels: Map<string, ComponentDocsModel>,
+): Promise<Emission[]> {
   const emissions: Emission[] = [];
   for (const style of VISUAL_STYLES) {
     const styleCss = readFileSync(join(STYLES_DIR, `style-${style}.css`), "utf8");
@@ -500,6 +491,11 @@ async function emitPerStyleComponents(authoredComponents: string[]): Promise<Emi
             selfRef(dep, style)
           ),
           files,
+          // The SAME model as the base item: a copy project with a
+          // visualStyle fetches THIS item (`add`, `docs`), so without it every
+          // initialized project got no docs and `add` cached none. Snippets are
+          // style-agnostic, so one model serves every style.
+          ...(docModels.has(name) ? { componentDocs: docModels.get(name) } : {}),
         },
         outName: `styles/${style}/${name}`,
         indexed: false,
@@ -616,11 +612,36 @@ async function main() {
     .map((e) => e.name)
     .sort();
 
+  // The docs model of every component, built ONCE and embedded in the base
+  // AND per-style items, and written into the package for the import path.
+  // The structured docs model, built once for all components from the files on
+  // disk (the imported docs.ts module, the demo .marko files, the component's
+  // own source and api-reference.json). Reading those directly is what keeps
+  // this out of a cycle with build:demos: the demos manifest is generated FROM
+  // the registry this script writes.
+  //
+  // `title`/`description` are passed in from the SAME meta this puts in the
+  // item, because the docs site rebuilds the model from that item's snapshot —
+  // a model whose title came from somewhere else would make the two answers
+  // differ, which is the defect `docs-parity.test.ts` guards against.
+  const docSources = await Promise.all(
+    components.map(async (name) => {
+      const meta = await readMeta(join(UI_DIR, name));
+      return {
+        name,
+        title: meta.title || titleize(name),
+        description: meta.description ?? "",
+      };
+    }),
+  );
+  const docModels = await buildAllApiDocModels(docSources);
+  await writePackageDocs(docModels);
+
   const emissions: Emission[] = [
     ...(await emitUtils()),
     ...(await emitThemeVariants()),
-    ...(await emitComponents(components)),
-    ...(await emitPerStyleComponents(components)),
+    ...(await emitComponents(components, docModels)),
+    ...(await emitPerStyleComponents(components, docModels)),
     ...(await emitBlocks()),
   ];
 
@@ -710,6 +731,21 @@ async function main() {
     `registry: ${index.length} indexed items + ${styledCount} per-style component ` +
       `variants (${VISUAL_STYLES.length} styles × ${components.length} components) → ${relative(process.cwd(), OUT_DIR)}`
   );
+}
+
+/**
+ * Writes `packages/shadcn/docs/<name>.json` for every component that has a
+ * docs model, after wiping the directory so a removed component cannot leave
+ * a stale file behind. Committed, and gated by CI's registry-drift job like
+ * the other generated outputs. Minified: the reader is `marko-ui docs`, which
+ * reads exactly one file per call.
+ */
+async function writePackageDocs(models: Map<string, ComponentDocsModel>): Promise<void> {
+  await rm(PACKAGE_DOCS_DIR, { recursive: true, force: true });
+  await mkdir(PACKAGE_DOCS_DIR, { recursive: true });
+  for (const name of [...models.keys()].sort()) {
+    await writeFile(join(PACKAGE_DOCS_DIR, `${name}.json`), `${JSON.stringify(models.get(name))}\n`);
+  }
 }
 
 if (import.meta.main) await main();
