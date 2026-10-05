@@ -45,7 +45,6 @@ export const docs: ComponentDocs = {
     },
     {
       name: "input-otp-pattern",
-      essential: true,
       title: "Pattern",
       description:
         "Constrain accepted characters with `pattern`, a regular-expression source string. Upstream imports the `REGEXP_ONLY_DIGITS`/`REGEXP_ONLY_DIGITS_AND_CHARS` constants from the `input-otp` package; this port inlines the equivalent regex source directly since that package isn't a dependency here.",
@@ -92,6 +91,7 @@ export const docs: ComponentDocs = {
       name: "input-otp-form",
       title: "Form",
       description: "A full verification-code form built from `Card`, `Field`, and `InputOTP`.",
+      essential: true,
     },
     {
       name: "input-otp-rtl",

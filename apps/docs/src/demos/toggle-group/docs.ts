@@ -50,7 +50,6 @@ Upstream expresses this as \`ToggleGroup\` > \`ToggleGroupItem\` children; our p
     },
     {
       name: "toggle-group-compound",
-      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@item>` attribute tags instead of `items=` to compose each option directly in markup.",
@@ -85,6 +84,7 @@ Upstream expresses this as \`ToggleGroup\` > \`ToggleGroupItem\` children; our p
       title: "Custom",
       description:
         "A custom toggle group example: `<@item>` bodies can render arbitrary markup (not just text), here paired with `Field`/`FieldLabel`/`FieldDescription` to build a font-weight selector.",
+      essential: true,
     },
     {
       name: "toggle-group-rtl",

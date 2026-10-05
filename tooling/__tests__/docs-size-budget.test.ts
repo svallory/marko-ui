@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { readFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
 import { buildAllApiDocModels } from "../build-api-doc-model";
 import { renderComponentDocs } from "../../packages/marko-ui/src/docs/index";
+import { registryDocSources, registryItemPath } from "./doc-sources";
 
 /**
  * Size budgets for the DEFAULT output — what `marko-ui docs <name>` prints
@@ -13,7 +13,6 @@ import { renderComponentDocs } from "../../packages/marko-ui/src/docs/index";
  * and api-reference.json), because a fixture cannot catch the component
  * somebody added 26 examples to last week.
  */
-const REPO_ROOT = fileURLToPath(new URL("../..", import.meta.url));
 
 /** The ceilings the brief sets, in characters. */
 const BUTTON_BUDGET = 3600;
@@ -33,7 +32,7 @@ const ABOVE_CEILING_WITH_REASON: Record<string, string> = {
 
 describe("the default docs output stays inside its budget", () => {
   it("renders every component's model without throwing", async () => {
-    const models = await buildAllApiDocModels();
+    const models = await buildAllApiDocModels(await registryDocSources());
 
     expect(models.size).toBeGreaterThan(80);
     for (const [name, model] of models) {
@@ -42,7 +41,7 @@ describe("the default docs output stays inside its budget", () => {
   }, 120_000);
 
   it("keeps button under 3600 characters", async () => {
-    const models = await buildAllApiDocModels();
+    const models = await buildAllApiDocModels(await registryDocSources());
     const button = models.get("button");
 
     expect(button).toBeDefined();
@@ -50,7 +49,7 @@ describe("the default docs output stays inside its budget", () => {
   }, 120_000);
 
   it("keeps the median component under 5000 characters", async () => {
-    const models = await buildAllApiDocModels();
+    const models = await buildAllApiDocModels(await registryDocSources());
     const sizes = [...models.values()]
       .map((model) => renderComponentDocs(model).length)
       .sort((a, b) => a - b);
@@ -59,7 +58,7 @@ describe("the default docs output stays inside its budget", () => {
   }, 120_000);
 
   it("keeps every component under the hard ceiling, or names it as an exception", async () => {
-    const models = await buildAllApiDocModels();
+    const models = await buildAllApiDocModels(await registryDocSources());
     const over = [...models.entries()]
       .filter(([, model]) => renderComponentDocs(model).length > HARD_CEILING)
       .map(([name]) => name)
@@ -76,7 +75,7 @@ describe("the default docs output stays inside its budget", () => {
     // The old renderer is not kept around; this asserts the direction that
     // matters instead — the default output is a fraction of the ALL-examples
     // output, which is what the docs site serves.
-    const models = await buildAllApiDocModels();
+    const models = await buildAllApiDocModels(await registryDocSources());
     const wrong = [...models.entries()].filter(
       ([, model]) =>
         model.examples.length > 3 &&
@@ -88,7 +87,7 @@ describe("the default docs output stays inside its budget", () => {
 
   it("keeps the docs.ts flags this budget depends on under the example cap", async () => {
     // Three printed by default: the hero plus at most two essentials.
-    const models = await buildAllApiDocModels();
+    const models = await buildAllApiDocModels(await registryDocSources());
     for (const [name, model] of models) {
       const essentials = model.examples.filter((example) => example.essential);
       expect(essentials.length, name).toBeLessThanOrEqual(2);
@@ -98,9 +97,9 @@ describe("the default docs output stays inside its budget", () => {
   it("reads the same example ids from the registry item the docs site uses", async () => {
     // The registry is the CLI's source and the manifest is the site's; a flag
     // that reached one and not the other would print different defaults.
-    const models = await buildAllApiDocModels();
+    const models = await buildAllApiDocModels(await registryDocSources());
     const registry = JSON.parse(
-      await readFile(`${REPO_ROOT}apps/docs/public/r/accordion.json`, "utf8"),
+      await readFile(registryItemPath("accordion"), "utf8"),
     ) as { componentDocs?: { examples: { id: string; essential?: boolean }[] } };
 
     expect(registry.componentDocs).toBeDefined();

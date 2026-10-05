@@ -35,6 +35,7 @@ import CardFooter from "@/components/ui/card/footer.marko";`,
       name: "card-demo",
       title: "Login form",
       description: "A card built from a header, content, and footer holding a login form.",
+      essential: true,
     },
     {
       name: "card-small",

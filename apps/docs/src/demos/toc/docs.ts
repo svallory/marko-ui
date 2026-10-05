@@ -28,10 +28,10 @@ export const docs: ComponentDocs = {
       name: "toc-nested",
       title: "Nested headings",
       description: "Each item's `depth` controls its indentation, so `h2`/`h3` outlines nest naturally.",
+      essential: true,
     },
     {
       name: "toc-controlled",
-      essential: true,
       title: "Controlled",
       description:
         "Listen for `activeIdsChange` (or `onActiveChange` for the full details) to read the active headings without taking over control of the list.",

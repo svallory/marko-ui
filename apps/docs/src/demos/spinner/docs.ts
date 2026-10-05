@@ -51,7 +51,6 @@ export const docs: ComponentDocs = {
     },
     {
       name: "spinner-input-group",
-      essential: true,
       title: "Input Group",
       description: "Show a loading state inside an input group's addon.",
     },

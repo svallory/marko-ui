@@ -38,10 +38,13 @@ export const docs: ComponentDocs = {
       name: "command-basic",
       title: "Command Dialog",
       description: "A command menu opened from a button trigger, composed from `Dialog` and `Command` (see Composition above).",
+      // Hand-flagged: the automated rule reads the demo's own signals and this
+      // one's signal is that it composes TWO registry components (Dialog +
+      // Command) with no attr-tag of its own — an agent cannot infer that
+      // pairing from command's parts or props list.
     },
     {
       name: "command-shortcuts",
-      essential: true,
       title: "Shortcuts",
       description: "Items with a `shortcut` render it right-aligned. Upstream also shows a leading icon per item; our `CommandItem` type carries only `value`/`label`/`shortcut` and has no icon slot, so this demo omits them rather than faking them.",
     },

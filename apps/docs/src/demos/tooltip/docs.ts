@@ -53,6 +53,7 @@ export const docs: ComponentDocs = {
       name: "tooltip-keyboard",
       title: "With Keyboard Shortcut",
       description: "Compose `Kbd` inside the tooltip's body to show a keyboard shortcut alongside the tooltip text.",
+      essential: true,
     },
     {
       name: "tooltip-disabled",

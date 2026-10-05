@@ -70,11 +70,13 @@ import FieldDescription from "@/components/ui/field/field-description.marko";`,
       title: "Invalid",
       description:
         "Pass `invalid` to `Field` to switch the whole block into an error state, and `aria-invalid` on the control itself.",
+      essential: true,
     },
     {
       name: "field-multiple-errors",
       title: "Multiple errors",
       description: "`FieldError` accepts a list of errors and renders them as a bulleted list.",
+      essential: true,
     },
     {
       name: "field-input",
@@ -94,7 +96,6 @@ import FieldDescription from "@/components/ui/field/field-description.marko";`,
     },
     {
       name: "field-slider",
-      essential: true,
       title: "Slider",
       description: "Pair `Field` with `Slider` and reflect the live value in `FieldDescription`.",
     },
@@ -134,7 +135,6 @@ import FieldDescription from "@/components/ui/field/field-description.marko";`,
     },
     {
       name: "field-choice-card",
-      essential: true,
       title: "Choice card",
       description:
         "Render rich title/description content inside a `RadioGroup` item's `content` slot to build a selectable card group. Each item is one root row in a fixed order — indicator, hidden input, then that `content` — so the indicator cannot be moved to trail the text the way upstream's `FieldLegend`/`Field` wrapper arrangement does it.",

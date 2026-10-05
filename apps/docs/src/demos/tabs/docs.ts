@@ -88,7 +88,6 @@ items=-derived panels — see the Hybrid example below.`,
     },
     {
       name: "tabs-compound",
-      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@trigger>` and `<@panel>` attribute tags instead of `items=` to compose each tab's label and panel content directly in markup.",

@@ -50,7 +50,6 @@ export const docs: ComponentDocs = {
     },
     {
       name: "context-menu-radio",
-      essential: true,
       title: "Radio",
       description:
         "Use `type: \"radio\"` entries for exclusive choices grouped by `radioGroup`. Exclusivity is your own state, not automatic — set exactly one entry's `checked` per group in the `select` handler.",
@@ -98,7 +97,6 @@ export const docs: ComponentDocs = {
     },
     {
       name: "context-menu-compound",
-      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@item>` attribute tags instead of `items=` to compose the menu directly in markup — pass `type=\"separator\"` for a divider or `type=\"label\"` for a group label. Entries render in the order they are written. An item's text can come from either a `label=` attribute or a markup body, whichever you prefer.",

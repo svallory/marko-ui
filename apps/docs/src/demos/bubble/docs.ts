@@ -98,6 +98,7 @@ shows the pattern).`,
       name: "bubble-tooltip",
       title: "Tooltip",
       description: "Wrap a bubble control in `Tooltip` to reveal metadata on hover, such as when a message was read.",
+      essential: true,
     },
     {
       name: "bubble-popover",

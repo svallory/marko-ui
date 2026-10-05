@@ -54,13 +54,11 @@ export const docs: ComponentDocs = {
     },
     {
       name: "button-group-input-group",
-      essential: true,
       title: "Input Group",
       description: "Wrap an `InputGroup` to create complex input layouts.",
     },
     {
       name: "button-group-dropdown",
-      essential: true,
       title: "Dropdown Menu",
       description: "Create a split button group with a `DropdownMenu`.",
     },
@@ -69,6 +67,7 @@ export const docs: ComponentDocs = {
       title: "Select",
       description:
         "Pair with a `Select`. Upstream's `SelectTrigger` accepts arbitrary children and renders the bare currency symbol via a `font-mono` class; ours always shows the selected item's `label` (`valueAsString || placeholder`) with no custom-content slot, so the trigger reads 'US Dollar' rather than a bare '$'.",
+      essential: true,
     },
     {
       name: "button-group-popover",

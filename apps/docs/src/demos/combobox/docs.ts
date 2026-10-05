@@ -80,7 +80,6 @@ Combobox (items= groups=)
     },
     {
       name: "combobox-multiple",
-      essential: true,
       title: "Multiple",
       description:
         "Pass `multiple` for multi-select with chips. Pair with `inputBehavior=\"autohighlight\"` to highlight the first match while typing.",
@@ -105,6 +104,7 @@ Combobox (items= groups=)
       name: "combobox-invalid",
       title: "Invalid",
       description: "Pass `invalid` to mark the combobox invalid (sets `aria-invalid`/`data-invalid` throughout).",
+      essential: true,
     },
     {
       name: "combobox-disabled",

@@ -27,7 +27,6 @@ export const docs: ComponentDocs = {
     },
     {
       name: "toggle-controlled",
-      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `pressed` prop without a change handler never moves. Pair it with `pressedChange`, or use Marko's bind shorthand `pressed:=state`.",

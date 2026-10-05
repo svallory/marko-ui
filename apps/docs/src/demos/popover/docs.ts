@@ -48,7 +48,6 @@ Upstream's \`PopoverHeader\`, \`PopoverTitle\`, and \`PopoverDescription\` have 
     },
     {
       name: "popover-form",
-      essential: true,
       title: "With Form",
       description: "A popover with form fields inside.",
     },

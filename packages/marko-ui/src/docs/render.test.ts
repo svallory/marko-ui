@@ -173,7 +173,99 @@ describe("renderComponentDocs: parts", () => {
 
     expect(md).toContain("- <@trigger|Record<string, unknown>|>");
     expect(md).toContain("- <@title>");
-    expect(md).toContain("- <@item> (repeatable)");
+    expect(md).toContain("repeatable");
+    expect(md).toContain("- <@item> — repeatable");
+  });
+
+  it("names the part's own attributes, with the required ones marked", () => {
+    const md = renderComponentDocs(
+      model({
+        parts: [
+          {
+            name: "trigger",
+            attributes: [
+              { name: "value", type: "string", required: true },
+              { name: "disabled", type: "boolean | undefined", required: false },
+            ],
+            repeatable: true,
+          },
+        ],
+      }),
+    );
+
+    expect(md).toContain("attributes: `value` (required): string, `disabled`: boolean");
+    expect(md).toContain("repeatable");
+  });
+
+  it("documents the default body as the tag's body, never as an attr-tag", () => {
+    const md = renderComponentDocs(
+      model({ title: "Dialog", body: { param: "string" } }),
+    );
+
+    expect(md).toContain("The tag's body: `<Dialog|string|>…</Dialog>`");
+    // `<@content>` is not valid markup: the body goes between the tags.
+    expect(md).not.toContain("<@content");
+  });
+
+  it("omits the body line for a component with no body", () => {
+    expect(renderComponentDocs(model())).not.toContain("The tag's body");
+  });
+});
+
+describe("renderComponentDocs: import style", () => {
+  const withImports = (importSnippet: string, source: string) =>
+    model({ importSnippet, examples: [{ id: "demo", title: "Demo", source }] });
+
+  it("rewrites the authored package path onto a copy project's ui alias", () => {
+    const md = renderComponentDocs(
+      withImports(
+        'import Button from "@/components/ui/button/button.marko";',
+        'import Button from "@marko-ui/shadcn/ui/button/button.marko";\n<Button />',
+      ),
+      "essential",
+      { importStyle: { kind: "copy", uiAlias: "#src/components/ui" } },
+    );
+
+    expect(md).toContain('import Button from "#src/components/ui/button/button.marko";');
+    expect(md).not.toContain("@marko-ui/shadcn/ui");
+    expect(md).not.toContain("@/components/ui");
+  });
+
+  it("moves the usage import onto the package for an import-project", () => {
+    const md = renderComponentDocs(
+      withImports(
+        'import Button from "@/components/ui/button/button.marko";',
+        'import Button from "@marko-ui/shadcn/ui/button/button.marko";\n<Button />',
+      ),
+      "essential",
+      { importStyle: { kind: "import" } },
+    );
+
+    expect(md).toContain('import Button from "@marko-ui/shadcn/ui/button/button.marko";');
+    expect(md).not.toContain("@/components/ui");
+  });
+
+  it("defaults to the copy path with the default alias", () => {
+    const md = renderComponentDocs(
+      withImports('import Button from "@/components/ui/button/button.marko";', "<Button />"),
+    );
+
+    expect(md).toContain('import Button from "@/components/ui/button/button.marko";');
+  });
+
+  it("puts every import inside one fenced block, before the snippet", () => {
+    const md = renderComponentDocs(model());
+
+    const usage = md.slice(md.indexOf("## Usage"));
+    const fence = usage.indexOf("```marko");
+    const importAt = usage.indexOf("import Button");
+    const snippetAt = usage.indexOf("<Button>Click</Button>");
+    expect(fence).toBeGreaterThan(-1);
+    expect(importAt).toBeGreaterThan(fence);
+    expect(snippetAt).toBeGreaterThan(importAt);
+    // Nothing between the closing fence and the section end may carry code.
+    const after = usage.slice(usage.indexOf("```", fence + 3));
+    expect(after.split("\n").slice(0, 2).join("\n")).not.toContain("import Button");
   });
 });
 

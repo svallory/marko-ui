@@ -79,7 +79,6 @@ export const docs: ComponentDocs = {
     },
     {
       name: "radio-group-compound",
-      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@item>` attribute tags instead of `items=` to compose each option directly in markup.",

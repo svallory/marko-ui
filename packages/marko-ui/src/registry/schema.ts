@@ -205,6 +205,12 @@ const componentDocsPartSchema = z.object({
   name: z.string(),
   param: z.string().optional(),
   repeatable: z.boolean().optional(),
+  attributes: z.array(componentDocsPropSchema).optional(),
+  description: z.string().optional(),
+})
+
+const componentDocsBodySchema = z.object({
+  param: z.string().optional(),
   description: z.string().optional(),
 })
 
@@ -225,12 +231,15 @@ export const componentDocsSchema = z.object({
   parts: z.array(componentDocsPartSchema),
   props: z.array(componentDocsPropSchema),
   events: z.array(componentDocsEventSchema),
+  body: componentDocsBodySchema.optional(),
   nativeAttributes: z.string().optional(),
   subcomponents: z
     .array(
       z.object({
         name: z.string(),
         props: z.array(componentDocsPropSchema),
+        parts: z.array(componentDocsPartSchema).optional(),
+        body: componentDocsBodySchema.optional(),
         nativeAttributes: z.string().optional(),
       }),
     )
@@ -269,7 +278,12 @@ export const registryItemCommonSchema = z.object({
   meta: z.record(z.string(), z.any()).optional(),
   docs: z.string().optional(),
   /** The structured, machine-readable docs model (see componentDocsSchema). */
-  componentDocs: componentDocsSchema.optional(),
+  // `.catch(undefined)`: docs are an ADDITIVE convenience. A registry item
+  // whose `componentDocs` is malformed (hand-edited registry, a half-deployed
+  // registry, a newer model than this CLI knows) must still install and still
+  // `show` — the failure has to be limited to `marko-ui docs`, not turn into a
+  // parse error on the whole item.
+  componentDocs: componentDocsSchema.optional().catch(undefined),
   categories: z.array(z.string()).optional(),
 })
 

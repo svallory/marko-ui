@@ -31,7 +31,6 @@ export const docs: ComponentDocs = {
     },
     {
       name: "signature-pad-controlled",
-      essential: true,
       title: "Controlled draw-end",
       description:
         "Listen for `drawEndChange` to read the committed stroke paths whenever a stroke is finished.",

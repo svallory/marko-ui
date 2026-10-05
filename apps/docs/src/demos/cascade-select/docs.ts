@@ -43,7 +43,6 @@ export const docs: ComponentDocs = {
     },
     {
       name: "cascade-select-compound",
-      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@option>` attribute tags for a flat list of options instead of `items=`. Attribute tags don't recurse into children — use `items=` for real trees.",

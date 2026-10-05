@@ -61,7 +61,6 @@ export const docs: ComponentDocs = {
     },
     {
       name: "date-picker-range",
-      essential: true,
       title: "Range Picker",
       description:
         "`Calendar selectionMode=\"range\"` with `numOfMonths={2}` for selecting a date range across two visible months.",
@@ -95,6 +94,7 @@ export const docs: ComponentDocs = {
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`, which receives the new ISO string (or `undefined` when cleared).",
+      essential: true,
     },
     {
       name: "date-picker-disabled",

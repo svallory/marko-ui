@@ -37,7 +37,6 @@ export const docs: ComponentDocs = {
     },
     {
       name: "listbox-compound",
-      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@option>` attribute tags instead of `items=` to compose each option directly in markup.",

@@ -46,6 +46,7 @@ in the machine's \`getContentProps()\` internally.`,
       title: "Basic",
       description:
         "A trigger toggles the panel's open state; the chevron icon rotates to reflect it.",
+      essential: true,
     },
     {
       name: "collapsible-basic",
@@ -60,7 +61,6 @@ in the machine's \`getContentProps()\` internally.`,
     },
     {
       name: "collapsible-file-tree",
-      essential: true,
       title: "File Tree",
       description:
         "Use nested collapsibles to build a file tree. Each folder recurses into its own Collapsible; files render as plain link-styled buttons.",

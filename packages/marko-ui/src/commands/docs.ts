@@ -1,17 +1,36 @@
+import path from "path"
 import { getRegistryItems, getShadcnRegistryIndex } from "@/src/registry/api"
+import { configWithDefaults } from "@/src/registry/config"
 import { clearRegistryContext } from "@/src/registry/context"
-import { RegistryErrorCode } from "@/src/registry/errors"
-import { renderComponentDocs, type ComponentDocs, type ExampleSelection } from "@/src/docs/index"
+import { RegistryErrorCode, RegistryItemNotFoundError } from "@/src/registry/errors"
+import type { RegistryItem } from "@/src/registry/schema"
+import { validateRegistryConfigForItems } from "@/src/registry/validator"
+import { loadEnvFiles } from "@/src/utils/env-loader"
+import {
+  getConfig,
+  readPartialComponentsJson,
+  type Config,
+} from "@/src/utils/get-config"
+import {
+  renderComponentDocs,
+  DEFAULT_UI_ALIAS,
+  type ComponentDocs,
+  type ExampleSelection,
+  type ImportStyle,
+} from "@/src/docs/index"
 import { CommandError, handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { printEnvelope } from "@/src/utils/json-output"
 import { logger } from "@/src/utils/logger"
 import { setJsonMode } from "@/src/utils/output-mode"
+import { ensureRegistriesInConfig } from "@/src/utils/registries"
 import { closestNames } from "@/src/utils/suggest"
 import { Command } from "commander"
+import fsExtra from "fs-extra"
 import { z } from "zod"
 
 const docsOptionsSchema = z.object({
+  cwd: z.string(),
   list: z.boolean(),
   json: z.boolean(),
   examples: z.boolean(),
@@ -35,6 +54,7 @@ export const docs = new Command()
   .name("docs")
   .description("print component documentation as markdown")
   .argument("[components...]", "component names (e.g. button dialog)")
+  .option("-c, --cwd <cwd>", "the working directory. defaults to the current directory.", process.cwd())
   .option("-l, --list", "list documented components.", false)
   .option("--json", "output as JSON (with --list, or the markdown itself).", false)
   .option(
@@ -44,7 +64,7 @@ export const docs = new Command()
   )
   .option(
     "--example <id...>",
-    "print only the named examples (ids are listed by --list and in the \"More examples\" list).",
+    "print only the named examples. Every id is listed in the \"More examples\" section of the default output.",
   )
   .action(async (components: string[], opts) => {
     try {
@@ -53,11 +73,19 @@ export const docs = new Command()
       setJsonMode(Boolean(opts.json))
 
       const options = docsOptionsSchema.parse({
+        // `...opts` first and the resolved cwd LAST: the reverse order lets a
+        // relative `--cwd` survive into the Config, which is what
+        // findWorkspaceConfig/findPackageRoot compares against (same bug, same
+        // fix, as every other command's action).
+        ...opts,
+        cwd: path.resolve(opts.cwd),
         list: opts.list,
         json: opts.json,
         examples: Boolean(opts.examples),
         example: opts.example ?? [],
       })
+
+      await loadEnvFiles(options.cwd)
 
       if (options.list || !components.length) {
         const index = await getShadcnRegistryIndex()
@@ -98,6 +126,13 @@ export const docs = new Command()
         candidates: number
       }[] = []
 
+      // Resolution is `show`'s, not a bare `{}`: REGISTRY_URL, a project's
+      // components.json and its configured registries all apply. `docs
+      // @acme/widget` used to answer "Unknown registry @acme" while `show
+      // @acme/widget` happily fetched it.
+      const config = await resolveDocsConfig(options.cwd, components)
+      const importStyle = importStyleFor(config)
+
       // With --json the markdown is COLLECTED instead of written, so the whole
       // answer is one envelope. `docs <name> --json` used to accept the flag
       // and print markdown anyway, because the flag was documented as applying
@@ -107,7 +142,18 @@ export const docs = new Command()
       const documents: { name: string; markdown: string; docs: ComponentDocs }[] = []
 
       for (const name of components) {
-        const [item] = await getRegistryItems([name], {})
+        // A 404 for one name is a MISS, not a thrown error: `docs nope button`
+        // must still print button. `getRegistryItems` throws for an item that
+        // is not there, which used to abort the whole loop and lose the pages
+        // that DID resolve.
+        let item: RegistryItem | undefined
+        try {
+          const found = await getRegistryItems([name], { config })
+          item = found[0]
+        } catch (error) {
+          if (!(error instanceof RegistryItemNotFoundError)) throw error
+          item = undefined
+        }
         const model = item?.componentDocs
         if (!model) {
           // A typo is the overwhelmingly common reason. The index may be
@@ -130,9 +176,24 @@ export const docs = new Command()
         // caller that wants parts/props/events as data does not have to parse
         // the markdown back out.
         const selection = selectExamples(model, options.example, options.examples)
-        const markdown = renderComponentDocs(model, selection)
+        // The printed snippets assume the PROJECT's own import paths: a
+        // `copy` project gets its configured `aliases.ui` (default
+        // `@/components/ui`), an `import` project gets `@marko-ui/shadcn/ui`.
+        // Without this the Usage block and the examples disagreed — Usage
+        // printed the copy path while every example printed the package path,
+        // so neither was copy-pasteable.
+        const markdown = renderComponentDocs(model, selection, { importStyle })
         if (options.json) {
-          documents.push({ name, markdown, docs: model })
+          // The model rides along as data, but WITHOUT every example's
+          // source: embedding all 17 of button's examples made the envelope
+          // 11.8kB against 1.3kB of markdown, which defeats the point of both
+          // the lean default and minified JSON. Only the examples this
+          // invocation selected keep their source.
+          documents.push({
+            name,
+            markdown,
+            docs: { ...model, examples: selectedExampleDocs(model, selection) },
+          })
         } else {
           process.stdout.write(markdown)
         }
@@ -184,6 +245,55 @@ export const docs = new Command()
   })
 
 /**
+ * `show`'s resolution, so `docs` resolves a name exactly the way `show` does:
+ * the project's components.json, its configured registries and REGISTRY_URL all
+ * apply. Mirrors view.ts's option parse rather than inventing a second one.
+ */
+async function resolveDocsConfig(cwd: string, components: string[]): Promise<Config> {
+  // Start with a shadow config so a PARTIAL components.json still works.
+  let shadowConfig = configWithDefaults({})
+  const componentsJsonPath = path.resolve(cwd, "components.json")
+  if (fsExtra.existsSync(componentsJsonPath)) {
+    shadowConfig = configWithDefaults(await readPartialComponentsJson(cwd))
+  }
+
+  let config = shadowConfig
+  try {
+    const fullConfig = await getConfig(cwd)
+    if (fullConfig) config = configWithDefaults(fullConfig)
+  } catch (error) {
+    // A refusal (React components.json) is not a "partial config" — it must
+    // reach the user, not be shadowed over.
+    if (error instanceof CommandError) throw error
+  }
+
+  const { config: updatedConfig, newRegistries } = await ensureRegistriesInConfig(
+    components,
+    config,
+    { silent: true, writeFile: false }
+  )
+  if (newRegistries.length > 0) {
+    config.registries = updatedConfig.registries
+  }
+
+  // Validate registries early for better error messages.
+  validateRegistryConfigForItems(components, config)
+  return config
+}
+
+/**
+ * Which import paths the rendered snippets assume, from the project's own
+ * configuration: `distribution` picks the copy path (the project's
+ * `aliases.ui`, default `@/components/ui`) or the `@marko-ui/shadcn` package
+ * path. Absent config falls back to copy with the default alias.
+ */
+function importStyleFor(config: Pick<Config, "distribution" | "aliases">): ImportStyle {
+  if (config.distribution === "import") return { kind: "import" };
+  const uiAlias = config.aliases?.ui?.trim();
+  return { kind: "copy", uiAlias: uiAlias || DEFAULT_UI_ALIAS };
+}
+
+/**
  * Which examples to print for one component.
  *
  * An unknown id is a USAGE error, not a missing component: the component was
@@ -212,6 +322,18 @@ function selectExamples(
     );
   }
   return requested;
+}
+
+/** The examples a selection resolves to — the renderer applies the same rule. */
+function selectedExampleDocs(
+  model: ComponentDocs,
+  selection: ExampleSelection,
+): ComponentDocs["examples"] {
+  if (Array.isArray(selection)) {
+    const wanted = new Set(selection);
+    return model.examples.filter((example) => wanted.has(example.id));
+  }
+  return selection === "all" ? model.examples : [];
 }
 
 /**

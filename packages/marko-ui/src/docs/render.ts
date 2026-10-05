@@ -8,11 +8,22 @@
 // keyboard, and then the few examples that show API prose cannot, with a list
 // and an exact command for the rest. Sections an agent does not need are not
 // printed at all rather than printed empty.
+//
+// The model stores every snippet AS AUTHORED (examples import
+// `@marko-ui/shadcn/ui/…`, the usage import is the copy path's
+// `@/components/ui/…`). `importStyle` resolves both into ONE coherent story,
+// so the Usage block and the examples can never disagree about where a
+// component comes from — the defect the previous branch shipped.
 import {
   DEFAULT_EXAMPLE_CHAR_BUDGET,
   DEFAULT_EXAMPLE_LIMIT,
+  DEFAULT_IMPORT_STYLE,
+  IMPORT_PACKAGE_UI,
   type ComponentDocs,
   type ExampleSelection,
+  type ImportStyle,
+  type PartDoc,
+  type PropDoc,
 } from "./types";
 
 /** Options beyond the model itself. */
@@ -30,10 +41,16 @@ export interface RenderOptions {
   exampleCharBudget?: number;
   /**
    * The command the "More examples" line tells the reader to run. Defaults to
-   * `marko-ui docs <name> --examples`; the docs site passes its own phrasing
-   * so a human reading the page is not sent to a CLI they may not have.
+   * `marko-ui docs <name>`; the docs site passes its own phrasing so a human
+   * reading the page is not sent to a CLI they may not have.
    */
   moreExamplesCommand?: string;
+  /**
+   * Which import paths the snippets assume. The CLI passes the project's own
+   * (components.json `distribution` + `aliases.ui`); the site passes the
+   * copy path with the default alias. Defaults to copy + `@/components/ui`.
+   */
+  importStyle?: ImportStyle;
 }
 
 /** Collapse to one line. Pipes are left alone: nothing here is a table cell. */
@@ -49,15 +66,6 @@ function stripUndefined(type: string): string {
     .trim();
 }
 
-/** `boolean | undefined` → `boolean`; `((details: X) => void) | undefined` → `X`. */
-function handlerArg(type: string): string | undefined {
-  const cleaned = stripUndefined(type).trim();
-  // `(value: string[]) => void` (a component's own sugar prop) and
-  // `((details: X) => void) | undefined` (a Zag machine prop) both occur.
-  const match = /^\(+\s*\w+\s*:\s*([^)]*)\)\s*=>\s*void\)?$/.exec(cleaned);
-  return match?.[1]?.trim() || undefined;
-}
-
 /** The default/fixed suffix, or "" when neither is recorded. */
 function valueSuffix(prop: { default?: string; fixed?: string | true }): string {
   if (prop.fixed !== undefined) {
@@ -67,18 +75,69 @@ function valueSuffix(prop: { default?: string; fixed?: string | true }): string 
 }
 
 /** One prop line: `name: type = default — description`. */
-function propLine(prop: ComponentDocs["props"][number]): string {
+function propLine(prop: PropDoc): string {
   const name = prop.required ? `${prop.name} (required)` : prop.name;
   const suffix = valueSuffix(prop);
   const description = prop.description ? ` — ${oneLine(prop.description)}` : "";
   return `${name}: ${stripUndefined(prop.type)}${suffix}${description}`;
 }
 
-function partLine(part: ComponentDocs["parts"][number]): string {
+/** `value` (required) — how a part's own attributes are listed. */
+function attributeList(part: PartDoc): string {
+  const attributes = part.attributes ?? [];
+  if (attributes.length === 0) return "";
+  const rendered = attributes
+    .map((attribute) => {
+      const required = attribute.required ? " (required)" : "";
+      return `\`${attribute.name}\`${required}: ${stripUndefined(attribute.type)}`;
+    })
+    .join(", ");
+  return `attributes: ${rendered}`;
+}
+
+/**
+ * `<@trigger|Record<string, unknown>|>`, plus the part's own attributes and
+ * whether it may be written more than once.
+ */
+function partLine(part: PartDoc): string {
   const tag = part.param ? `<@${part.name}|${part.param}|>` : `<@${part.name}>`;
-  const repeatable = part.repeatable ? " (repeatable)" : "";
-  const description = part.description ? ` — ${oneLine(part.description)}` : "";
-  return `${tag}${repeatable}${description}`;
+  const details = [part.description && oneLine(part.description), attributeList(part)];
+  if (part.repeatable) details.push("repeatable");
+  const rendered = details.filter(Boolean).join("; ");
+  return rendered ? `${tag} — ${rendered}` : tag;
+}
+
+/** `<Dialog|string|>` — the tag's default body, which is NOT an attr-tag. */
+function bodyLine(tagName: string, body: ComponentDocs["body"]): string {
+  const tag = body?.param ? `<${tagName}|${body.param}|>` : `<${tagName}>`;
+  const description = body?.description ? ` — ${oneLine(body.description)}` : "";
+  return `The tag's body: \`${tag}…</${tagName}>\`${description}`;
+}
+
+/**
+ * Rewrites every import in a snippet to the paths `style` assumes.
+ *
+ * Authors write examples against `@marko-ui/shadcn/ui/…` (the in-repo alias,
+ * so the demo compiles in this workspace) and the usage import against the
+ * copy path's `@/components/ui/…`. Both are normalized here so one project
+ * never sees a mixture.
+ */
+export function applyImportStyle(source: string, style: ImportStyle): string {
+  if (style.kind === "import") {
+    // Leave `@marko-ui/shadcn/ui/…` alone; only the copy-path usage import
+    // has to move onto the package.
+    return source.replace(
+      /(["'])@\/components\/ui\//g,
+      `$1${IMPORT_PACKAGE_UI}/`,
+    );
+  }
+  // Copy: BOTH authored spellings move onto the project's alias, so the
+  // snippet's imports and the usage import agree — with each other and with
+  // what `marko-ui add` actually writes.
+  const alias = style.uiAlias.replace(/\/$/, "");
+  return source
+    .replace(/(["'])@marko-ui\/shadcn\/ui\//g, `$1${alias}/`)
+    .replace(/(["'])@\/components\/ui\//g, `$1${alias}/`);
 }
 
 /** The examples the default output prints: hero first, then essentials. */
@@ -111,9 +170,6 @@ function selectExamples(
   return { shown, hidden: docs.examples.filter((example) => !shownIds.has(example.id)) };
 }
 
-/** How many entries the "More examples" list prints before counting the rest. */
-const MORE_EXAMPLES_LIST_LIMIT = 10;
-
 /**
  * Renders a ComponentDocs model as markdown.
  *
@@ -127,9 +183,15 @@ export function renderComponentDocs(
   options: RenderOptions = {},
 ): string {
   const limit = options.exampleLimit ?? DEFAULT_EXAMPLE_LIMIT;
+  const style = options.importStyle ?? DEFAULT_IMPORT_STYLE;
   const sections: string[] = [];
 
   sections.push(`# ${docs.title}`, "", docs.description, "");
+
+  const usageBlock = [docs.importSnippet, docs.usageSnippet]
+    .filter((value) => value.trim().length > 0)
+    .map((value) => applyImportStyle(value.trim(), style))
+    .join("\n\n");
 
   sections.push(
     "## Install",
@@ -140,15 +202,21 @@ export function renderComponentDocs(
     "",
     "## Usage",
     "",
-    docs.usageTags,
+    "Tags are auto-registered; these imports are the optional explicit form.",
     "",
     "```marko",
-    docs.usageSnippet,
+    // One well-formed fenced block: every import first, then a blank line,
+    // then the snippet. The previous branch printed a bare `<Button>` line
+    // OUTSIDE any fence (which markdown swallows as HTML) and put the import
+    // after the block.
+    ...[usageBlock],
     "```",
     "",
-    docs.importSnippet,
-    "",
   );
+
+  if (docs.usageTags) {
+    sections.push(`Available tags: ${docs.usageTags}`, "");
+  }
 
   if (docs.concepts) sections.push("## Concepts", "", docs.concepts, "");
 
@@ -165,8 +233,9 @@ export function renderComponentDocs(
     );
   }
 
-  if (docs.parts.length > 0) {
+  if (docs.body || docs.parts.length > 0) {
     sections.push("## Parts", "");
+    if (docs.body) sections.push(`- ${bodyLine(docs.title, docs.body)}`);
     for (const part of docs.parts) sections.push(`- ${partLine(part)}`);
     sections.push("");
   }
@@ -190,8 +259,9 @@ export function renderComponentDocs(
   // root's, so nothing is lost to the compaction. `####`, not `###`: they are
   // nested under Props, and at the same level they read as examples.
   for (const sub of docs.subcomponents ?? []) {
-    if (sub.props.length === 0) continue;
+    if (sub.props.length === 0 && (sub.parts?.length ?? 0) === 0) continue;
     sections.push(`#### \`${sub.name}\``, "");
+    for (const part of sub.parts ?? []) sections.push(`- ${partLine(part)}`);
     for (const prop of sub.props) sections.push(`- ${propLine(prop)}`);
     if (sub.nativeAttributes) {
       sections.push("", `Also accepts every \`<${sub.nativeAttributes}>\` attribute.`);
@@ -235,28 +305,31 @@ export function renderComponentDocs(
     for (const example of shown) {
       sections.push(`### ${example.title}`, "");
       if (example.description) sections.push(example.description, "");
-      sections.push("```marko", example.source, "```", "");
+      sections.push("```marko", applyImportStyle(example.source, style), "```", "");
     }
   }
 
   if (hidden.length > 0) {
-    const command = options.moreExamplesCommand ?? `marko-ui docs ${docs.name}`;
+    const custom = options.moreExamplesCommand;
+    const command = custom ?? `marko-ui docs ${docs.name}`;
     const all = command.includes("--example")
       ? command
       : `${command} ${hidden.length > 1 ? "--examples" : `--example ${hidden[0]?.id}`}`;
-    // The list is capped: a 26-example component would otherwise spend a
-    // kilobyte of a 12k budget restating titles the reader did not ask for.
-    // `--examples` still prints all of them.
-    const listed = hidden.slice(0, MORE_EXAMPLES_LIST_LIMIT);
     sections.push(
       "## More examples",
       "",
-      ...listed.map((example) => `- \`${example.id}\` — ${example.title}`),
-      ...(hidden.length > listed.length
-        ? [`- …and ${hidden.length - listed.length} more.`]
-        : []),
+      // EVERY id, not a truncated list: an agent that wants one specific
+      // example needs its id, and ids are short. The previous branch capped
+      // the list at ten and then printed "…and 6 more", which is unusable
+      // with `--example <id>`.
+      ...hidden.map((example) => `- \`${example.id}\` — ${example.title}`),
       "",
-      `Print any of them: \`${all}\`.`,
+      // The single-example command is CLI-specific, so it is only offered when
+      // the command IS the CLI: the docs site passes its own phrasing and a
+      // human reading the page must not be sent to a command they cannot run.
+      custom
+        ? `Print them all: \`${all}\`.`
+        : `Print them all: \`${all}\`. Print one: \`marko-ui docs ${docs.name} --example <id>\`.`,
       "",
     );
   }
@@ -271,6 +344,7 @@ export type {
   EventDoc,
   ExampleDoc,
   ExampleSelection,
+  ImportStyle,
   PartDoc,
   PropDoc,
 } from "./types";

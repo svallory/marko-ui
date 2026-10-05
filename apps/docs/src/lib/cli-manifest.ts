@@ -204,6 +204,11 @@ export const CLI_MANIFEST: CliManifest = {
       ],
       "options": [
         {
+          "flags": "-c, --cwd <cwd>",
+          "description": "the working directory. defaults to the current directory.",
+          "defaultValue": "current working directory"
+        },
+        {
           "flags": "-l, --list",
           "description": "list documented components.",
           "defaultValue": false
@@ -220,7 +225,7 @@ export const CLI_MANIFEST: CliManifest = {
         },
         {
           "flags": "--example <id...>",
-          "description": "print only the named examples (ids are listed by --list and in the \"More examples\" list)."
+          "description": "print only the named examples. Every id is listed in the \"More examples\" section of the default output."
         }
       ]
     },

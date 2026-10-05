@@ -41,7 +41,6 @@ export const docs: ComponentDocs = {
     },
     {
       name: "editable-custom-trigger",
-      essential: true,
       title: "Custom trigger",
       description: "Replace the default edit-trigger button with the `@trigger` tag parameter.",
     },

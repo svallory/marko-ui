@@ -35,7 +35,6 @@ export const docs: ComponentDocs = {
     },
     {
       name: "input-field",
-      essential: true,
       title: "Field",
       description: "Use `Field`, `FieldLabel`, and `FieldDescription` to create an input with a label and description.",
     },
@@ -53,6 +52,7 @@ export const docs: ComponentDocs = {
       name: "input-invalid",
       title: "Invalid",
       description: "Set `aria-invalid=\"true\"` to style the input for a failed validation state. To style the invalid state, add the `data-invalid` attribute to the `Field` component.",
+      essential: true,
     },
     {
       name: "input-value",
@@ -108,6 +108,7 @@ export const docs: ComponentDocs = {
       name: "input-form",
       title: "Form",
       description: "A full form example with multiple inputs, a select, and a button.",
+      essential: true,
     },
     {
       name: "input-rtl",

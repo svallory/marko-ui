@@ -29,14 +29,34 @@ export interface PropDoc {
  * `Marko.AttrTag<…>` or `Marko.Body<…>` in the API data), so the API table
  * showed them as `Marko.Body<[Foo]>`, which tells an agent nothing about what
  * to write. They get their own section instead.
+ *
+ * NOTE: the DEFAULT body (`content`) is deliberately NOT a part. `<@content>`
+ * is not valid markup — the body is written between the component's own tags
+ * (`<Dialog>…</Dialog>`). It is carried as `ComponentDocs.body` instead.
  */
 export interface PartDoc {
   /** `trigger` for `<@trigger>`. */
   name: string;
   /** The parameter type when the body takes one, e.g. `Record<string, unknown>`. */
   param?: string;
-  /** True when the API data types it as an array, i.e. it can appear twice. */
+  /** True when the component iterates it, so it can be written more than once. */
   repeatable?: boolean;
+  /**
+   * The part's own attributes, read out of the `Marko.AttrTag<T>` type T.
+   * `<@trigger value>` is only writable because `value` is declared here; a
+   * part printed as a bare `<@trigger>` tells an agent nothing about that.
+   */
+  attributes?: PropDoc[];
+  description?: string;
+}
+
+/**
+ * The component's default body — the `content` prop. Not a part: it is what
+ * goes between the component's own tags.
+ */
+export interface BodyDoc {
+  /** The parameter type when the body takes one, e.g. `string` for `<Dialog|description|>`. */
+  param?: string;
   description?: string;
 }
 
@@ -54,6 +74,10 @@ export interface SubcomponentDoc {
   /** File name without extension, e.g. `trigger`. */
   name: string;
   props: PropDoc[];
+  /** Nested attr-tags (chart's `<@series>`, pie's `<@centerLabel>`). */
+  parts?: PartDoc[];
+  /** The sub-part's own default body, if it declares one. */
+  body?: BodyDoc;
   nativeAttributes?: string;
 }
 
@@ -83,8 +107,10 @@ export interface ComponentDocs {
   usageTags: string;
   /** The explicit-import form. */
   importSnippet: string;
-  /** A minimal usage snippet. */
+  /** A minimal usage snippet, WITHOUT any import line. */
   usageSnippet: string;
+  /** The tag's default body, when the component declares one. */
+  body?: BodyDoc;
   parts: PartDoc[];
   props: PropDoc[];
   events: EventDoc[];
@@ -112,6 +138,31 @@ export interface ComponentDocs {
  * - an array of ids: exactly those examples, in the order given.
  */
 export type ExampleSelection = "essential" | "all" | string[];
+
+/**
+ * Which import paths the rendered snippets assume.
+ *
+ * The model stores every source AS AUTHORED (examples import
+ * `@marko-ui/shadcn/ui/...`; the usage import is the copy path's
+ * `@/components/ui/...`). The renderer resolves both into one coherent story
+ * per project, so the CLI and the docs site can never print a Usage block and
+ * an example that disagree about where a component comes from.
+ */
+export type ImportStyle =
+  | { kind: "copy"; uiAlias: string }
+  | { kind: "import" };
+
+/** The alias a project with no `aliases.ui` gets. */
+export const DEFAULT_UI_ALIAS = "@/components/ui";
+
+/** The import style used when nothing else is known: copy, default alias. */
+export const DEFAULT_IMPORT_STYLE: ImportStyle = {
+  kind: "copy",
+  uiAlias: DEFAULT_UI_ALIAS,
+};
+
+/** The `@marko-ui/shadcn` package root the `import` distribution resolves. */
+export const IMPORT_PACKAGE_UI = "@marko-ui/shadcn/ui";
 
 /** How many examples the default output prints, hero included. */
 export const DEFAULT_EXAMPLE_LIMIT = 3;

@@ -34,7 +34,6 @@ export const docs: ComponentDocs = {
     },
     {
       name: "steps-controlled",
-      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `step` prop without a change handler never moves. Pair it with `stepChange`, or use Marko's bind shorthand `step:=state`.",

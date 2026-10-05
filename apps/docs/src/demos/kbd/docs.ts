@@ -35,7 +35,6 @@ export const docs: ComponentDocs = {
     },
     {
       name: "kbd-input-group",
-      essential: true,
       title: "Input Group",
       description: "Use `Kbd` inside an `InputGroupAddon` component to display a keyboard key inside an input group.",
     },

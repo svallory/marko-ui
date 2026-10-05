@@ -31,14 +31,12 @@ export const docs: ComponentDocs = {
     },
     {
       name: "qr-code-download",
-      essential: true,
       title: "Download as PNG",
       description:
         "Pass a ref-like binding (`<QrCode/qrCodeApi>`) to reach the live API and call `getDataUrl` for a downloadable image.",
     },
     {
       name: "qr-code-controlled",
-      essential: true,
       title: "Controlled value",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange`.",

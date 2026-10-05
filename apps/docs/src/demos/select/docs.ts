@@ -70,6 +70,7 @@ markup (see the Compound example below).`,
       name: "select-invalid",
       title: "Invalid",
       description: "Set `invalid` on `Field` and `aria-invalid` on `Select` to show an error state.",
+      essential: true,
     },
     {
       name: "select-rtl",
@@ -100,7 +101,6 @@ markup (see the Compound example below).`,
     },
     {
       name: "select-compound",
-      essential: true,
       title: "Compound (attr tags)",
       description:
         "Use `<@option>` attribute tags instead of `items=` to compose each option directly in markup.",

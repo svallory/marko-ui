@@ -1,5 +1,9 @@
 import { getRegistryItems, getShadcnRegistryIndex } from "@/src/registry/api"
-import { RegistryErrorCode } from "@/src/registry/errors"
+import {
+  RegistryError,
+  RegistryErrorCode,
+  RegistryItemNotFoundError,
+} from "@/src/registry/errors"
 import { resetJsonMode } from "@/src/utils/output-mode"
 import { stripVTControlCharacters } from "node:util"
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -10,6 +14,31 @@ vi.mock("@/src/registry/api", () => ({
   getRegistryItems: vi.fn(),
   getShadcnRegistryIndex: vi.fn(),
 }))
+
+/**
+ * A components.json shaped like a real project's: `rawConfigSchema` is
+ * `.strict()` and requires style/tailwind/aliases, so a two-field fixture is
+ * rejected as an INVALID_CONFIG rather than exercising the code under test.
+ */
+function BASE_CONFIG(extra: Record<string, unknown> = {}) {
+  // `aliases` merged last (rather than written twice in the literal) so an
+  // `aliases` in `extra` overrides the base instead of being overwritten.
+  const { aliases: aliasOverrides, ...rest } = extra as { aliases?: object };
+  return {
+    style: "default",
+    tailwind: {
+      css: "src/styles/globals.css",
+      baseColor: "neutral",
+      cssVariables: true,
+    },
+    ...rest,
+    aliases: {
+      components: "@/components",
+      utils: "@/lib/utils",
+      ...aliasOverrides,
+    },
+  };
+}
 
 const INDEX = [
   { name: "button", type: "registry:ui", description: "A button." },
@@ -69,8 +98,15 @@ const exitSpy = vi.spyOn(process, "exit").mockImplementation((code) => {
 /** The registry items `getRegistryItems` resolves, by name. */
 function stubRegistry(items: Record<string, unknown> = {}) {
   vi.mocked(getRegistryItems).mockImplementation(
-    async (names: string[]) =>
-      names.map((name) => items[name]).filter(Boolean) as never
+    async (names: string[]) => {
+      // The REAL resolver THROWS RegistryItemNotFoundError for a 404; the
+      // previous stub returned `[]` and hid exactly that, which is how
+      // `docs nope button` shipped printing nothing.
+      for (const name of names) {
+        if (!items[name]) throw new RegistryItemNotFoundError(name)
+      }
+      return names.map((name) => items[name]) as never
+    }
   )
 }
 
@@ -275,6 +311,32 @@ describe("docs command: unknown component", () => {
     expect(stderr).toContain("nope")
   })
 
+  it("keeps the found page when the MISS comes first", async () => {
+    // `docs nope button` used to print nothing at all: getRegistryItems
+    // throws for a 404 and the throw aborted the loop before button printed.
+    stubRegistry({
+      button: item("button", [{ id: "controlled", essential: true }]),
+      dialog: item("dialog"),
+    })
+
+    const { stdout, stderr, exitCode } = await runFailing(["nope", "button"])
+
+    expect(stdout).toContain("# button")
+    expect(stdout).toContain("button description")
+    expect(exitCode).toBe(1)
+    expect(stderr).toContain(`No documentation for "nope"`)
+  })
+
+  it("propagates a non-404 registry failure instead of calling it a miss", async () => {
+    vi.mocked(getRegistryItems).mockRejectedValue(
+      new RegistryError("boom", { code: RegistryErrorCode.NETWORK_ERROR })
+    )
+
+    const { stderr } = await runFailing(["button"])
+
+    expect(stderr).toContain(RegistryErrorCode.NETWORK_ERROR)
+  })
+
   it("does not turn a suggestion lookup failure into a different error", async () => {
     vi.mocked(getShadcnRegistryIndex).mockRejectedValue(new Error("no index"))
 
@@ -303,5 +365,111 @@ describe("docs command: --list is unchanged", () => {
       "button-group",
       "dialog",
     ])
+  })
+})
+describe("docs command: it resolves names exactly as `show` does", () => {
+  let projectDir: string
+
+  async function writeConfig(config: Record<string, unknown>) {
+    const { mkdtemp, writeFile } = await import("node:fs/promises")
+    const { tmpdir } = await import("node:os")
+    const { join } = await import("node:path")
+    projectDir = await mkdtemp(join(tmpdir(), "marko-ui-docs-"))
+    await writeFile(join(projectDir, "components.json"), JSON.stringify(BASE_CONFIG(config)))
+    return projectDir
+  }
+
+  it("passes the project's configured registries to the resolver", async () => {
+    const dir = await writeConfig({
+      registries: { "@acme": "http://127.0.0.1:59999/r/{name}.json" },
+    })
+    stubRegistry({ "@acme/widget": item("widget") })
+
+    await run(["@acme/widget", "--cwd", dir])
+
+    const call = vi.mocked(getRegistryItems).mock.calls[0]
+    // `docs @acme/x` used to answer NOT_CONFIGURED "Unknown registry @acme"
+    // while `show @acme/x` fetched it — because docs passed `{}` for config.
+    expect((call?.[1]?.config as { registries?: Record<string, string> }).registries)
+      .toHaveProperty("@acme")
+  })
+
+  it("resolves a bare name against the project's registries too", async () => {
+    const dir = await writeConfig({
+      registries: { "@acme": "http://127.0.0.1:59999/r/{name}.json" },
+    })
+    stubRegistry({ button: item("button") })
+
+    await run(["button", "--cwd", dir])
+
+    const call = vi.mocked(getRegistryItems).mock.calls[0]
+    expect((call?.[1]?.config as { registries?: Record<string, string> }).registries)
+      .toHaveProperty("@acme")
+  })
+})
+
+describe("docs command: the printed snippets assume the project's import paths", () => {
+  let projectDir: string
+
+  async function writeConfig(config: Record<string, unknown>) {
+    const { mkdtemp, writeFile } = await import("node:fs/promises")
+    const { tmpdir } = await import("node:os")
+    const { join } = await import("node:path")
+    projectDir = await mkdtemp(join(tmpdir(), "marko-ui-docs-"))
+    await writeFile(join(projectDir, "components.json"), JSON.stringify(BASE_CONFIG(config)))
+    return projectDir
+  }
+
+  function itemWithExampleImports() {
+    const base = item("button")
+    base.componentDocs.examples[0]!.source =
+      'import Button from "@marko-ui/shadcn/ui/button/button.marko";\n<Button />'
+    return base
+  }
+
+  it("uses the copy path and the DEFAULT alias with no components.json", async () => {
+    stubRegistry({ button: itemWithExampleImports() })
+
+    const { stdout } = await run(["button"])
+
+    expect(stdout).toContain('from "@/components/ui/button/button.marko"')
+    expect(stdout).not.toContain("@marko-ui/shadcn/ui")
+  })
+
+  it("uses the project's own ui alias", async () => {
+    const dir = await writeConfig({ aliases: { ui: "#src/components/ui" } })
+    stubRegistry({ button: itemWithExampleImports() })
+
+    const { stdout } = await run(["button", "--cwd", dir])
+
+    expect(stdout).toContain('from "#src/components/ui/button/button.marko"')
+    expect(stdout).not.toContain("@marko-ui/shadcn/ui")
+    expect(stdout).not.toContain('"@/components/ui')
+  })
+
+  it("uses the package path for an `import`-distribution project", async () => {
+    const dir = await writeConfig({ distribution: "import" })
+    stubRegistry({ button: itemWithExampleImports() })
+
+    const { stdout } = await run(["button", "--cwd", dir])
+
+    expect(stdout).toContain('from "@marko-ui/shadcn/ui/button/button.marko"')
+    expect(stdout).not.toContain("@/components/ui")
+  })
+})
+
+describe("docs command: --json does not re-inflate the model", () => {
+  it("drops every unselected example's source from the envelope", async () => {
+    stubRegistry({ button: item("button", [{ id: "controlled", essential: true }]) })
+
+    const { stdout } = await run(["button", "--json"])
+    const parsed = JSON.parse(stdout)
+    const docs = parsed.data.components[0].docs
+
+    // The markdown keeps only the hero; the model must not smuggle the other
+    // three examples' sources back in (it was 11.8kB against 1.3kB markdown).
+    expect(docs.examples).toEqual([])
+    expect(parsed.data.components[0].markdown).toContain("# button")
+    expect(stdout.length).toBeLessThan(4000)
   })
 })

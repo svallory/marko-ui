@@ -1,46 +1,51 @@
 // Assembles the structured ComponentDocs model for one component and renders it.
 //
 // This is the ONLY markdown assembler for component docs. It builds the model
-// (from `docs.ts`, the demo sources and api-reference.json) and hands it to the
-// renderer in packages/marko-ui/src/docs — the same renderer `marko-ui docs`
-// runs on the model it reads from the registry item, so the two cannot drift.
+// (from `docs.ts`, the demo sources, api-reference.json and the component's
+// own source) and hands it to the renderer in packages/marko-ui/src/docs — the
+// same renderer `marko-ui docs` runs on the model it reads from the registry
+// item, so the two cannot drift.
 //
-// The inputs are passed in rather than imported: the registry build calls this
-// with demo sources read from disk, while the docs site passes the ones already
-// inlined in the demos manifest. That keeps the demos manifest out of the
-// registry build's dependency graph (it is generated FROM the registry).
+// The inputs are passed in rather than imported: the registry build assembles
+// the same model from files on disk, while the docs site passes the ones
+// already inlined in the demos manifest. That keeps the demos manifest out of
+// the registry build's dependency graph (it is generated FROM the registry).
 import {
   renderComponentDocs,
   type ComponentDocs as ComponentDocsModel,
   type ExampleSelection,
-  type PropDoc,
+  type ImportStyle,
 } from "../../../../packages/marko-ui/src/docs/index.ts";
 import {
   buildComponentDocs,
   type ComponentDocsInput,
-} from "../../../../packages/marko-ui/src/docs/build";
+} from "../../../../packages/marko-ui/src/docs/build.ts";
 import type { ComponentPageData } from "./component-page-data.ts";
-import type { ApiPart } from "../tags/docs/api-table.marko";
-import { stripMarkoComments } from "../../../../packages/marko-ui/src/docs/strip-comments";
+import { stripMarkoComments } from "../../../../packages/marko-ui/src/docs/strip-comments.ts";
 
 export { defaultCell } from "./default-cell.ts";
+export { stripMarkoComments } from "../../../../packages/marko-ui/src/docs/strip-comments.ts";
+export type { ComponentDocsInput } from "../../../../packages/marko-ui/src/docs/build.ts";
 
-/** What the builder needs about one component, from wherever it is assembled. */
-/** The pure builder lives in the CLI package; the docs site only adds the
- * comment stripping, which is a property of the demo sources, not of the
- * model. */
-export { stripMarkoComments } from "../../../../packages/marko-ui/src/docs/strip-comments";
-export type { ComponentDocsInput } from "../../../../packages/marko-ui/src/docs/build";
-
-/** Builds the model from the docs site's inputs, with comments stripped. */
-export function buildComponentDocs(input: ComponentDocsInput): ComponentDocsModel {
-  return buildModel(input);
-}
+/**
+ * Builds the model from the docs site's inputs.
+ *
+ * A straight re-export of the pure builder, NOT a wrapper: the registry build
+ * calls that same function, and a wrapper here is how the two answers drifted
+ * apart in the first place.
+ */
+export { buildComponentDocs };
 
 /**
  * The builder's input, from the page model the docs site already assembles.
  * Its `examples` carry the resolved demo sources, so no second lookup — and no
  * dependency on the demos manifest, which is generated from the registry.
+ *
+ * `componentSource` is the component's authored `.marko` source, read back out
+ * of the registry snapshot inlined here — byte-for-byte what the registry
+ * build read off disk. The builder needs it for two facts nothing else
+ * carries: whether an attr-tag is iterated (repeatable) and what an
+ * `Marko.AttrTag<T>` type declares (the part's own attributes).
  */
 export function componentDocsInputFromPage(page: ComponentPageData): ComponentDocsInput {
   const demos: ComponentDocsInput["demos"] = {};
@@ -53,6 +58,10 @@ export function componentDocsInputFromPage(page: ComponentPageData): ComponentDo
     demos,
     parts: page.parts,
     installCommand: page.installCommand,
+    componentSource: page.registry.files
+      .filter((file) => file.path.endsWith(".marko"))
+      .map((file) => file.content)
+      .join("\n"),
   };
 }
 
@@ -60,14 +69,19 @@ export function componentDocsInputFromPage(page: ComponentPageData): ComponentDo
 export function renderComponentDocsFrom(
   input: ComponentDocsInput,
   selection: ExampleSelection = "essential",
+  importStyle?: ImportStyle,
 ): string {
-  return renderComponentDocs(buildComponentDocs(input), selection);
+  return renderComponentDocs(buildComponentDocs(input), selection, { importStyle });
 }
 
 /**
  * What the docs site's `/docs/components/<name>.md` serves: the same renderer
  * the CLI runs, with EVERY example (a human reading the page can see them all;
  * the CLI's default is the lean slice).
+ *
+ * The snippets assume the COPY path with the default `@/components/ui` alias —
+ * the same assumption the pages' code panels make — so the `.md` a reader
+ * copies out of the page is the code that lands in their project.
  */
 export function renderComponentMarkdown(
   page: ComponentPageData,

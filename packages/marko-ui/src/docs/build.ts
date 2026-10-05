@@ -1,10 +1,22 @@
-// Builds the ComponentDocs model from raw inputs: the hand-authored docs
-// entry, demo sources, and the extracted API data. Pure — no I/O, no imports
-// outside this package — so the registry build can call it for all 86
-// components without pulling the docs site (or its .marko files) into its own
-// module graph. The docs site imports this same function through
-// apps/docs/src/lib/component-markdown.ts.
-import type { ComponentDocs, PartDoc, PropDoc, SubcomponentDoc } from "./types";
+// Builds the ComponentDocs model from raw inputs: the EVALUATED docs.ts
+// entry, demo sources, the extracted API data and the component's own source.
+// Pure — no I/O, no imports outside this package — so the registry build can
+// call it for all 86 components without pulling the docs site into its module
+// graph, and the docs site imports this same function.
+//
+// ONE builder. The registry build and the docs site both call it with the
+// same three inputs (docs.ts export, demo sources, api-reference entry); the
+// previous branch had two builders and they disagreed — the registry's parsed
+// `docs.ts` as text and shipped unevaluated `${...}`, literal `\n` and
+// truncated sentences to the CLI. `tooling/__tests__/docs-parity.test.ts`
+// asserts the two answers are byte-identical.
+import type {
+  BodyDoc,
+  ComponentDocs,
+  PartDoc,
+  PropDoc,
+  SubcomponentDoc,
+} from "./types";
 import { stripMarkoComments } from "./strip-comments";
 
 /** One property, as the API data carries it. */
@@ -20,6 +32,7 @@ export interface ApiProp {
 /** One part's properties, as the API data carries them. */
 export interface ApiPartLike {
   name: string;
+  file?: string;
   nativeAttributes?: string;
   properties: ApiProp[];
 }
@@ -52,7 +65,7 @@ export interface ComponentDocsInput {
   title?: string;
   /** Registry description, used when `docs.ts` has none. */
   registryDescription?: string;
-  /** The hand-authored `docs.ts` entry. */
+  /** The hand-authored `docs.ts` entry, EVALUATED. */
   docs: DocsEntry;
   /** Demo sources by file name without extension, as written in `examples[].name`. */
   demos: Record<string, { source: string }>;
@@ -60,6 +73,18 @@ export interface ComponentDocsInput {
   parts: ApiPartLike[];
   /** The install line the reader should run. */
   installCommand: string;
+  /**
+   * The component's own `.marko` sources, concatenated.
+   *
+   * Needed for two facts no other input carries: whether an attr-tag is
+   * iterated (`[...(input.item ?? [])]` / `<for|…| of=input.item>` makes a
+   * part repeatable) and what an attr-tag's declared attributes are
+   * (`Marko.AttrTag<TabsPanelAttrs>` names an interface in this source).
+   * Both the registry build and the docs site read the same text — the
+   * registry item inlines the authored source verbatim — so the two answers
+   * cannot drift.
+   */
+  componentSource?: string;
 }
 
 /** `alert-dialog` → `Alert Dialog`. */
@@ -78,12 +103,21 @@ export function slugify(value: string): string {
     .replace(/(^-|-$)/g, "");
 }
 
-/** A prop typed as a `Marko.AttrTag<…>` or `Marko.Body<…>` is a part, not a prop. */
-function isPartType(type: string): boolean {
-  return type.includes("AttrTag") || /^Marko\.Body\b/.test(type);
+// ---------------------------------------------------------------------------
+// Type-shape predicates
+// ---------------------------------------------------------------------------
+
+/** `Marko.Body<…>` — the tag's own (default) body. */
+function isBodyType(type: string): boolean {
+  return /^Marko\.Body\b/.test(type.trim());
 }
 
-/** The body parameter's type, when the part takes one. */
+/** `Marko.AttrTag<…>` — a real attr-tag, e.g. `<@trigger>`. */
+function isAttrTagType(type: string): boolean {
+  return type.includes("AttrTag");
+}
+
+/** The body parameter's type, when the body takes one. */
 function partParam(type: string): string | undefined {
   // `Marko.AttrTag<{ content: Marko.Body<[Record<string, unknown>]>; }>` and
   // the bare `Marko.Body<[AccordionItem], void>` both name the tuple's only
@@ -91,18 +125,133 @@ function partParam(type: string): string | undefined {
   const tuple = /Marko\.Body<\s*\[([^\]]*)\]/.exec(type);
   const inner = tuple?.[1]?.trim();
   if (!inner) return undefined;
-  const empty = /^void$|^$/.test(inner);
-  return empty ? undefined : inner.replace(/;$/, "").trim();
+  if (/^void$|^$/.test(inner)) return undefined;
+  return inner.replace(/;$/, "").trim();
 }
 
-/** A part whose type is an array can be written more than once. */
-function isRepeatable(type: string): boolean {
-  const trimmed = type.replace(/;\s*$/, "").trim();
-  return /\[\]\s*$/.test(trimmed);
+/** The inner type of `Marko.AttrTag<T>`: an interface name, or an inline object. */
+function attrTagInnerType(type: string): string | undefined {
+  const match = /AttrTag<\s*([\s\S]*?)\s*>\s*$/.exec(type.trim());
+  const inner = match?.[1]?.trim();
+  return inner && inner.length > 0 ? inner : undefined;
+}
+
+/** A callback prop's argument type, or undefined when it is not a callback. */
+function handlerArg(type: string): string | undefined {
+  const cleaned = type.replace(/\s*\|\s*undefined\b/g, "").replace(/\s*\|\s*null\b/g, "").trim();
+  // `(value: string[]) => void` — a component's own sugar prop — and
+  // `((details: X) => void) | undefined` — a Zag machine prop — both occur.
+  const match = /^\(+\s*\w+\s*:\s*([^)]*)\)\s*=>\s*void\)?$/.exec(cleaned);
+  return match?.[1]?.trim() || undefined;
+}
+
+/**
+ * An event is a prop that IS a callback — nothing else.
+ *
+ * Naming is not enough: combobox's `openOnChange: boolean | ((details) =>
+ * boolean) | undefined` ends in `Change` but is a boolean-or-predicate prop,
+ * and printing it as an event sends an agent looking for a handler.
+ */
+function isHandlerType(type: string): boolean {
+  const cleaned = type
+    .replace(/\s*\|\s*undefined\b/g, "")
+    .replace(/\s*\|\s*null\b/g, "")
+    .trim();
+  return (
+    /^\(+\s*\w+\s*:\s*[^)]*\)\s*=>\s*void\)?$/.test(cleaned) ||
+    /^\(\s*\)\s*=>\s*void$/.test(cleaned)
+  );
 }
 
 function isEventName(name: string): boolean {
   return /^on[A-Z]/.test(name) || /Change$/.test(name);
+}
+
+// ---------------------------------------------------------------------------
+// Reading the component's own source
+// ---------------------------------------------------------------------------
+
+/**
+ * Fields of `interface T { … }` / `export interface T { … }` in the component
+ * source, as `{ name, type, required }`.
+ *
+ * Deliberately a brace-matched block scan and not a TS parser: this resolves
+ * one hand-written shape (one declaration per line, no nested objects) whose
+ * only job is to name a part's attributes in the output. A field the scan
+ * cannot read is simply absent, and the part prints without it.
+ */
+export function readInterfaceFields(
+  source: string,
+  interfaceName: string,
+): { name: string; type: string; required: boolean }[] {
+  const declaration = new RegExp(
+    `(?:^|\\n)\\s*(?:export\\s+)?interface\\s+${interfaceName}\\s*(?:extends[^{]*)?\\{`,
+  ).exec(source);
+  if (!declaration) return [];
+  const start = declaration.index + declaration[0].length;
+  let depth = 1;
+  let end = start;
+  while (end < source.length && depth > 0) {
+    const char = source[end];
+    if (char === "{") depth += 1;
+    else if (char === "}") depth -= 1;
+    end += 1;
+  }
+  const body = source.slice(start, end - 1);
+
+  const fields: { name: string; type: string; required: boolean }[] = [];
+  for (const rawLine of body.split("\n")) {
+    const line = rawLine.replace(/\/\/.*$/, "").trim();
+    if (!line || line.startsWith("*") || line.startsWith("/*")) continue;
+    const field = /^([A-Za-z_$][\w$]*|\[[^\]]+\])\s*(\?)?\s*:\s*(.+)$/.exec(line);
+    if (!field) continue;
+    fields.push({
+      name: field[1] as string,
+      type: (field[3] as string).replace(/;\s*$/, "").trim(),
+      required: !field[2],
+    });
+  }
+  return fields;
+}
+
+/**
+ * True when the component ITERATES an attr-tag, which is what makes a part
+ * repeatable: `[...(input.item ?? [])]` (tabs, accordion, select,
+ * dropdown-menu) or `<for|…| of=input.item>`.
+ *
+ * Decided from the component's source, not from the API type: every
+ * `Marko.AttrTag<T>` is iterable by construction in Marko, so the type says
+ * nothing. What distinguishes `<@item>` (written once per row) from `<@title>`
+ * (invoked once) is whether the component loops over it. A part neither
+ * spreads nor loops is printed without `(repeatable)` — the honest answer for
+ * a single-invocation tag.
+ */
+function iteratesAttrTag(source: string, attrTagName: string): boolean {
+  const escaped = attrTagName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(
+    `(?:\\.\\.\\.\\(\\s*input\\.${escaped}\\b)|(?:of=\\s*input\\.${escaped}\\b)`,
+  ).test(source);
+}
+
+/** A part's own attributes, or `undefined` when its type declares none. */
+function partAttributes(
+  innerType: string | undefined,
+  source: string,
+): PropDoc[] | undefined {
+  if (!innerType) return undefined;
+  // `Marko.AttrTag<{ content: Marko.Body<…> }>` — the single-invocation form,
+  // which declares no attributes of its own.
+  if (!/^[A-Za-z_$][\w$]*$/.test(innerType)) return undefined;
+  const fields = readInterfaceFields(source, innerType).filter(
+    // `content` on an AttrTag IS the part's body, already covered by `param`.
+    (field) => !isBodyType(field.type),
+  );
+  if (fields.length === 0) return undefined;
+  return fields.map((field) => ({
+    name: field.name,
+    type: field.type,
+    required: field.required,
+  }));
 }
 
 function toPropDoc(property: ApiProp): PropDoc {
@@ -117,59 +266,74 @@ function toPropDoc(property: ApiProp): PropDoc {
   return prop;
 }
 
-/** `((details: OpenChangeDetails) => void) | undefined` → `OpenChangeDetails`. */
-function handlerArg(type: string): string | undefined {
-  const cleaned = type.replace(/\s*\|\s*undefined\b/g, "").trim();
-  // `(value: string[]) => void` — a component's own sugar prop — and
-  // `((details: X) => void) | undefined` — a Zag machine prop — both occur.
-  const match = /^\(+\s*\w+\s*:\s*([^)]*)\)\s*=>\s*void\)?$/.exec(cleaned);
-  return match?.[1]?.trim() || undefined;
+/** Everything one property list contributes to the model. */
+interface Partitioned {
+  body?: BodyDoc;
+  parts: PartDoc[];
+  props: PropDoc[];
+  events: ComponentDocs["events"];
+}
+
+function partition(properties: ApiProp[], source: string): Partitioned {
+  const result: Partitioned = { parts: [], props: [], events: [] };
+  for (const property of properties) {
+    const type = property.type ?? "";
+    if (isBodyType(type)) {
+      // The tag's default body, NOT a part: `<@content>` is not markup.
+      const body: BodyDoc = {};
+      const param = partParam(type);
+      if (param) body.param = param;
+      if (property.description) body.description = property.description;
+      result.body = body;
+      continue;
+    }
+    if (isAttrTagType(type)) {
+      const part: PartDoc = { name: property.name };
+      const param = partParam(type);
+      if (param) part.param = param;
+      const attributes = partAttributes(attrTagInnerType(type), source);
+      if (attributes) part.attributes = attributes;
+      if (iteratesAttrTag(source, property.name)) part.repeatable = true;
+      if (property.description) part.description = property.description;
+      result.parts.push(part);
+      continue;
+    }
+    if (isEventName(property.name) && isHandlerType(type)) {
+      const event: ComponentDocs["events"][number] = { name: property.name };
+      const arg = handlerArg(type);
+      if (arg) event.arg = arg;
+      if (property.description) event.description = property.description;
+      result.events.push(event);
+      continue;
+    }
+    result.props.push(toPropDoc(property));
+  }
+  return result;
 }
 
 /**
  * Builds the model.
  *
- * Parts and events are lifted out of the props: an attr-tag printed as
- * `Marko.Body<[Foo]>` tells an agent nothing about the markup to write, and a
- * change handler buried in an alphabetical prop list is one an agent skims
- * past. Both stay in the API data — only the docs view changes.
+ * Parts, the body and events are lifted out of the props: an attr-tag printed
+ * as `Marko.Body<[Foo]>` tells an agent nothing about the markup to write, the
+ * body printed as `<@content>` is markup that does not compile, and a change
+ * handler buried in an alphabetical prop list is one an agent skims past.
+ * They all stay in the API data — only the docs view changes.
  */
 export function buildComponentDocs(input: ComponentDocsInput): ComponentDocs {
   const { name, docs, demos, parts } = input;
   const root = parts.find((part) => part.name === name) ?? parts[0];
+  const source = input.componentSource ?? "";
 
-  const partDocs: ComponentDocs["parts"] = [];
-  const propDocs: PropDoc[] = [];
-  const eventDocs: ComponentDocs["events"] = [];
+  const split = partition(root?.properties ?? [], source);
 
-  for (const property of root?.properties ?? []) {
-    if (isPartType(property.type)) {
-      const part: PartDoc = { name: property.name };
-      const param = partParam(property.type);
-      if (param) part.param = param;
-      if (isRepeatable(property.type)) part.repeatable = true;
-      if (property.description) part.description = property.description;
-      partDocs.push(part);
-      continue;
-    }
-    if (isEventName(property.name) && property.type.includes("=>")) {
-      const event: ComponentDocs["events"][number] = { name: property.name };
-      const arg = handlerArg(property.type);
-      if (arg) event.arg = arg;
-      if (property.description) event.description = property.description;
-      eventDocs.push(event);
-      continue;
-    }
-    propDocs.push(toPropDoc(property));
-  }
-
-  const subcomponents = parts
+  const subcomponents: SubcomponentDoc[] = parts
     .filter((part) => part.name !== root?.name)
     .map((part) => {
-      const sub: SubcomponentDoc = {
-        name: part.name,
-        props: part.properties.map(toPropDoc),
-      };
+      const nested = partition(part.properties, source);
+      const sub: SubcomponentDoc = { name: part.name, props: nested.props };
+      if (nested.parts.length > 0) sub.parts = nested.parts;
+      if (nested.body) sub.body = nested.body;
       if (part.nativeAttributes) sub.nativeAttributes = part.nativeAttributes;
       return sub;
     });
@@ -196,18 +360,21 @@ export function buildComponentDocs(input: ComponentDocsInput): ComponentDocs {
   const model: ComponentDocs = {
     name,
     title: input.title || titleize(name),
-    description: docs.description ?? input.registryDescription ?? "",
+    // `||`, not `??`: the docs site falls back to the registry description for
+    // an EMPTY docs.description too, and the two answers must match.
+    description: docs.description || input.registryDescription || "",
     installCommand: input.installCommand,
     usageTags: docs.usageTags ?? "",
     importSnippet: docs.importSnippet ?? "",
     usageSnippet: docs.usageSnippet ?? "",
-    parts: partDocs,
-    props: propDocs,
-    events: eventDocs,
+    parts: split.parts,
+    props: split.props,
+    events: split.events,
     keyboard: docs.accessibilityKeyboard ?? [],
     accessibilityNotes: docs.accessibilityNotes ?? [],
     examples,
   };
+  if (split.body) model.body = split.body;
   if (root?.nativeAttributes) model.nativeAttributes = root.nativeAttributes;
   if (subcomponents.length > 0) model.subcomponents = subcomponents;
   if (docs.concepts) model.concepts = docs.concepts;

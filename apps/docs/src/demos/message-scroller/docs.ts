@@ -89,13 +89,12 @@ import MessageScrollerButton from "@/components/ui/message-scroller/button.marko
     },
     {
       name: "message-scroller-previous-context",
-      essential: true,
       title: "Keeping Context Visible",
       description: "Adjust scrollPreviousItemPeek to control how much of the previous turn stays visible above a newly anchored row.",
+      essential: true,
     },
     {
       name: "message-scroller-streaming",
-      essential: true,
       title: "Following the Live Edge",
       description: "With autoScroll enabled, the viewport keeps pace with scripted replies while the reader is at the bottom, and backs off the moment they scroll away.",
     },
@@ -103,6 +102,7 @@ import MessageScrollerButton from "@/components/ui/message-scroller/button.marko
       name: "message-scroller-opening-position",
       title: "Opening Saved Threads",
       description: "Switch defaultScrollPosition between start, end, and last-anchor to see where a reopened transcript lands.",
+      essential: true,
     },
     {
       name: "message-scroller-load-history",

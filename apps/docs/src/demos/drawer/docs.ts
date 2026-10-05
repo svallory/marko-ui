@@ -66,7 +66,6 @@ export const docs: ComponentDocs = {
     },
     {
       name: "drawer-swipe-handle",
-      essential: true,
       title: "Swipe handle",
       description:
         "Our drawer always renders a drag grabber unless `hideGrabber` is set — there's no separate `showSwipeHandle` toggle to opt into, since the grabber is the default rather than an add-on.",
@@ -76,6 +75,7 @@ export const docs: ComponentDocs = {
       title: "Nested",
       description:
         "Open a drawer from inside another drawer. Our @zag-js/drawer port stacks nested drawers as independent instances — it does not implement upstream's stacked-indent visual (the parent drawer does not scale/dim behind the frontmost one).",
+      essential: true,
     },
     {
       name: "drawer-non-modal",

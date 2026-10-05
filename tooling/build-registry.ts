@@ -41,7 +41,7 @@ import { VISUAL_STYLES as VISUAL_STYLE_DEFINITIONS } from "../packages/marko-ui/
 import { createStyleMap, type StyleMap } from "./style-map";
 import { transformComponent } from "./transform-component";
 import type { RegistryItem } from "@/src/registry/schema"
-import { buildAllApiDocModels } from "./build-api-doc-model";
+import { buildAllApiDocModels, titleize } from "./build-api-doc-model";
 import directory from "../apps/docs/src/data/directory.json";
 
 const ROOT = new URL("../packages/shadcn/", import.meta.url).pathname;
@@ -415,10 +415,26 @@ async function emitThemeVariants(): Promise<Emission[]> {
 async function emitComponents(components: string[]): Promise<Emission[]> {
   const emissions: Emission[] = [];
   // The structured docs model, built once for all components from the files on
-  // disk (docs.ts, the demo .marko files and api-reference.json). Reading those
-  // directly is what keeps this out of a cycle with build:demos: the demos
-  // manifest is generated FROM the registry this function writes.
-  const docModels = await buildAllApiDocModels();
+  // disk (the imported docs.ts module, the demo .marko files, the component's
+  // own source and api-reference.json). Reading those directly is what keeps
+  // this out of a cycle with build:demos: the demos manifest is generated FROM
+  // the registry this function writes.
+  //
+  // `title`/`description` are passed in from the SAME meta this puts in the
+  // item, because the docs site rebuilds the model from that item's snapshot —
+  // a model whose title came from somewhere else would make the two answers
+  // differ, which is the defect `docs-parity.test.ts` guards against.
+  const docSources = await Promise.all(
+    components.map(async (name) => {
+      const meta = await readMeta(join(UI_DIR, name));
+      return {
+        name,
+        title: meta.title || titleize(name),
+        description: meta.description ?? "",
+      };
+    }),
+  );
+  const docModels = await buildAllApiDocModels(docSources);
   for (const name of components) {
     const dir = join(UI_DIR, name);
     const meta = await readMeta(dir);

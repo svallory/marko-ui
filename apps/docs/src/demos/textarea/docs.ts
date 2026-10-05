@@ -20,7 +20,6 @@ export const docs: ComponentDocs = {
     },
     {
       name: "textarea-field",
-      essential: true,
       title: "With label",
       description: "Pair a textarea with a `Label` via a shared id.",
     },
@@ -44,6 +43,7 @@ export const docs: ComponentDocs = {
       name: "textarea-invalid",
       title: "Invalid",
       description: "Set `aria-invalid` to mark the textarea as invalid.",
+      essential: true,
     },
     {
       name: "textarea-button",

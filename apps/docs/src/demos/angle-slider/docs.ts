@@ -31,7 +31,6 @@ export const docs: ComponentDocs = {
     },
     {
       name: "angle-slider-controlled",
-      essential: true,
       title: "Controlled",
       description:
         "Zag machines are controlled: a `value` prop without a change handler never moves. Pair it with `valueChange` to track updates.",
