@@ -6,6 +6,7 @@ import { filterSpecFromEnv, selectScenarios } from "./lib/selection.ts"
 const GATE_FILES = [
   "run/_filters.test.ts",
   "run/_runner-internals.test.ts",
+  "run/_expectations.test.ts",
   "run/_mirror-lifecycle.test.ts",
   // The CI shard derivation (cheap, pure): a broken matrix must fail every shard.
   "scripts/kind-matrix.test.ts",

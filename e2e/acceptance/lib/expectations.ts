@@ -268,6 +268,16 @@ export function evaluateExpectations(
       failures.push(`stderr does not contain ${show(needle)}`)
     }
   }
+  for (const needle of asList(expectations.stderrNotContains)) {
+    if (outcome.stderr.includes(needle)) {
+      failures.push(`stderr contains ${show(needle)}, which it must not`)
+    }
+  }
+  for (const pattern of expectations.stderrMatches ?? []) {
+    if (!compilePattern(pattern).test(outcome.stderr)) {
+      failures.push(`stderr does not match /${pattern}/`)
+    }
+  }
 
   for (const pattern of expectations.filesExist ?? []) {
     const matches = resolveGlob(outcome.cwd, pattern)
