@@ -365,6 +365,9 @@ export async function readPartialComponentsJson(
   }
 }
 
+/** Thrown for a shadcn/ui-for-React components.json; doctor tells it apart from an unreadable one. */
+export class ReactComponentsJsonError extends CommandError {}
+
 /**
  * Refuses a shadcn/ui-for-React components.json. One parse is not enough to
  * tell them apart — a React shadcn config is valid against marko-ui's schema
@@ -413,7 +416,7 @@ export function assertNotReactComponentsJson(
     return
   }
 
-  throw new CommandError(
+  throw new ReactComponentsJsonError(
     `The ${highlighter.info(
       "components.json"
     )} at ${highlighter.info(
