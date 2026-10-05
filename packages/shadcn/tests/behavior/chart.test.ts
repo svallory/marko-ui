@@ -90,8 +90,22 @@ describe("chart SSR + hydration (charts-ssr regression)", () => {
       // stubbed-out hydration would leave this a no-op, and this assertion
       // (not just "no crash") is what catches that: it fails if the pointer
       // handler is broken, not only if the page 500s.
+      //
+      // Scrolled into view FIRST: `page.mouse.move` takes raw viewport
+      // coordinates and never scrolls, and `isVisible()` above is true for an
+      // element below the fold. With this demo no longer the page's first
+      // example, its svg sat below the viewport and the move landed on
+      // nothing. The pointer itself still drives the hover, so the assertion
+      // still exercises the hydrated handler, not a synthetic event.
+      await svg.scrollIntoViewIfNeeded();
       const box = await svg.boundingBox();
       expect(box).not.toBeNull();
+      if (box) {
+        const viewport = page.viewportSize();
+        // The point hovered must be on screen, or the move proves nothing.
+        expect(box.y + box.height / 2).toBeGreaterThanOrEqual(0);
+        if (viewport) expect(box.y + box.height / 2).toBeLessThanOrEqual(viewport.height);
+      }
       if (box) {
         await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
       }
