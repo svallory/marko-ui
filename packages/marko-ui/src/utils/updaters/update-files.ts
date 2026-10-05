@@ -47,6 +47,87 @@ import { z } from "zod"
 const CODE_EXTENSIONS = [".ts", ".tsx", ".js", ".jsx"]
 const NON_ALIAS_RESOLVED_PATH_KEYS = new Set(["tailwindConfig", "tailwindCss"])
 
+type ResolvedFile = NonNullable<RegistryItem["files"]>[number]
+type ProjectFramework = Parameters<typeof resolveFilePath>[2]["framework"]
+
+/**
+ * Where `file` will land on disk: the registry path resolved against the
+ * project's aliases, redirected to the project's own Tailwind entry for the
+ * theme stylesheet, and to an existing sibling env file when that is where
+ * the variables already live.
+ *
+ * ONE function for the writer loop and for {@link assertFilesWritable}, so the
+ * pre-flight check judges exactly the paths the writer will use — a second copy
+ * of this logic is how a check and a write come to disagree.
+ */
+function resolveWriteTarget(
+  file: ResolvedFile,
+  files: ResolvedFile[],
+  index: number,
+  config: Config,
+  options: {
+    isSrcDir?: boolean
+    framework?: ProjectFramework
+    path?: string
+  }
+): string | null {
+  let filePath = resolveFilePath(file, config, {
+    isSrcDir: options.isSrcDir,
+    framework: options.framework,
+    commonRoot: findCommonRoot(
+      files.map((f) => f.path),
+      file.path
+    ),
+    path: options.path,
+    fileIndex: index,
+  })
+  if (!filePath) return null
+
+  if (isThemeStylesheetFile(file) && config.resolvedPaths.tailwindCss) {
+    filePath = config.resolvedPaths.tailwindCss
+  }
+
+  if (isEnvFile(filePath) && !existsSync(filePath)) {
+    const alternativeEnvFile = findExistingEnvFile(path.dirname(filePath))
+    if (alternativeEnvFile) filePath = alternativeEnvFile
+  }
+  return filePath
+}
+
+/**
+ * Throws UNSAFE_WRITE_TARGET when ANY file in `files` would be written
+ * somewhere the guard refuses — without touching the disk.
+ *
+ * `add` calls this BEFORE its first side effect. The guard inside
+ * {@link updateFiles} runs per file, which is too late for a command that has
+ * already installed npm dependencies by then: a refused target used to leave
+ * the project with new entries in package.json and a lockfile for an add that
+ * wrote nothing.
+ */
+export async function assertFilesWritable(
+  files: RegistryItem["files"] | undefined,
+  config: Config,
+  options: { path?: string; roots?: WriteRoots } = {}
+): Promise<void> {
+  const planned: ResolvedFile[] =
+    applyIconLibrary(files ?? [], config.iconLibrary, { warn: false }) ?? []
+  if (!planned.length) return
+
+  const projectInfo = await getProjectInfo(config.resolvedPaths.cwd)
+  const roots = options.roots ?? rootsFor(config.resolvedPaths.cwd)
+
+  for (let index = 0; index < planned.length; index++) {
+    const file = planned[index]!
+    if (!file.content) continue
+    const target = resolveWriteTarget(file, planned, index, config, {
+      isSrcDir: projectInfo?.isSrcDir,
+      framework: projectInfo?.framework.name,
+      path: options.path,
+    })
+    if (target) assertWritable(target, roots, "write")
+  }
+}
+
 export async function updateFiles(
   files: RegistryItem["files"],
   config: Config,
@@ -145,15 +226,10 @@ export async function updateFiles(
       continue
     }
 
-    let filePath = resolveFilePath(file, config, {
+    let filePath = resolveWriteTarget(file, files, index, config, {
       isSrcDir: projectInfo?.isSrcDir,
       framework: projectInfo?.framework.name,
-      commonRoot: findCommonRoot(
-        files.map((f) => f.path),
-        file.path
-      ),
       path: options.path,
-      fileIndex: index,
     })
 
     if (!filePath) {
@@ -165,7 +241,6 @@ export async function updateFiles(
     // path; content is merged there when the file already has user CSS.
     let themeContent: string | undefined
     if (isThemeStylesheetFile(file) && config.resolvedPaths.tailwindCss) {
-      filePath = config.resolvedPaths.tailwindCss
       const existingCss = existsSync(filePath)
         ? await fs.readFile(filePath, "utf-8")
         : null
@@ -191,13 +266,6 @@ export async function updateFiles(
 
     const fileName = basename(file.path)
     const targetDir = path.dirname(filePath)
-
-    if (isEnvFile(filePath) && !existsSync(filePath)) {
-      const alternativeEnvFile = findExistingEnvFile(targetDir)
-      if (alternativeEnvFile) {
-        filePath = alternativeEnvFile
-      }
-    }
 
     // THE choke point. Every write and every delete below goes through a
     // `filePath` computed here, so this one check covers them all: mkdir,

@@ -22,7 +22,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
  */
 
 import { RegistryErrorCode } from "@/src/registry/errors"
-import { assertWritable, isInsideNodeModules, realpathOfTarget } from "@/src/utils/path-guard"
+import { assertWritable, isInsideNodeModules, realpathOfTarget, rootsFor } from "@/src/utils/path-guard"
+import { assertCssWritable } from "@/src/utils/updaters/update-css"
 
 let root: string
 let project: string
@@ -187,3 +188,62 @@ describe("assertWritable", () => {
  * resolution just to aim the fixture at a real target, and a test that aims
  * at the wrong path proves nothing about the guard.
  */
+
+describe("rootsFor — the workspace root is the nearest one that INCLUDES the project", () => {
+  const write = (rel: string, contents: object | string) => {
+    const file = path.join(root, rel)
+    mkdirSync(path.dirname(file), { recursive: true })
+    writeFileSync(file, typeof contents === "string" ? contents : JSON.stringify(contents))
+  }
+
+  it("a member gets the workspace root, so a sibling package is a legal target", () => {
+    write("mono/package.json", { name: "mono", workspaces: ["apps/*", "packages/*"] })
+    write("mono/apps/web/package.json", { name: "web" })
+    const roots = rootsFor(path.join(root, "mono/apps/web"))
+    expect(roots.workspaceRoot).toBe(realpathSync(path.join(root, "mono")))
+    expect(() =>
+      assertWritable(path.join(root, "mono/packages/ui/src/button.marko"), roots)
+    ).not.toThrow()
+  })
+
+  it("a non-member under an unrelated `workspaces` ancestor gets none, so the sibling is refused", () => {
+    write("mono/package.json", { name: "mono", workspaces: ["apps/*", "packages/*"] })
+    write("mono/proj/package.json", { name: "proj" })
+    const roots = rootsFor(path.join(root, "mono/proj"))
+    expect(roots.workspaceRoot).toBeNull()
+    expect(() =>
+      assertWritable(path.join(root, "mono/packages/ui/src/button.marko"), roots)
+    ).toThrow(/outside the project/)
+  })
+})
+
+describe("assertCssWritable", () => {
+  const config = (tailwindCss: string) =>
+    ({ resolvedPaths: { cwd: project, tailwindCss } }) as Parameters<typeof assertCssWritable>[1]
+
+  it("refuses a stylesheet outside the project when the item would write it", () => {
+    expect(() =>
+      assertCssWritable({ "@layer base": {} }, config(path.join(project, "..", "outside", "g.css")))
+    ).toThrow(/outside the project/)
+    expect(() =>
+      assertCssWritable(undefined, config(path.join(project, "node_modules", "dep", "g.css")), {
+        cssVars: { light: { primary: "red" } },
+      })
+    ).toThrow(/node_modules/)
+  })
+
+  it("does not refuse when the item writes no CSS (matches updateCss's own early return)", () => {
+    expect(() =>
+      assertCssWritable(undefined, config(path.join(project, "..", "outside", "g.css")))
+    ).not.toThrow()
+    expect(() =>
+      assertCssWritable({}, config(path.join(project, "..", "outside", "g.css")), { cssVars: {} })
+    ).not.toThrow()
+  })
+
+  it("allows a stylesheet inside the project", () => {
+    expect(() =>
+      assertCssWritable({ "@layer base": {} }, config(path.join(project, "src", "g.css")))
+    ).not.toThrow()
+  })
+})

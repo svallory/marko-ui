@@ -34,10 +34,10 @@ import type {
   FileChange,
 } from "@/src/utils/command-result"
 import { WarningCode, toFileChanges } from "@/src/utils/command-result"
-import { updateCss } from "@/src/utils/updaters/update-css"
+import { assertCssWritable, updateCss } from "@/src/utils/updaters/update-css"
 import { updateDependencies } from "@/src/utils/updaters/update-dependencies"
 import { updateEnvVars } from "@/src/utils/updaters/update-env-vars"
-import { updateFiles } from "@/src/utils/updaters/update-files"
+import { assertFilesWritable, updateFiles } from "@/src/utils/updaters/update-files"
 import { writeDocsCacheEntries } from "@/src/utils/docs-cache"
 import { z } from "zod"
 
@@ -235,6 +235,13 @@ async function addProjectComponents(
 
   const tailwindVersion = await getProjectTailwindVersionFromConfig(config)
 
+  // Every write target is judged BEFORE the first side effect. The per-file
+  // guard in updateFiles would still refuse, but only after the dependencies
+  // below were installed: a refused add must leave package.json and the
+  // lockfile as it found them.
+  await assertFilesWritable(tree.files, config, { path: options.path })
+  assertCssWritable(tree.css, config, { cssVars: tree.cssVars })
+
   const dependencies =
     (await updateDependencies(tree.dependencies, tree.devDependencies, config, {
       silent: options.silent,
@@ -404,6 +411,13 @@ async function addWorkspaceComponents(
 
   const rootSpinner = spinner(`Installing components.`)?.start()
 
+  // The allowed roots are the INVOKING project's, never the target package's:
+  // a target that is a member of some workspace would otherwise widen the
+  // guard to that whole workspace for a project that is not a member of it.
+  // For a project inside the workspace (the standard layout) both are the same
+  // root, so a sibling `packages/ui` stays a legal destination.
+  const roots = rootsFor(config.resolvedPaths.cwd)
+
   // Process global updates for the main target.
   // These should typically go to the UI package in a workspace.
   const mainTargetConfig = workspaceConfig.ui
@@ -414,26 +428,9 @@ async function addWorkspaceComponents(
     mainTargetConfig.resolvedPaths.ui
   )
 
-  // 1. Update dependencies.
-  const workspaceDependencies =
-    (await updateDependencies(
-      tree.dependencies,
-      tree.devDependencies,
-      mainTargetConfig,
-      {
-        silent: true,
-        interactive: options.interactive,
-      }
-    )) ?? []
-
-  // 3. Update environment variables.
-  if (tree.envVars) {
-    await updateEnvVars(tree.envVars, mainTargetConfig, {
-      silent: true,
-    })
-  }
-
-  // 5. Group files by their target config and update files.
+  // Group files by their target config first: every target is judged BEFORE
+  // the first side effect (see the preflight below), and the grouping is what
+  // says which package each file lands in.
   const filesByTarget = new Map<TargetAliasKey, typeof tree.files>()
   const FILE_TYPE_TO_CONFIG_KEY: Record<string, TargetAliasKey> = {
     "registry:ui": "ui",
@@ -461,6 +458,38 @@ async function addWorkspaceComponents(
       filesByTarget.set(targetKey, [])
     }
     filesByTarget.get(targetKey)!.push(file)
+  }
+
+  // Pre-flight: refuse an unsafe target before dependencies are installed, so
+  // a refused add leaves package.json and the lockfile untouched. Each group
+  // is judged against the roots of the package it lands in.
+  for (const targetKey of Array.from(filesByTarget.keys())) {
+    const targetConfig = getTargetConfigForKey(targetKey)
+    const targetFiles = filesByTarget.get(targetKey)!
+    await assertFilesWritable(targetFiles, targetConfig, {
+      path: options.path,
+      roots,
+    })
+  }
+  assertCssWritable(tree.css, mainTargetConfig, { cssVars: tree.cssVars, roots })
+
+  // 1. Update dependencies.
+  const workspaceDependencies =
+    (await updateDependencies(
+      tree.dependencies,
+      tree.devDependencies,
+      mainTargetConfig,
+      {
+        silent: true,
+        interactive: options.interactive,
+      }
+    )) ?? []
+
+  // 3. Update environment variables.
+  if (tree.envVars) {
+    await updateEnvVars(tree.envVars, mainTargetConfig, {
+      silent: true,
+    })
   }
 
   // Process each target config with its appropriate workspace config.
@@ -499,9 +528,9 @@ async function addWorkspaceComponents(
         plannedFiles,
         // B2, workspace path: same per-file accumulation.
         written: alreadyWritten,
-        // Roots for the TARGET package: the guard's workspace root is what
-        // makes a sibling `packages/ui` a legal destination (B1).
-        roots: rootsFor(targetConfig.resolvedPaths.cwd),
+        // The invoking project's roots: its workspace root is what makes a
+        // sibling `packages/ui` a legal destination (B1).
+        roots,
       })) ?? {
       filesCreated: [],
       filesUpdated: [],
@@ -541,6 +570,7 @@ async function addWorkspaceComponents(
     options.overwriteCssVars
   )
   await updateCss(tree.css, mainTargetConfig, {
+    roots,
     silent: true,
     cssVars: tree.cssVars,
     overwriteCssVars,

@@ -1,68 +1,14 @@
-import { promises as fs } from "fs"
-import path from "path"
 import {
   registryItemCssVarsSchema,
   registryItemTailwindSchema,
 } from "@/src/schema"
 import { Config } from "@/src/utils/get-config"
 import { TailwindVersion } from "@/src/utils/get-project-info"
-import { highlighter } from "@/src/utils/highlighter"
-import { spinner } from "@/src/utils/spinner"
 import postcss from "postcss"
 import AtRule from "postcss/lib/at-rule"
 import Root from "postcss/lib/root"
 import Rule from "postcss/lib/rule"
-import { rootsFor, writeGuarded, type WriteRoots } from "@/src/utils/path-guard"
 import { z } from "zod"
-
-export async function updateCssVars(
-  cssVars: z.infer<typeof registryItemCssVarsSchema> | undefined,
-  config: Config,
-  options: {
-    overwriteCssVars?: boolean
-    silent?: boolean
-    tailwindVersion?: TailwindVersion
-    tailwindConfig?: z.infer<typeof registryItemTailwindSchema>["config"]
-    /** Allowed write roots; computed once by the command. */
-    roots?: WriteRoots
-  }
-) {
-  if (!config.resolvedPaths.tailwindCss || !Object.keys(cssVars ?? {}).length) {
-    return
-  }
-
-  options = {
-    silent: false,
-    tailwindVersion: "v3",
-    overwriteCssVars: false,
-    ...options,
-  }
-  const cssFilepath = config.resolvedPaths.tailwindCss
-  const cssFilepathRelative = path.relative(
-    config.resolvedPaths.cwd,
-    cssFilepath
-  )
-  const cssVarsSpinner = spinner(
-    `Updating CSS variables in ${highlighter.info(cssFilepathRelative)}`,
-    {
-      silent: options.silent,
-    }
-  ).start()
-  const raw = await fs.readFile(cssFilepath, "utf8")
-  let output = await transformCssVars(raw, cssVars ?? {}, config, {
-    tailwindVersion: options.tailwindVersion,
-    tailwindConfig: options.tailwindConfig,
-    overwriteCssVars: options.overwriteCssVars,
-  })
-  // B2: same guard as every other config-driven writer — the path is
-  // components.json's `tailwind.css`.
-  await writeGuarded(
-    cssFilepath,
-    output,
-    options.roots ?? rootsFor(config.resolvedPaths.cwd)
-  )
-  cssVarsSpinner.succeed()
-}
 
 export async function transformCssVars(
   input: string,
@@ -455,54 +401,6 @@ function addCustomVariant({ params }: { params: string }) {
         }
 
         root.insertBefore(variantNode, postcss.comment({ text: "---break---" }))
-      }
-    },
-  }
-}
-
-function addCustomImport({ params }: { params: string }) {
-  return {
-    postcssPlugin: "add-custom-import",
-    Once(root: Root) {
-      const importNodes = root.nodes.filter(
-        (node): node is AtRule =>
-          node.type === "atrule" && node.name === "import"
-      )
-
-      // Find custom variant node (to ensure we insert before it).
-      const customVariantNode = root.nodes.find(
-        (node): node is AtRule =>
-          node.type === "atrule" && node.name === "custom-variant"
-      )
-
-      // Check if our specific import already exists.
-      const hasImport = importNodes.some(
-        (node) => node.params.replace(/["']/g, "") === params
-      )
-
-      if (!hasImport) {
-        const importNode = postcss.atRule({
-          name: "import",
-          params: `"${params}"`,
-          raws: { semicolon: true, before: "\n" },
-        })
-
-        if (importNodes.length > 0) {
-          // If there are existing imports, add after the last import.
-          const lastImport = importNodes[importNodes.length - 1]
-          root.insertAfter(lastImport, importNode)
-        } else if (customVariantNode) {
-          // If no imports but has custom-variant, insert before it.
-          root.insertBefore(customVariantNode, importNode)
-          root.insertBefore(
-            customVariantNode,
-            postcss.comment({ text: "---break---" })
-          )
-        } else {
-          // If no imports and no custom-variant, insert at the start.
-          root.prepend(importNode)
-          root.insertAfter(importNode, postcss.comment({ text: "---break---" }))
-        }
       }
     },
   }
