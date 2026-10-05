@@ -72,6 +72,16 @@ jobs:
       #   - tooling/** — already listed explicitly in `docs` and `registry`
       #     (the registry/style build scripts themselves); `cli` doesn't run
       #     any tooling script, so it's correctly absent there.
+      #   - The generators' import closure (`registry` only) — traced
+      #     statically from the five generators registry-drift runs
+      #     (build-registry, build-demos-manifest, build-usage-snippets,
+      #     build-blocks-manifest, extract-api): packages/marko-ui/src/docs/**,
+      #     apps/docs/scripts/**, and apps/docs/src/lib/{component-*.ts,
+      #     components-list.ts, default-cell.ts, api-reference.json}. A PR
+      #     touching only one of them changes generated output, so it must
+      #     fire registry-drift. Re-trace when a generator gains an import.
+      #     (`docs` already covers all of them via apps/docs/** and
+      #     packages/marko-ui/**.)
       # Pinned to the v4.0.3 tag's commit SHA (not a tag ref) per repo policy
       # on third-party actions.
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
@@ -113,6 +123,21 @@ jobs:
               # runs on the PR that makes it stale.
               - 'apps/docs/src/demos/**'
               - 'apps/docs/src/lib/blocks-list.ts'
+              # The generators' own code and the modules they import (traced
+              # statically from build-registry.ts, build-demos-manifest.ts,
+              # build-usage-snippets.ts, build-blocks-manifest.ts and
+              # extract-api.ts): the docs model builder + renderer that
+              # build-registry embeds and build-usage-snippets renders, the
+              # docs-site page-data modules the usage-snippet generator builds
+              # its models through, and the generator scripts themselves. A PR
+              # touching only one of these changes generated output, so it
+              # must fire registry-drift.
+              - 'packages/marko-ui/src/docs/**'
+              - 'apps/docs/scripts/**'
+              - 'apps/docs/src/lib/component-*.ts'
+              - 'apps/docs/src/lib/components-list.ts'
+              - 'apps/docs/src/lib/default-cell.ts'
+              - 'apps/docs/src/lib/api-reference.json'
               - 'tooling/**'
               - 'tsconfig.json'
               - 'bun.lock'
