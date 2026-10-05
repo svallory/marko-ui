@@ -12,6 +12,8 @@ const {
   mockUpdateFonts,
   mockUpdateFiles,
   mockUpdateCss,
+  mockAssertFilesWritable,
+  mockAssertCssWritable,
   mockGetWorkspaceConfig,
   mockGetProjectTailwindVersionFromConfig,
   mockMassageTreeForFonts,
@@ -36,6 +38,8 @@ const {
     mockUpdateFonts: vi.fn(),
     mockUpdateFiles: vi.fn(),
     mockUpdateCss: vi.fn(),
+    mockAssertFilesWritable: vi.fn(),
+    mockAssertCssWritable: vi.fn(),
     mockGetWorkspaceConfig: vi.fn(),
     mockGetProjectTailwindVersionFromConfig: vi.fn(),
     mockMassageTreeForFonts: vi.fn(),
@@ -89,6 +93,7 @@ vi.mock("@/src/utils/updaters/update-fonts", () => ({
 
 vi.mock("@/src/utils/updaters/update-files", () => ({
   updateFiles: mockUpdateFiles,
+  assertFilesWritable: mockAssertFilesWritable,
 }))
 
 vi.mock("@/src/utils/interactive", () => ({
@@ -97,6 +102,7 @@ vi.mock("@/src/utils/interactive", () => ({
 
 vi.mock("@/src/utils/updaters/update-css", () => ({
   updateCss: mockUpdateCss,
+  assertCssWritable: mockAssertCssWritable,
 }))
 
 vi.mock("@/src/utils/spinner", () => ({
@@ -130,6 +136,8 @@ describe("addComponents", () => {
       filesSkipped: [],
     })
     mockUpdateCss.mockResolvedValue(undefined)
+    mockAssertFilesWritable.mockResolvedValue(undefined)
+    mockAssertCssWritable.mockReset()
   })
 
   it("throws when registry items cannot be resolved", async () => {
@@ -255,6 +263,42 @@ describe("addComponents", () => {
       expect.any(Object),
       expect.any(Object)
     )
+  })
+
+  it("judges every write target BEFORE any side effect: a refused target installs nothing and writes nothing", async () => {
+    mockResolveRegistryTree.mockResolvedValue({
+      dependencies: ["clsx"],
+      devDependencies: [],
+      files: [{ path: "ui/button.marko", type: "registry:ui", content: "x" }],
+    })
+    mockAssertFilesWritable.mockRejectedValue(new Error("UNSAFE"))
+
+    await expect(
+      addComponents(["button"], { resolvedPaths: { cwd: "/test/project" } } as any, { silent: true })
+    ).rejects.toThrow("UNSAFE")
+
+    expect(mockUpdateDependencies).not.toHaveBeenCalled()
+    expect(mockUpdateEnvVars).not.toHaveBeenCalled()
+    expect(mockUpdateFiles).not.toHaveBeenCalled()
+    expect(mockUpdateCss).not.toHaveBeenCalled()
+  })
+
+  it("a refused stylesheet target also stops before the dependency install", async () => {
+    mockResolveRegistryTree.mockResolvedValue({
+      dependencies: ["clsx"],
+      devDependencies: [],
+      files: [],
+      cssVars: { light: { primary: "red" } },
+    })
+    mockAssertCssWritable.mockImplementation(() => {
+      throw new Error("UNSAFE_CSS")
+    })
+
+    await expect(
+      addComponents(["button"], { resolvedPaths: { cwd: "/test/project" } } as any, { silent: true })
+    ).rejects.toThrow("UNSAFE_CSS")
+    expect(mockUpdateDependencies).not.toHaveBeenCalled()
+    expect(mockUpdateFiles).not.toHaveBeenCalled()
   })
 
 })

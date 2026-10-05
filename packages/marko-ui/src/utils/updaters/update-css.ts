@@ -8,7 +8,12 @@ import {
 import { Config } from "@/src/utils/get-config"
 import { TailwindVersion } from "@/src/utils/get-project-info"
 import { highlighter } from "@/src/utils/highlighter"
-import { rootsFor, writeGuarded, type WriteRoots } from "@/src/utils/path-guard"
+import {
+  assertWritable,
+  rootsFor,
+  writeGuarded,
+  type WriteRoots,
+} from "@/src/utils/path-guard"
 import { spinner } from "@/src/utils/spinner"
 import { transformCssVars } from "@/src/utils/updaters/update-css-vars"
 import postcss from "postcss"
@@ -18,6 +23,30 @@ import Root from "postcss/lib/root"
 import Rule from "postcss/lib/rule"
 import { twMerge } from "tailwind-merge"
 import { z } from "zod"
+
+/**
+ * Throws UNSAFE_WRITE_TARGET when {@link updateCss} would write the stylesheet
+ * somewhere the guard refuses — without reading or writing anything. Same
+ * "will it write at all" condition as updateCss itself, so the pre-flight
+ * check never refuses an add that would not have touched the stylesheet.
+ */
+export function assertCssWritable(
+  css: z.infer<typeof registryItemCssSchema> | undefined,
+  config: Config,
+  options: {
+    cssVars?: z.infer<typeof registryItemCssVarsSchema>
+    roots?: WriteRoots
+  } = {}
+): void {
+  const hasCss = css && Object.keys(css).length > 0
+  const hasCssVars = Object.keys(options.cssVars ?? {}).length > 0
+  if (!config.resolvedPaths.tailwindCss || (!hasCss && !hasCssVars)) return
+  assertWritable(
+    config.resolvedPaths.tailwindCss,
+    options.roots ?? rootsFor(config.resolvedPaths.cwd),
+    "write"
+  )
+}
 
 export async function updateCss(
   css: z.infer<typeof registryItemCssSchema> | undefined,
