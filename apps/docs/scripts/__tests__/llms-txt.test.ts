@@ -7,7 +7,7 @@ import { staticUrls } from "../../vite.config.ts";
 import { DOCUMENTED_COMPONENTS, REGISTRY_BASE_URL } from "../../src/lib/component-page-data.ts";
 import { DOCS_NAV_FLAT } from "../../src/tags/docs/docs-nav.ts";
 import { SITE_URL } from "../../src/lib/site-meta.ts";
-import { LLMS_DOC_PAGES, LLMS_NOTE_MAX, buildLlmsTxt, oneLine, renderLlmsTxt } from "../../src/lib/llms-txt.ts";
+import { LLMS_DOC_PAGES, buildLlmsTxt, oneLine, renderLlmsTxt } from "../../src/lib/llms-txt.ts";
 
 const DOCS_ROOT = path.resolve(import.meta.dirname, "../..");
 const ROUTES_DIR = path.join(DOCS_ROOT, "src/routes");
@@ -59,8 +59,22 @@ describe("llms.txt shape", () => {
     ]);
   });
 
-  it("stays under 12,000 characters", () => {
-    expect(TEXT.length).toBeLessThan(12_000);
+  it("stays under 18,000 characters (full one-line notes, not truncated ones)", () => {
+    expect(TEXT.length).toBeLessThan(18_000);
+  });
+
+  it("survives a UTF-8 round trip (it carries non-ASCII punctuation and is served as UTF-8)", () => {
+    const bytes = Buffer.from(TEXT, "utf8");
+    expect(bytes.toString("utf8")).toBe(TEXT);
+    expect(bytes.length).toBeGreaterThanOrEqual(TEXT.length);
+  });
+
+  it("never cuts a component note mid-sentence", () => {
+    expect(TEXT).not.toContain("…");
+  });
+
+  it("points at docs --list for the CLI's copy of the index", () => {
+    expect(TEXT).toContain("`marko-ui docs --list`");
   });
 
   it("is plain text a program can read: no HTML, ends with one newline", () => {
@@ -127,8 +141,9 @@ describe("llms.txt links resolve to something the build emits", () => {
     for (const { url } of registry) {
       expect(registryFiles.has(url.slice(REGISTRY_BASE_URL.length + 1)), url).toBe(true);
     }
-    // The item template names a real item.
-    expect(registryFiles.has("button.json")).toBe(true);
+    // The item link is a real link to a real item, not a URL template.
+    expect(registry.map((link) => link.url)).toContain(`${REGISTRY_BASE_URL}/button.json`);
+    expect(TEXT).not.toContain("<name>.json");
   });
 });
 
@@ -141,11 +156,13 @@ describe("oneLine", () => {
     expect(oneLine("Short one. A second sentence that is ignored.")).toBe("Short one");
   });
 
-  it("cuts a long sentence at a word boundary with an ellipsis, within the limit", () => {
-    const out = oneLine("A vertically stacked set of interactive headings that each reveal content.");
-    expect(out.endsWith("…")).toBe(true);
-    expect(out.length).toBeLessThanOrEqual(LLMS_NOTE_MAX);
-    expect(out.slice(0, -1)).toBe("A vertically stacked set of");
+  it("keeps a long first sentence whole instead of cutting it", () => {
+    const sentence = "A vertically stacked set of interactive headings that each reveal a section of content";
+    expect(oneLine(`${sentence}. Second.`)).toBe(sentence);
+  });
+
+  it("keeps an em-dash clause that is part of the first sentence", () => {
+    expect(oneLine("Displays a menu — opened by a trigger. More.")).toBe("Displays a menu — opened by a trigger");
   });
 
   it("collapses whitespace and newlines", () => {
@@ -178,6 +195,7 @@ describe("renderLlmsTxt", () => {
     expect(text).toContain("- [CLI](https://example.test/docs/cli): all commands");
     expect(text).toContain("- [alpha](https://example.test/docs/components/alpha.md): First component");
     expect(text).toContain("(https://example.test/r/index.json)");
+    expect(text).toContain("(https://example.test/r/button.json)");
     expect(text).not.toContain("marko-ui.saulo.tech");
   });
 

@@ -8,6 +8,8 @@
  * SITE_URL and the registry base URL — never from a hand-kept list, so a new
  * component or page appears here by being added where the site already lists
  * it. The guidance section is the one hand-written part (llms-guidance.ts).
+ * Size is not capped by truncation: every component keeps its full first
+ * sentence (the test ceiling is 18,000 characters).
  *
  * `scripts/prerender-handlers.ts` writes the result to dist/public/llms.txt:
  * a route cannot serve it (@marko/run reads a period in a directory name as a
@@ -33,15 +35,13 @@ export const LLMS_DOC_PAGES: Record<string, string> = {
   "/docs/creating-components": "write a new component (attr-tags, Zag wiring)",
 };
 
-/** Longest per-component note. Keeps the whole file small enough to be read in one go. */
-export const LLMS_NOTE_MAX = 32;
-
-/** First sentence of `text`, cut at a word boundary to at most `max` characters. */
-export function oneLine(text: string, max = LLMS_NOTE_MAX): string {
-  const sentence = text.replace(/\s+/g, " ").trim().split(/(?<=[.!?])\s/)[0]!.replace(/\.$/, "");
-  if (sentence.length <= max) return sentence;
-  const cut = sentence.slice(0, max - 1);
-  return `${cut.slice(0, cut.lastIndexOf(" "))}…`;
+/**
+ * A component's one-line note: its description's FIRST SENTENCE, whole. Never
+ * cut mid-sentence — a truncated note ("Displays a button or a…") says less than
+ * the component's name does, and the reader chooses a component from this line.
+ */
+export function oneLine(text: string): string {
+  return text.replace(/\s+/g, " ").trim().split(/(?<=[.!?])\s/)[0]!.replace(/\.$/, "");
 }
 
 export interface LlmsInput {
@@ -70,7 +70,7 @@ export function renderLlmsTxt(input: LlmsInput): string {
     "## Registry",
     "",
     `- [index](${input.registryUrl}/index.json): every item with its description`,
-    `- Item JSON: ${input.registryUrl}/<name>.json (what \`marko-ui add\` fetches)`,
+    `- [button](${input.registryUrl}/button.json): one item's JSON, what \`marko-ui add\` fetches (same URL pattern for every component name)`,
     "",
   );
   return lines.join("\n");

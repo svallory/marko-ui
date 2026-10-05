@@ -73,16 +73,16 @@ jobs:
       #     (the registry/style build scripts themselves); `cli` doesn't run
       #     any tooling script, so it's correctly absent there.
       #   - The generators' import closure (`registry` only) — traced
-      #     statically from the five generators registry-drift runs
-      #     (build-registry, build-demos-manifest, build-usage-snippets,
-      #     build-blocks-manifest, extract-api): packages/marko-ui/src/docs/**,
+      #     statically from the five generators registry-drift ran before
+      #     build-cli-manifest joined (build-registry, build-demos-manifest,
+      #     build-usage-snippets, build-blocks-manifest, extract-api): packages/marko-ui/src/docs/**,
       #     apps/docs/scripts/**, and apps/docs/src/lib/{component-*.ts,
       #     components-list.ts, default-cell.ts, api-reference.json}. A PR
       #     touching only one of them changes generated output, so it must
       #     fire registry-drift. Re-trace when a generator gains an import.
       #     (`docs` already covers all of them via apps/docs/** and
       #     packages/marko-ui/**.)
-      #   - build:cli-manifest (the sixth drift-checked generator, ygc.15) —
+      #   - build:cli-manifest (the sixth generator script registry-drift runs, ygc.15) —
       #     imports buildManifest/buildProgram from the CLI SOURCE, so its
       #     input is all of packages/marko-ui/src/** plus
       #     packages/marko-ui/package.json (the manifest records `cliVersion`,
@@ -243,7 +243,7 @@ jobs:
       #     registry output AND src/lib/blocks-list.ts.
       #   - api-reference.json (extract:api): fresh against the .marko
       #     sources under packages/shadcn/ui/**.
-      # All four generators were verified deterministic (two consecutive runs
+      # All six generators were verified deterministic (two consecutive runs
       # produce byte-identical output on an untouched tree), so `git diff
       # --exit-code` cannot flake on generator nondeterminism.
       - name: Build registry and check manifest for drift
