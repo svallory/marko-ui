@@ -1,9 +1,8 @@
-import { getRegistryItems, getShadcnRegistryIndex } from "@/src/registry/api"
+import { getRegistryItemDocs, getShadcnRegistryIndex } from "@/src/registry/api"
 import {
   RegistryError,
   RegistryErrorCode,
-  RegistryItemNotFoundError,
-} from "@/src/registry/errors"
+  } from "@/src/registry/errors"
 import { resetJsonMode } from "@/src/utils/output-mode"
 import { stripVTControlCharacters } from "node:util"
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -11,7 +10,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vites
 import { docs } from "./docs"
 
 vi.mock("@/src/registry/api", () => ({
-  getRegistryItems: vi.fn(),
+  getRegistryItemDocs: vi.fn(),
   getShadcnRegistryIndex: vi.fn(),
 }))
 
@@ -95,18 +94,29 @@ const exitSpy = vi.spyOn(process, "exit").mockImplementation((code) => {
   throw new Error(`process.exit:${code}`)
 })
 
-/** The registry items `getRegistryItems` resolves, by name. */
+/**
+ * Adapts a hand-written fixture item (which carries its model under
+ * `componentDocs`, the shape these cases are written in) to what
+ * `getRegistryItemDocs` returns: the item with only a `componentDocsRef`, and
+ * the model the reference resolved to.
+ */
+function asItemDocs(item: unknown) {
+  if (!item) return { item: undefined, model: undefined }
+  const { componentDocs, ...rest } = item as { name: string; componentDocs?: unknown }
+  return {
+    item: componentDocs
+      ? { ...rest, componentDocsRef: `https://registry.test/r/docs/${rest.name}.json` }
+      : rest,
+    model: componentDocs,
+  }
+}
+
+/** The registry items `getRegistryItemDocs` resolves, by name. */
 function stubRegistry(items: Record<string, unknown> = {}) {
-  vi.mocked(getRegistryItems).mockImplementation(
-    async (names: string[]) => {
-      // The REAL resolver THROWS RegistryItemNotFoundError for a 404; the
-      // previous stub returned `[]` and hid exactly that, which is how
-      // `docs nope button` shipped printing nothing.
-      for (const name of names) {
-        if (!items[name]) throw new RegistryItemNotFoundError(name)
-      }
-      return names.map((name) => items[name]) as never
-    }
+  // The REAL function returns no item for a 404 (the earlier stub threw and
+  // hid how `docs nope button` shipped printing nothing).
+  vi.mocked(getRegistryItemDocs).mockImplementation(async (name: string) =>
+    asItemDocs(items[name]) as never
   )
 }
 
@@ -295,6 +305,9 @@ describe("docs command: unknown component", () => {
 
     expect(exitCode).toBe(1)
     expect(stderr).toContain(`Error [${RegistryErrorCode.NOT_FOUND}]`)
+    // The item exists, so the suggestion is not the typo one.
+    expect(stderr).toContain("publishes no docs data")
+    expect(stderr).toContain("marko-ui show button")
   })
 
   it("still prints the components that resolved when another name misses", async () => {
@@ -312,7 +325,7 @@ describe("docs command: unknown component", () => {
   })
 
   it("keeps the found page when the MISS comes first", async () => {
-    // `docs nope button` used to print nothing at all: getRegistryItems
+    // `docs nope button` used to print nothing at all: getRegistryItemDocs
     // throws for a 404 and the throw aborted the loop before button printed.
     stubRegistry({
       button: item("button", [{ id: "controlled", essential: true }]),
@@ -328,7 +341,7 @@ describe("docs command: unknown component", () => {
   })
 
   it("propagates a non-404 registry failure instead of calling it a miss", async () => {
-    vi.mocked(getRegistryItems).mockRejectedValue(
+    vi.mocked(getRegistryItemDocs).mockRejectedValue(
       new RegistryError("boom", { code: RegistryErrorCode.NETWORK_ERROR })
     )
 
@@ -387,7 +400,7 @@ describe("docs command: it resolves names exactly as `show` does", () => {
 
     await run(["@acme/widget", "--cwd", dir])
 
-    const call = vi.mocked(getRegistryItems).mock.calls[0]
+    const call = vi.mocked(getRegistryItemDocs).mock.calls[0]
     // `docs @acme/x` used to answer NOT_CONFIGURED "Unknown registry @acme"
     // while `show @acme/x` fetched it — because docs passed `{}` for config.
     expect((call?.[1]?.config as { registries?: Record<string, string> }).registries)
@@ -402,7 +415,7 @@ describe("docs command: it resolves names exactly as `show` does", () => {
 
     await run(["button", "--cwd", dir])
 
-    const call = vi.mocked(getRegistryItems).mock.calls[0]
+    const call = vi.mocked(getRegistryItemDocs).mock.calls[0]
     expect((call?.[1]?.config as { registries?: Record<string, string> }).registries)
       .toHaveProperty("@acme")
   })

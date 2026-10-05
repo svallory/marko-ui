@@ -1,7 +1,10 @@
 import path from "path"
 import { getRegistryItems } from "@/src/registry/api"
 import { configWithDefaults } from "@/src/registry/config"
-import { resolveRegistryTree } from "@/src/registry/resolver"
+import {
+  resolveRegistryTree,
+  type ResolvedDocsFailure,
+} from "@/src/registry/resolver"
 import {
   configSchema,
   registryItemFileSchema,
@@ -302,7 +305,7 @@ async function addProjectComponents(
   return {
     files: withCssFile(toFileChanges(writtenGroups), cssPath, config.resolvedPaths.cwd),
     dependencies,
-    warnings: collectWarnings(dependencies, tree.docs),
+    warnings: collectWarnings(dependencies, tree.docs, tree.docsFailures),
     resolved: names.resolved,
     registryDependencies: names.registryDependencies,
   }
@@ -370,7 +373,8 @@ function withCssFile(
  */
 function collectWarnings(
   dependencies: DependencyChange[],
-  docs: string | null | undefined
+  docs: string | null | undefined,
+  docsFailures: ResolvedDocsFailure[] = []
 ): CommandWarning[] {
   const warnings: CommandWarning[] = []
   const failed = dependencies.filter((dep) => dep.status === "failed")
@@ -379,6 +383,13 @@ function collectWarnings(
       code: WarningCode.DEPENDENCY_INSTALL_FAILED,
       message: `Could not install ${failed.map((dep) => dep.name).join(", ")}. Component files were still written.`,
       fix: `Install them with your package manager, e.g. bun add ${failed.map((dep) => dep.name).join(" ")}`,
+    })
+  }
+  if (docsFailures.length) {
+    warnings.push({
+      code: WarningCode.DOCS_CACHE_FAILED,
+      message: `Could not fetch the docs for ${docsFailures.map((failure) => failure.name).join(", ")} (${docsFailures[0]!.message}). The components were installed; \`docs\` will read the registry instead.`,
+      fix: `marko-ui docs ${docsFailures[0]!.name}`,
     })
   }
   if (docs) {
@@ -667,7 +678,7 @@ async function addWorkspaceComponents(
   return {
     files: resultFiles,
     dependencies: workspaceDependencies,
-    warnings: collectWarnings(workspaceDependencies, tree.docs),
+    warnings: collectWarnings(workspaceDependencies, tree.docs, tree.docsFailures),
     resolved: names.resolved,
     registryDependencies: names.registryDependencies,
   }
@@ -683,7 +694,9 @@ async function resolveAndValidateRegistryTree(
   })?.start()
   const tree =
     options.resolvedTree ??
-    (await resolveRegistryTree(components, configWithDefaults(config)))
+    (await resolveRegistryTree(components, configWithDefaults(config), {
+      fetchDocs: true,
+    }))
 
   if (!tree) {
     registrySpinner?.fail()

@@ -74,6 +74,7 @@ export async function addRegistryItems(
     async () => {
       const resolvedTree = await resolveRegistryTree(items, config, {
         useCache: true,
+        fetchDocs: true,
         requireUniversal: !parsedConfig.success,
       })
       if (!resolvedTree) {

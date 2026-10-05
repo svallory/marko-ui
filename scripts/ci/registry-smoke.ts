@@ -22,6 +22,12 @@
  *      schema validation. Per-style items are the actual copy-path install
  *      payload (`marko-ui add` fetches them per style) and are NOT in
  *      index.json — a localhost URL hiding in one would otherwise pass green.
+ *   6. The sample item's `componentDocsRef` (docs are one file per component,
+ *      not embedded in the items) is present, points at the registry being
+ *      checked, passes the same substring scan, and the file it names fetches
+ *      and validates against componentDocsSchema — the model `marko-ui docs`
+ *      and `add` follow. Without it a deploy that dropped `r/docs/` would be
+ *      green here while every `docs` call failed.
  *
  * Note this asserts LIVE HEALTH, not freshness: the poll succeeds against
  * whatever the edge currently serves, so a stale-but-healthy previous deploy
@@ -38,7 +44,7 @@
  *
  * Usage: bun scripts/ci/registry-smoke.ts
  */
-import { registryItemSchema } from "../../packages/marko-ui/src/registry/schema.ts";
+import { componentDocsSchema, registryItemSchema } from "../../packages/marko-ui/src/registry/schema.ts";
 
 const BASE_URL = (process.env.REGISTRY_URL ?? "https://marko-ui.saulo.tech/r").replace(/\/$/, "");
 const SAMPLE_ITEM = process.env.REGISTRY_SAMPLE_ITEM ?? "button";
@@ -152,6 +158,25 @@ try {
     `styles/${STYLE}/${SAMPLE_ITEM}.json`,
   );
   checkItem(`styles/${STYLE}/${SAMPLE_ITEM}.json`, perStyle);
+
+  const docsRef = (sample as { componentDocsRef?: unknown }).componentDocsRef;
+  check(typeof docsRef === "string", `${SAMPLE_ITEM}.json carries a componentDocsRef`);
+  check(
+    (perStyle as { componentDocsRef?: unknown }).componentDocsRef === docsRef,
+    `styles/${STYLE}/${SAMPLE_ITEM}.json references the same docs file`,
+  );
+  if (typeof docsRef === "string") {
+    const docsModel = await fetchJson(docsRef, `docs file ${docsRef}`);
+    for (const needle of FORBIDDEN) {
+      check(!JSON.stringify(docsModel).includes(needle), `docs file contains no "${needle}"`);
+    }
+    const parsedDocs = componentDocsSchema.safeParse(docsModel);
+    check(parsedDocs.success, "docs file validates against componentDocsSchema");
+    check(
+      parsedDocs.success && parsedDocs.data.name === SAMPLE_ITEM,
+      "docs file documents the sample item",
+    );
+  }
 } catch (err) {
   console.error(`registry smoke check FAILED: ${String(err)}`);
   process.exit(1);

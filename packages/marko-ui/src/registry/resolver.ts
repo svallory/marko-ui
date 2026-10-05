@@ -15,6 +15,11 @@ import {
   RegistryNotFoundError,
   RegistryParseError,
 } from "@/src/registry/errors"
+import {
+  absolutizeDocsRef,
+  fetchComponentDocs,
+  type ComponentDocsModel,
+} from "@/src/registry/docs-ref"
 import { fetchRegistry, fetchRegistryLocal } from "@/src/registry/fetcher"
 import { fetchGitHubRegistryItem } from "@/src/registry/github"
 import { parseRegistryAndItemFromString } from "@/src/registry/parser"
@@ -39,6 +44,12 @@ import deepmerge from "deepmerge"
 import { z } from "zod"
 
 type RegistryFetchOptions = {
+  /**
+   * Fetch each installed ui item's docs model (the file its `componentDocsRef`
+   * names) and return it as `itemDocs`. Only `add` wants this: `diff` and
+   * `show` resolve the same trees and must not pay for 80 extra requests.
+   */
+  fetchDocs?: boolean
   requireUniversal?: boolean
   useCache?: boolean
   sourceCache?: Map<string, Promise<string>>
@@ -94,17 +105,21 @@ export async function fetchRegistryItems(
       const resolvedAddress = resolveItemAddress(item)
 
       if (resolvedAddress.scheme === "github") {
-        return fetchGitHubRegistryItem(resolvedAddress, options)
+        // No file or URL to resolve a relative docs reference against.
+        return absolutizeDocsRef(
+          await fetchGitHubRegistryItem(resolvedAddress, options),
+          undefined
+        )
       }
 
       if (isLocalFile(item)) {
-        return fetchRegistryLocal(item)
+        return absolutizeDocsRef(await fetchRegistryLocal(item), item)
       }
 
       if (isUrl(item)) {
         const [result] = await fetchRegistry([item], options)
         try {
-          return registryItemSchema.parse(result)
+          return absolutizeDocsRef(registryItemSchema.parse(result), item)
         } catch (error) {
           throw new RegistryParseError(item, error)
         }
@@ -114,7 +129,7 @@ export async function fetchRegistryItems(
         const paths = resolveRegistryItemsFromRegistries([item], config)
         const [result] = await fetchRegistry(paths, options)
         try {
-          return registryItemSchema.parse(result)
+          return absolutizeDocsRef(registryItemSchema.parse(result), paths[0])
         } catch (error) {
           throw new RegistryParseError(item, error)
         }
@@ -160,7 +175,10 @@ async function fetchBareRegistryItem(
   if (styledPath) {
     try {
       const [result] = await fetchRegistry([styledPath], options)
-      return registryItemSchema.parse(result)
+      return absolutizeDocsRef(
+        registryItemSchema.parse(result),
+        resolveRegistryUrl(styledPath)
+      )
     } catch (error) {
       if (!(error instanceof RegistryNotFoundError)) {
         if (error instanceof z.ZodError) {
@@ -194,7 +212,10 @@ async function fetchBareRegistryItem(
     }
   )
   try {
-    return registryItemSchema.parse(result)
+    return absolutizeDocsRef(
+      registryItemSchema.parse(result),
+      resolveRegistryUrl(flatPath)
+    )
   } catch (error) {
     throw new RegistryParseError(item, error)
   }
@@ -568,17 +589,53 @@ export async function resolveRegistryTree(
     // from and a hash of the exact item — `add` caches these so `docs` can
     // describe the version on disk without the network. The resolved-tree
     // schema merges items into one file list, so this is the only place the
-    // per-item model is still attached to its name.
-    itemDocs: payload
-      .filter((item) => item.type === "registry:ui" && item.componentDocs)
-      .map((item) => ({
+    // per-item reference is still attached to its name.
+    ...(options.fetchDocs ? await fetchItemDocs(payload) : {}),
+  }) as typeof parsed & ResolvedTreeNames
+}
+
+/**
+ * Fetches the docs file of every ui item that references one, in parallel. A
+ * failure NEVER fails the caller: the docs cache is an optimisation, so a docs
+ * file that cannot be read becomes a `docsFailures` entry (which `add` reports
+ * as a warning) and `docs` reads the registry later.
+ */
+async function fetchItemDocs(
+  payload: RegistryItemWithSource[]
+): Promise<{ itemDocs: ResolvedItemDocs[]; docsFailures: ResolvedDocsFailure[] }> {
+  const withRef = payload.filter(
+    (item) => item.type === "registry:ui" && item.componentDocsRef
+  )
+  const settled = await Promise.allSettled(
+    withRef.map((item) => fetchComponentDocs(item.componentDocsRef!))
+  )
+  const itemDocs: ResolvedItemDocs[] = []
+  const docsFailures: ResolvedDocsFailure[] = []
+  settled.forEach((result, index) => {
+    const item = withRef[index]!
+    if (result.status === "fulfilled") {
+      itemDocs.push({
         name: item.name,
         source: item._source ?? item.name,
         contentHash: registryItemContentHash(item),
-        componentDocs: item.componentDocs!,
-      })),
-  }) as typeof parsed & ResolvedTreeNames
+        componentDocs: result.value,
+      })
+    } else {
+      docsFailures.push({
+        name: item.name,
+        ref: item.componentDocsRef!,
+        message:
+          result.reason instanceof Error
+            ? result.reason.message.split("\n")[0]!
+            : String(result.reason),
+      })
+    }
+  })
+  return { itemDocs, docsFailures }
 }
+
+/** A docs file `add` could not fetch; the install itself still succeeded. */
+export type ResolvedDocsFailure = { name: string; ref: string; message: string }
 
 /** One installed ui item's docs model, as the resolved tree carries it. */
 export type ResolvedItemDocs = {
@@ -587,7 +644,7 @@ export type ResolvedItemDocs = {
   source: string
   /** sha256 of the item as fetched, minus the resolver's own `_source`. */
   contentHash: string
-  componentDocs: NonNullable<z.infer<typeof registryItemSchema>["componentDocs"]>
+  componentDocs: ComponentDocsModel
 }
 
 /** The item names a resolved tree carries, beyond its schema fields. */
@@ -595,6 +652,7 @@ export type ResolvedTreeNames = {
   items: string[]
   dependencyItems: string[]
   itemDocs?: ResolvedItemDocs[]
+  docsFailures?: ResolvedDocsFailure[]
 }
 
 /** sha256 of a registry item's content, independent of how it was requested. */

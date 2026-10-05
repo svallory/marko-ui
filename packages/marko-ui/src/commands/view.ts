@@ -119,18 +119,10 @@ export const view = new Command()
         throw new CleanExit(0)
       }
 
-      // `componentDocs` is stripped from `data`: it is the model
-      // `marko-ui docs` renders, with every example's source inlined — a few
-      // hundred KB per component. `show` answers "what would this install
-      // write", which is files and dependencies.
-      printEnvelope(
-        "marko-ui/show",
-        payload.map((item) => {
-          if (!item) return item
-          const { componentDocs: _docs, ...rest } = item
-          return rest
-        })
-      )
+      // The item is printed as fetched: its docs are a `componentDocsRef`
+      // (a URL), not the model, so this stays the size of the files and
+      // dependencies it describes. `marko-ui docs` follows the reference.
+      printEnvelope("marko-ui/show", payload)
       throw new CleanExit(0)
     } catch (error) {
       handleError(error)

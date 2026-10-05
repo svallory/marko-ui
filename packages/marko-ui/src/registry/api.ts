@@ -13,10 +13,12 @@ import {
   ConfigParseError,
   RegistriesIndexParseError,
   RegistryInvalidNamespaceError,
+  RegistryItemNotFoundError,
   RegistryNotFoundError,
   RegistryParseError,
   RegistryValidationError,
 } from "@/src/registry/errors"
+import { fetchComponentDocs, type ComponentDocsModel } from "@/src/registry/docs-ref"
 import { fetchRegistry } from "@/src/registry/fetcher"
 import { fetchGitHubRegistryCatalog } from "@/src/registry/github"
 import {
@@ -202,6 +204,37 @@ export async function getRegistryItems(
   return withRegistryContext(() =>
     fetchRegistryItems(items, configWithDefaults(config), { useCache })
   )
+}
+
+/**
+ * One item and, when it references one, its docs model — fetched inside the
+ * SAME registry context as the item, so a private registry's headers still
+ * apply to the docs file next to it. `item` is undefined for a name the
+ * registry does not have; `model` for an item that publishes no docs. A docs
+ * file that cannot be fetched throws the registry error it is (NETWORK_ERROR,
+ * FETCH_ERROR, ...): the item was reachable, so this is not a "no docs" answer.
+ */
+export async function getRegistryItemDocs(
+  name: string,
+  options?: RegistryApiOptions
+): Promise<{
+  item: z.infer<typeof registryItemSchema> | undefined
+  model: ComponentDocsModel | undefined
+}> {
+  const { config, useCache = false } = options || {}
+
+  return withRegistryContext(async () => {
+    let item: z.infer<typeof registryItemSchema> | undefined
+    try {
+      ;[item] = await fetchRegistryItems([name], configWithDefaults(config), {
+        useCache,
+      })
+    } catch (error) {
+      if (!(error instanceof RegistryItemNotFoundError)) throw error
+    }
+    const ref = item?.componentDocsRef
+    return { item, model: ref ? await fetchComponentDocs(ref) : undefined }
+  })
 }
 
 export async function resolveRegistryItems(

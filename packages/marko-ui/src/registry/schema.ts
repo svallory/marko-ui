@@ -287,13 +287,15 @@ export const registryItemCommonSchema = z.object({
   envVars: registryItemEnvVarsSchema.optional(),
   meta: z.record(z.string(), z.any()).optional(),
   docs: z.string().optional(),
-  /** The structured, machine-readable docs model (see componentDocsSchema). */
-  // `.catch(undefined)`: docs are an ADDITIVE convenience. A registry item
-  // whose `componentDocs` is malformed (hand-edited registry, a half-deployed
-  // registry, a newer model than this CLI knows) must still install and still
-  // `show` — the failure has to be limited to `marko-ui docs`, not turn into a
-  // parse error on the whole item.
-  componentDocs: componentDocsSchema.optional().catch(undefined),
+  /**
+   * Where this component's structured docs model lives (see
+   * componentDocsSchema): an absolute URL, or a path relative to the item's own
+   * file for a local-file registry. The model is ONE file per component, not a
+   * copy inside every item that describes it, so `add` and `show` stay small and
+   * only `docs` (and `add`'s docs cache) fetch it. Absent on a registry that
+   * publishes no docs data.
+   */
+  componentDocsRef: z.string().optional(),
   categories: z.array(z.string()).optional(),
 })
 
