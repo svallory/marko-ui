@@ -360,7 +360,7 @@ jobs:
         run: |
           bun scripts/ci/behavior-coverage.ts --json > behavior-coverage.json
           bun scripts/ci/badge.ts behavior-coverage behavior-coverage.json badge-out
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v4
         if: always()
         with:
           name: badges-tests
@@ -384,7 +384,7 @@ jobs:
       - name: Generate badges
         if: always()
         run: bun scripts/ci/badge.ts axe axe-results.json badge-out
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v4
         if: always()
         with:
           name: badges-axe
@@ -403,7 +403,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v4
-      - uses: actions/download-artifact@484a0b528fb4d7bd804637ccb632e47a0e638317 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v4
         with:
           pattern: badges-*
           path: badges
